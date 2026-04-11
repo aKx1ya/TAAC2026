@@ -1,6 +1,9 @@
 # TAAC2026
 Deep Learning Project Group Repository
 
+# 注意
+修改完之后双击publish.bat脚本文件即可直接上传至GitHub
+
 ## 目录
 我没写  
 
