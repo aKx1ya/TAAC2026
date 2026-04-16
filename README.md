@@ -10,3 +10,6 @@ Deep Learning Project Group Repository
 ## 项目架构
 我也没写
 
+## MAC推送
+git config --global pull.rebase false
+sudo chmod -R 777 <相对路径>
