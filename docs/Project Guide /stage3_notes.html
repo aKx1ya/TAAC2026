@@ -1,0 +1,1546 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>学习笔记 · 阶段三 — 数据 · The Data</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Noto+Serif+SC:wght@400;500;600;700&family=Noto+Sans+SC:wght@300;400;500;600&family=JetBrains+Mono:wght@400;500&display=swap" rel="stylesheet">
+<style>
+  :root {
+    --bg: #F4EEE3;
+    --bg-paper: #FAF6EC;
+    --bg-soft: #EDE5D4;
+    --bg-card: #FFFCF5;
+
+    --ink: #2A2520;
+    --ink-soft: #5A4F44;
+    --ink-faint: #8A7E6F;
+
+    --teal: #1F5E55;
+    --rust: #A14828;
+    --gold: #8B6914;
+    --plum: #6B3F5C;
+    --moss: #4A6B2A;
+    --slate: #3D4D5C;
+    --indigo: #4A4178;
+
+    --bg-teal: #DAE8E2;
+    --bg-rust: #F0DCD0;
+    --bg-gold: #EFE3C8;
+    --bg-plum: #ECDCE5;
+    --bg-moss: #E1E8D0;
+    --bg-slate: #DDE5EA;
+    --bg-indigo: #DFDCEC;
+
+    --border: rgba(42, 37, 32, 0.12);
+    --border-strong: rgba(42, 37, 32, 0.25);
+    --shadow-paper: 0 1px 2px rgba(42, 37, 32, 0.04), 0 4px 12px rgba(42, 37, 32, 0.06);
+
+    --serif: "Noto Serif SC", "Songti SC", "STSong", serif;
+    --sans: "Noto Sans SC", -apple-system, BlinkMacSystemFont, "PingFang SC", sans-serif;
+    --mono: "JetBrains Mono", ui-monospace, "SF Mono", Menlo, monospace;
+  }
+
+  @media (prefers-color-scheme: dark) {
+    :root {
+      --bg: #1A1714;
+      --bg-paper: #221E19;
+      --bg-soft: #2C2620;
+      --bg-card: #2A241E;
+
+      --ink: #E8E0D2;
+      --ink-soft: #B8AC9A;
+      --ink-faint: #847868;
+
+      --teal: #6FB5A4;
+      --rust: #E89070;
+      --gold: #D4A845;
+      --plum: #C390AC;
+      --moss: #98B870;
+      --slate: #8FA5B5;
+      --indigo: #9F94CB;
+
+      --bg-teal: #1F3A35;
+      --bg-rust: #4A2818;
+      --bg-gold: #3F3018;
+      --bg-plum: #3D2832;
+      --bg-moss: #2E3A1F;
+      --bg-slate: #243038;
+      --bg-indigo: #2A2440;
+
+      --border: rgba(232, 224, 210, 0.12);
+      --border-strong: rgba(232, 224, 210, 0.22);
+      --shadow-paper: 0 1px 2px rgba(0, 0, 0, 0.3), 0 4px 12px rgba(0, 0, 0, 0.2);
+    }
+  }
+
+  * { box-sizing: border-box; }
+  html { scroll-behavior: smooth; }
+
+  body {
+    margin: 0;
+    background: var(--bg);
+    background-image:
+      radial-gradient(circle at 20% 10%, rgba(161, 72, 40, 0.04) 0%, transparent 50%),
+      radial-gradient(circle at 80% 90%, rgba(31, 94, 85, 0.04) 0%, transparent 50%);
+    color: var(--ink);
+    font-family: var(--sans);
+    font-size: 16px;
+    line-height: 1.75;
+    -webkit-font-smoothing: antialiased;
+  }
+
+  .page {
+    max-width: 760px;
+    margin: 0 auto;
+    padding: 60px 32px 100px;
+  }
+
+  /* ───── Header ───── */
+  .masthead {
+    border-bottom: 1px solid var(--border-strong);
+    padding-bottom: 32px;
+    margin-bottom: 56px;
+  }
+
+  .masthead-meta {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    font-family: var(--mono);
+    font-size: 11px;
+    text-transform: uppercase;
+    letter-spacing: 0.15em;
+    color: var(--ink-faint);
+    margin-bottom: 24px;
+  }
+
+  .stage-badge {
+    display: inline-flex;
+    align-items: center;
+    gap: 8px;
+    padding: 4px 12px;
+    background: var(--bg-indigo);
+    color: var(--indigo);
+    border-radius: 2px;
+    font-weight: 500;
+  }
+  .stage-badge::before {
+    content: "";
+    width: 6px;
+    height: 6px;
+    background: var(--indigo);
+    border-radius: 50%;
+  }
+
+  h1.title {
+    font-family: var(--serif);
+    font-size: 44px;
+    font-weight: 600;
+    line-height: 1.2;
+    margin: 0 0 12px;
+    letter-spacing: -0.01em;
+  }
+
+  .subtitle {
+    font-family: var(--serif);
+    font-size: 18px;
+    font-weight: 400;
+    color: var(--ink-soft);
+    font-style: italic;
+    margin: 0;
+  }
+
+  .preamble {
+    font-size: 16px;
+    color: var(--ink-soft);
+    line-height: 1.85;
+    margin: 32px 0 0;
+    padding: 20px 24px;
+    background: var(--bg-paper);
+    border-left: 2px solid var(--gold);
+    border-radius: 0 4px 4px 0;
+  }
+  .preamble strong { color: var(--ink); }
+
+  /* ───── Mindmap card ───── */
+  .mindmap-section {
+    background: var(--bg-card);
+    border: 1px solid var(--border);
+    border-radius: 8px;
+    padding: 28px 32px;
+    margin: 48px 0;
+    box-shadow: var(--shadow-paper);
+  }
+  .mindmap-section h2 {
+    font-family: var(--serif);
+    font-size: 14px;
+    text-transform: uppercase;
+    letter-spacing: 0.2em;
+    color: var(--ink-faint);
+    margin: 0 0 6px;
+    font-weight: 500;
+  }
+  .mindmap-section .mindmap-subtitle {
+    font-family: var(--serif);
+    font-style: italic;
+    color: var(--ink-soft);
+    font-size: 15px;
+    margin: 0 0 24px;
+  }
+
+  /* ───── SVG mindmap ───── */
+  .mindmap-svg {
+    width: 100%;
+    height: auto;
+    display: block;
+  }
+  .mindmap-svg .node-rect {
+    stroke-width: 1;
+  }
+  .mindmap-svg text {
+    font-family: var(--sans);
+    fill: var(--ink);
+  }
+  .mindmap-svg .title-text {
+    font-weight: 600;
+    font-size: 13px;
+  }
+  .mindmap-svg .sub-text {
+    font-size: 11px;
+    fill: var(--ink-soft);
+  }
+  .mindmap-svg .conn {
+    fill: none;
+    stroke: var(--ink-faint);
+    stroke-width: 1;
+    opacity: 0.5;
+  }
+
+  /* ───── Legend ───── */
+  .legend {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 16px;
+    margin: 16px 0 0;
+    padding: 14px 16px;
+    background: var(--bg-paper);
+    border-radius: 6px;
+    font-size: 12px;
+    font-family: var(--mono);
+  }
+  .legend-item {
+    display: flex;
+    align-items: center;
+    gap: 6px;
+    color: var(--ink-soft);
+  }
+  .legend-dot {
+    width: 12px;
+    height: 12px;
+    border-radius: 3px;
+  }
+
+  /* ───── TOC card ───── */
+  .toc {
+    background: var(--bg-card);
+    border: 1px solid var(--border);
+    border-radius: 8px;
+    padding: 28px 32px;
+    margin: 48px 0;
+    box-shadow: var(--shadow-paper);
+  }
+  .toc h2 {
+    font-family: var(--serif);
+    font-size: 14px;
+    text-transform: uppercase;
+    letter-spacing: 0.2em;
+    color: var(--ink-faint);
+    margin: 0 0 8px;
+    font-weight: 500;
+  }
+  .toc-summary {
+    font-family: var(--serif);
+    font-style: italic;
+    font-size: 15px;
+    color: var(--ink-soft);
+    margin: 0 0 24px;
+    padding-bottom: 20px;
+    border-bottom: 1px dashed var(--border);
+  }
+  .toc-list {
+    list-style: none;
+    padding: 0;
+    margin: 0;
+  }
+  .toc-list > li {
+    padding: 10px 0;
+    border-bottom: 1px dashed var(--border);
+    display: grid;
+    grid-template-columns: 36px 1fr;
+    gap: 12px;
+    align-items: baseline;
+  }
+  .toc-list > li:last-child { border-bottom: none; }
+  .toc-num {
+    font-family: var(--mono);
+    font-size: 12px;
+    color: var(--ink-faint);
+  }
+  .toc-link {
+    color: var(--ink);
+    text-decoration: none;
+    font-weight: 500;
+    transition: color 0.2s;
+  }
+  .toc-link:hover { color: var(--rust); }
+  .toc-desc {
+    grid-column: 2;
+    color: var(--ink-faint);
+    font-size: 13.5px;
+    font-style: italic;
+    margin-top: 2px;
+  }
+
+  /* ───── Section ───── */
+  .station {
+    margin: 80px 0 0;
+    scroll-margin-top: 24px;
+  }
+  .station-marker {
+    display: flex;
+    align-items: center;
+    gap: 16px;
+    margin-bottom: 8px;
+  }
+  .station-num {
+    font-family: var(--serif);
+    font-size: 13px;
+    color: var(--rust);
+    text-transform: uppercase;
+    letter-spacing: 0.25em;
+    font-weight: 500;
+  }
+  .station-line {
+    flex: 1;
+    height: 1px;
+    background: var(--border);
+  }
+  h2.station-title {
+    font-family: var(--serif);
+    font-size: 32px;
+    font-weight: 600;
+    margin: 0 0 8px;
+    line-height: 1.25;
+    letter-spacing: -0.005em;
+  }
+  .station-en {
+    font-family: var(--serif);
+    font-style: italic;
+    color: var(--ink-faint);
+    font-size: 15px;
+    margin: 0 0 28px;
+  }
+
+  /* ───── Body ───── */
+  p { margin: 14px 0; }
+  h3 {
+    font-family: var(--serif);
+    font-size: 20px;
+    font-weight: 600;
+    margin: 36px 0 12px;
+    color: var(--ink);
+  }
+  h4 {
+    font-family: var(--sans);
+    font-size: 14px;
+    font-weight: 600;
+    margin: 24px 0 8px;
+    color: var(--ink);
+    text-transform: uppercase;
+    letter-spacing: 0.08em;
+  }
+  strong { color: var(--ink); font-weight: 600; }
+
+  ul.refined {
+    list-style: none;
+    padding: 0;
+    margin: 16px 0;
+  }
+  ul.refined li {
+    padding: 4px 0 4px 24px;
+    position: relative;
+  }
+  ul.refined li::before {
+    content: "—";
+    position: absolute;
+    left: 0;
+    color: var(--rust);
+    font-weight: 600;
+  }
+
+  /* ───── Callouts ───── */
+  .pullquote {
+    margin: 28px 0;
+    padding: 0 0 0 24px;
+    border-left: 3px solid var(--rust);
+    font-family: var(--serif);
+    font-size: 19px;
+    line-height: 1.6;
+    color: var(--ink);
+    font-style: italic;
+  }
+
+  .insight, .compare, .analogy, .alert, .star {
+    margin: 28px 0;
+    padding: 18px 22px;
+    border-radius: 4px;
+  }
+  .insight { background: var(--bg-gold); }
+  .insight::before {
+    content: "💡 关键洞察";
+    display: block;
+    font-family: var(--mono);
+    font-size: 11px;
+    text-transform: uppercase;
+    letter-spacing: 0.15em;
+    color: var(--gold);
+    margin-bottom: 8px;
+    font-weight: 500;
+  }
+  .compare { background: var(--bg-teal); }
+  .compare::before {
+    content: "🔁 对比一下";
+    display: block;
+    font-family: var(--mono);
+    font-size: 11px;
+    text-transform: uppercase;
+    letter-spacing: 0.15em;
+    color: var(--teal);
+    margin-bottom: 8px;
+    font-weight: 500;
+  }
+  .alert { background: var(--bg-rust); }
+  .alert::before {
+    content: "⚠️ 重要警示";
+    display: block;
+    font-family: var(--mono);
+    font-size: 11px;
+    text-transform: uppercase;
+    letter-spacing: 0.15em;
+    color: var(--rust);
+    margin-bottom: 8px;
+    font-weight: 500;
+  }
+  .star { background: var(--bg-indigo); }
+  .star::before {
+    content: "⭐ 重点解读";
+    display: block;
+    font-family: var(--mono);
+    font-size: 11px;
+    text-transform: uppercase;
+    letter-spacing: 0.15em;
+    color: var(--indigo);
+    margin-bottom: 8px;
+    font-weight: 500;
+  }
+
+  .insight p:first-of-type, .compare p:first-of-type,
+  .alert p:first-of-type, .star p:first-of-type { margin-top: 0; }
+  .insight p:last-of-type, .compare p:last-of-type,
+  .alert p:last-of-type, .star p:last-of-type { margin-bottom: 0; }
+
+  .analogy {
+    background: var(--bg-card);
+    border: 1px solid var(--border);
+    border-radius: 6px;
+    box-shadow: var(--shadow-paper);
+    padding: 22px 26px;
+  }
+  .analogy-label {
+    display: inline-block;
+    font-family: var(--mono);
+    font-size: 10px;
+    text-transform: uppercase;
+    letter-spacing: 0.2em;
+    color: var(--ink-faint);
+    margin-bottom: 10px;
+    padding: 2px 8px;
+    background: var(--bg-soft);
+    border-radius: 2px;
+  }
+  .analogy-title {
+    font-family: var(--serif);
+    font-size: 18px;
+    font-weight: 600;
+    margin: 0 0 12px;
+    color: var(--ink);
+  }
+
+  /* ───── Tables ───── */
+  table {
+    width: 100%;
+    border-collapse: collapse;
+    margin: 24px 0;
+    font-size: 14px;
+    background: var(--bg-card);
+    border: 1px solid var(--border);
+    border-radius: 4px;
+    overflow: hidden;
+  }
+  th, td {
+    text-align: left;
+    padding: 12px 16px;
+    border-bottom: 1px solid var(--border);
+    vertical-align: top;
+  }
+  th {
+    background: var(--bg-soft);
+    font-weight: 600;
+    color: var(--ink-soft);
+    font-size: 12px;
+    text-transform: uppercase;
+    letter-spacing: 0.08em;
+  }
+  tr:last-child td { border-bottom: none; }
+
+  /* ───── Code ───── */
+  code {
+    font-family: var(--mono);
+    font-size: 13px;
+    background: var(--bg-soft);
+    padding: 2px 6px;
+    border-radius: 3px;
+    color: var(--rust);
+  }
+  pre {
+    background: var(--bg-paper);
+    border: 1px solid var(--border);
+    padding: 18px 20px;
+    border-radius: 4px;
+    overflow-x: auto;
+    font-family: var(--mono);
+    font-size: 12.5px;
+    line-height: 1.7;
+    margin: 20px 0;
+  }
+  pre code {
+    background: none;
+    padding: 0;
+    color: var(--ink);
+  }
+
+  /* ───── 6 type cards ───── */
+  .type-grid {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 16px;
+    margin: 24px 0;
+  }
+  @media (max-width: 640px) { .type-grid { grid-template-columns: 1fr; } }
+  .type-card {
+    background: var(--bg-card);
+    border: 1px solid var(--border);
+    border-left: 4px solid var(--rust);
+    border-radius: 4px;
+    padding: 16px 18px;
+  }
+  .type-num {
+    display: inline-block;
+    font-family: var(--mono);
+    font-size: 10px;
+    padding: 2px 8px;
+    border-radius: 2px;
+    text-transform: uppercase;
+    letter-spacing: 0.15em;
+    margin-bottom: 8px;
+    font-weight: 500;
+  }
+  .type-card h4 {
+    margin: 4px 0;
+    font-family: var(--serif);
+    font-size: 17px;
+    font-weight: 600;
+    text-transform: none;
+    letter-spacing: 0;
+  }
+  .type-meta {
+    font-family: var(--mono);
+    font-size: 11px;
+    color: var(--ink-faint);
+    margin: 4px 0;
+  }
+  .type-card p {
+    font-size: 13.5px;
+    margin: 6px 0 0;
+    color: var(--ink-soft);
+  }
+
+  /* Color variants for type cards */
+  .type-id { border-left-color: var(--ink-faint); }
+  .type-id .type-num { background: var(--bg-soft); color: var(--ink-soft); }
+  .type-uint { border-left-color: var(--indigo); }
+  .type-uint .type-num { background: var(--bg-indigo); color: var(--indigo); }
+  .type-udense { border-left-color: var(--slate); }
+  .type-udense .type-num { background: var(--bg-slate); color: var(--slate); }
+  .type-iint { border-left-color: var(--teal); }
+  .type-iint .type-num { background: var(--bg-teal); color: var(--teal); }
+  .type-idense { border-left-color: var(--ink-faint); border-left-style: dashed; }
+  .type-idense .type-num { background: var(--bg-soft); color: var(--ink-faint); }
+  .type-seq { border-left-color: var(--rust); }
+  .type-seq .type-num { background: var(--bg-rust); color: var(--rust); }
+
+  /* ───── Domain table ───── */
+  .domain-table {
+    background: var(--bg-card);
+    border: 1px solid var(--border);
+    border-radius: 6px;
+    overflow: hidden;
+    margin: 24px 0;
+  }
+  .domain-row {
+    display: grid;
+    grid-template-columns: 100px 1fr 80px;
+    gap: 16px;
+    padding: 14px 20px;
+    border-bottom: 1px solid var(--border);
+    align-items: center;
+  }
+  .domain-row:last-child { border-bottom: none; }
+  .domain-row:first-child {
+    background: var(--bg-soft);
+    font-family: var(--mono);
+    font-size: 11px;
+    text-transform: uppercase;
+    letter-spacing: 0.08em;
+    color: var(--ink-soft);
+  }
+  .domain-tag {
+    display: inline-block;
+    padding: 4px 12px;
+    border-radius: 4px;
+    font-family: var(--mono);
+    font-size: 12px;
+    font-weight: 600;
+  }
+  .tag-a { background: var(--bg-indigo); color: var(--indigo); }
+  .tag-b { background: var(--bg-teal); color: var(--teal); }
+  .tag-c { background: var(--bg-rust); color: var(--rust); }
+  .tag-d { background: var(--bg-gold); color: var(--gold); }
+  .domain-cols {
+    font-family: var(--mono);
+    font-size: 12.5px;
+    color: var(--ink);
+  }
+  .domain-count {
+    font-family: var(--mono);
+    font-size: 13px;
+    text-align: right;
+    color: var(--ink-soft);
+  }
+
+  /* ───── Aligned data box ───── */
+  .aligned-box {
+    background: var(--bg-paper);
+    border: 1px solid var(--border);
+    border-radius: 6px;
+    padding: 22px 24px;
+    margin: 24px 0;
+    font-family: var(--mono);
+    font-size: 12.5px;
+  }
+  .aligned-row {
+    display: flex;
+    gap: 12px;
+    align-items: baseline;
+    padding: 4px 0;
+  }
+  .aligned-key {
+    color: var(--rust);
+    min-width: 220px;
+  }
+  .aligned-val {
+    color: var(--ink);
+    flex: 1;
+  }
+  .aligned-comment {
+    color: var(--ink-faint);
+    font-style: italic;
+  }
+
+  /* ───── Self-check ───── */
+  details.check {
+    background: var(--bg-card);
+    border: 1px solid var(--border);
+    border-radius: 6px;
+    margin: 14px 0;
+    overflow: hidden;
+    transition: box-shadow 0.2s;
+  }
+  details.check[open] { box-shadow: var(--shadow-paper); }
+  details.check summary {
+    cursor: pointer;
+    padding: 16px 22px;
+    list-style: none;
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    font-weight: 500;
+    user-select: none;
+    transition: background 0.15s;
+  }
+  details.check summary::-webkit-details-marker { display: none; }
+  details.check summary:hover { background: var(--bg-soft); }
+  details.check summary::after {
+    content: "查看答案 →";
+    margin-left: auto;
+    font-family: var(--mono);
+    font-size: 11px;
+    color: var(--ink-faint);
+    text-transform: uppercase;
+    letter-spacing: 0.1em;
+  }
+  details.check[open] summary::after { content: "收起 ↑"; }
+  details.check .check-num {
+    font-family: var(--serif);
+    font-size: 24px;
+    font-weight: 600;
+    color: var(--rust);
+    min-width: 36px;
+  }
+  details.check .answer {
+    padding: 20px 22px 22px;
+    border-top: 1px solid var(--border);
+    background: var(--bg-paper);
+    font-size: 14.5px;
+    line-height: 1.75;
+  }
+  details.check .answer strong { color: var(--rust); }
+
+  /* ───── Recap ───── */
+  .recap {
+    background: var(--bg-paper);
+    border: 1px dashed var(--border-strong);
+    border-radius: 6px;
+    padding: 28px 32px;
+    margin: 60px 0 0;
+  }
+  .recap h3 {
+    margin-top: 0;
+    color: var(--rust);
+  }
+  .recap ul {
+    list-style: none;
+    padding: 0;
+  }
+  .recap li {
+    padding: 10px 0;
+    border-bottom: 1px dashed var(--border);
+    font-size: 14.5px;
+  }
+  .recap li:last-child { border-bottom: none; }
+  .recap li::before {
+    content: "→ ";
+    color: var(--rust);
+    font-weight: 600;
+    margin-right: 6px;
+  }
+
+  .footer {
+    margin-top: 100px;
+    padding-top: 32px;
+    border-top: 1px solid var(--border-strong);
+    text-align: center;
+    color: var(--ink-faint);
+    font-size: 13px;
+    font-family: var(--serif);
+    font-style: italic;
+  }
+
+  @media (max-width: 640px) {
+    .page { padding: 40px 20px 80px; }
+    h1.title { font-size: 32px; }
+    h2.station-title { font-size: 24px; }
+    .domain-row { grid-template-columns: 1fr; gap: 4px; }
+    .aligned-row { flex-direction: column; gap: 2px; }
+    .aligned-key { min-width: 0; }
+  }
+</style>
+</head>
+<body>
+
+<div class="page">
+
+  <!-- ═══════════════════ HEADER ═══════════════════ -->
+  <header class="masthead">
+    <div class="masthead-meta">
+      <span>学习笔记 · STUDY NOTES</span>
+      <span class="stage-badge">阶段三 / Stage 3</span>
+    </div>
+    <h1 class="title">数据 · The Data</h1>
+    <p class="subtitle">从问题空间切到工具空间——这份数据到底长什么样</p>
+
+    <div class="preamble">
+      阶段一搭项目心智模型,阶段二搞清问题定义。这一阶段开始转向<strong>"工具"</strong>——你手里这份数据具体长什么样、怎么组织、有哪些细节会影响后续建模。这一站结束后,你才有资格进入"模型"章节,因为你需要先理解模型在<strong>吃什么</strong>,才能理解模型在<strong>怎么吃</strong>。
+    </div>
+  </header>
+
+
+  <!-- ═══════════════════ MINDMAP ═══════════════════ -->
+  <div class="mindmap-section">
+    <h2>📍 数据层思维导图 · Mindmap</h2>
+    <p class="mindmap-subtitle">展现内在层级关系 + 与其他章节的外在连接</p>
+
+    <svg class="mindmap-svg" viewBox="0 0 760 1100" xmlns="http://www.w3.org/2000/svg">
+      <defs>
+        <marker id="arrow" viewBox="0 0 10 10" refX="8" refY="5" markerWidth="6" markerHeight="6" orient="auto">
+          <path d="M2 1L8 5L2 9" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/>
+        </marker>
+      </defs>
+
+      <!-- ═══ Tier 0: Root ═══ -->
+      <g>
+        <rect class="node-rect" x="240" y="20" width="280" height="64" rx="8"
+              fill="var(--bg-soft)" stroke="var(--ink-soft)"/>
+        <text class="title-text" x="380" y="48" text-anchor="middle">120 列扁平数据</text>
+        <text class="sub-text" x="380" y="68" text-anchor="middle">来自腾讯广告日志,完全脱敏</text>
+      </g>
+
+      <!-- Connectors to Tier 1 -->
+      <line class="conn" x1="380" y1="84" x2="380" y2="120"/>
+
+      <!-- ═══ Tier 1: 6 Categories ═══ -->
+      <!-- Row of 5 cards (Item Dense skipped, shown separately) -->
+      <g>
+        <rect class="node-rect" x="20" y="120" width="130" height="56" rx="6"
+              fill="var(--bg-soft)" stroke="var(--ink-soft)"/>
+        <text class="title-text" x="85" y="142" text-anchor="middle">ID & Label</text>
+        <text class="sub-text" x="85" y="162" text-anchor="middle">5 列 · 元数据</text>
+      </g>
+
+      <g>
+        <rect class="node-rect" x="166" y="120" width="130" height="56" rx="6"
+              fill="var(--bg-indigo)" stroke="var(--indigo)"/>
+        <text class="title-text" x="231" y="142" text-anchor="middle">User Int</text>
+        <text class="sub-text" x="231" y="162" text-anchor="middle">46 列 · 离散</text>
+      </g>
+
+      <g>
+        <rect class="node-rect" x="312" y="120" width="130" height="56" rx="6"
+              fill="var(--bg-slate)" stroke="var(--slate)"/>
+        <text class="title-text" x="377" y="142" text-anchor="middle">User Dense</text>
+        <text class="sub-text" x="377" y="162" text-anchor="middle">10 列 · 稠密</text>
+      </g>
+
+      <g>
+        <rect class="node-rect" x="458" y="120" width="130" height="56" rx="6"
+              fill="var(--bg-teal)" stroke="var(--teal)"/>
+        <text class="title-text" x="523" y="142" text-anchor="middle">Item Int</text>
+        <text class="sub-text" x="523" y="162" text-anchor="middle">14 列 · 离散</text>
+      </g>
+
+      <g>
+        <rect class="node-rect" x="604" y="120" width="130" height="56" rx="6"
+              fill="var(--bg-rust)" stroke="var(--rust)"/>
+        <text class="title-text" x="669" y="142" text-anchor="middle">Domain Seq</text>
+        <text class="sub-text" x="669" y="162" text-anchor="middle">45 列 · 序列</text>
+      </g>
+
+      <!-- Item Dense (空) note - dashed -->
+      <g>
+        <rect class="node-rect" x="290" y="195" width="180" height="36" rx="6"
+              fill="none" stroke="var(--ink-faint)" stroke-dasharray="4 3"/>
+        <text class="sub-text" x="380" y="218" text-anchor="middle" style="font-style:italic">Item Dense:0 列(空 · 留白可探索)</text>
+      </g>
+
+      <!-- Connector down to Tier 2 from Domain Seq -->
+      <path class="conn" d="M 669 176 L 669 245 L 380 245 L 380 270" marker-end="url(#arrow)"/>
+
+      <!-- ═══ Tier 2: 4 Domains ═══ -->
+      <text class="sub-text" x="380" y="262" text-anchor="middle" style="font-weight:500; fill: var(--rust)">展开 Domain Seq → 4 个行为域</text>
+
+      <g>
+        <rect class="node-rect" x="40" y="285" width="150" height="50" rx="6"
+              fill="var(--bg-indigo)" stroke="var(--indigo)"/>
+        <text class="title-text" x="115" y="307" text-anchor="middle">Domain A</text>
+        <text class="sub-text" x="115" y="324" text-anchor="middle">9 列 · 38–46</text>
+      </g>
+
+      <g>
+        <rect class="node-rect" x="206" y="285" width="150" height="50" rx="6"
+              fill="var(--bg-teal)" stroke="var(--teal)"/>
+        <text class="title-text" x="281" y="307" text-anchor="middle">Domain B</text>
+        <text class="sub-text" x="281" y="324" text-anchor="middle">14 列 · 67–79, 88</text>
+      </g>
+
+      <g>
+        <rect class="node-rect" x="372" y="285" width="150" height="50" rx="6"
+              fill="var(--bg-rust)" stroke="var(--rust)"/>
+        <text class="title-text" x="447" y="307" text-anchor="middle">Domain C</text>
+        <text class="sub-text" x="447" y="324" text-anchor="middle">12 列 · 27–37, 47</text>
+      </g>
+
+      <g>
+        <rect class="node-rect" x="538" y="285" width="150" height="50" rx="6"
+              fill="var(--bg-gold)" stroke="var(--gold)"/>
+        <text class="title-text" x="613" y="307" text-anchor="middle">Domain D</text>
+        <text class="sub-text" x="613" y="324" text-anchor="middle">10 列 · 17–26</text>
+      </g>
+
+      <!-- Connector to Tier 3 -->
+      <line class="conn" x1="380" y1="335" x2="380" y2="370" marker-end="url(#arrow)"/>
+
+      <!-- ═══ Tier 3: Internal alignment ═══ -->
+      <g>
+        <rect class="node-rect" x="80" y="375" width="600" height="86" rx="8"
+              fill="var(--bg-gold)" stroke="var(--gold)"/>
+        <text class="title-text" x="380" y="400" text-anchor="middle" style="fill: var(--gold)">域内多列逐元素对齐</text>
+        <text class="sub-text" x="380" y="422" text-anchor="middle">[商品 ID, 类目 ID, 时间戳, ...] 共同描述 1 个动作的多个侧面</text>
+        <text class="sub-text" x="380" y="442" text-anchor="middle" style="font-family: var(--mono)">第 i 个位置在所有列里指代同一次行为</text>
+      </g>
+
+      <line class="conn" x1="380" y1="461" x2="380" y2="490" marker-end="url(#arrow)"/>
+
+      <!-- ═══ Tier 4: Time bucket ═══ -->
+      <g>
+        <rect class="node-rect" x="200" y="495" width="360" height="60" rx="8"
+              fill="var(--bg-gold)" stroke="var(--gold)"/>
+        <text class="title-text" x="380" y="518" text-anchor="middle" style="fill: var(--gold)">时间戳 → 时间桶 ID</text>
+        <text class="sub-text" x="380" y="540" text-anchor="middle">共 65 个桶 · 边界从 5 秒到 1 年 · 可调参数</text>
+      </g>
+
+      <line class="conn" x1="380" y1="555" x2="380" y2="585"/>
+
+      <!-- ═══ Tier 5: Two formats ═══ -->
+      <g>
+        <rect class="node-rect" x="40" y="590" width="320" height="80" rx="8"
+              fill="var(--bg-soft)" stroke="var(--ink-soft)"/>
+        <text class="title-text" x="200" y="613" text-anchor="middle">Demo 格式</text>
+        <text class="sub-text" x="200" y="633" text-anchor="middle">7 列嵌套 struct</text>
+        <text class="sub-text" x="200" y="652" text-anchor="middle">Hugging Face · debug 用 1000 行</text>
+      </g>
+
+      <g>
+        <rect class="node-rect" x="400" y="590" width="320" height="80" rx="8"
+              fill="var(--bg-soft)" stroke="var(--ink)" stroke-width="1.5"/>
+        <text class="title-text" x="560" y="613" text-anchor="middle">正式格式</text>
+        <text class="sub-text" x="560" y="633" text-anchor="middle">120 列扁平</text>
+        <text class="sub-text" x="560" y="652" text-anchor="middle">训练真正用的格式</text>
+      </g>
+
+      <!-- ═══ External connections section ═══ -->
+      <line class="conn" x1="380" y1="690" x2="380" y2="720" stroke-dasharray="4 3"/>
+
+      <text class="sub-text" x="380" y="710" text-anchor="middle" style="font-style:italic; fill: var(--rust); font-weight:500">↓ 外部连接 · External connections ↓</text>
+
+      <g>
+        <rect class="node-rect" x="20" y="730" width="720" height="350" rx="10"
+              fill="var(--bg-moss)" stroke="var(--moss)" stroke-dasharray="6 4"/>
+        <text class="title-text" x="380" y="758" text-anchor="middle" style="fill: var(--moss); font-size: 14px;">数据层与其他章节的连接</text>
+
+        <!-- Sub-grid of 5 connections -->
+        <g>
+          <rect x="40" y="780" width="340" height="46" rx="6" fill="var(--bg-card)" stroke="var(--border)" stroke-width="0.5"/>
+          <text class="title-text" x="60" y="800" style="font-size: 12px;">→ 阶段一(120 列概览)</text>
+          <text class="sub-text" x="60" y="816">阶段三是其细化版,补全每类的具体形态</text>
+        </g>
+
+        <g>
+          <rect x="400" y="780" width="340" height="46" rx="6" fill="var(--bg-card)" stroke="var(--border)" stroke-width="0.5"/>
+          <text class="title-text" x="420" y="800" style="font-size: 12px;">→ 阶段二(4 个建模难点)</text>
+          <text class="sub-text" x="420" y="816">"长 + 异构序列"在这里有了具体证据</text>
+        </g>
+
+        <g>
+          <rect x="40" y="836" width="340" height="46" rx="6" fill="var(--bg-card)" stroke="var(--border)" stroke-width="0.5"/>
+          <text class="title-text" x="60" y="856" style="font-size: 12px;">→ 模型(下一阶段)</text>
+          <text class="sub-text" x="60" y="872">每个类别对应 model.py 里的不同 embedding 路径</text>
+        </g>
+
+        <g>
+          <rect x="400" y="836" width="340" height="46" rx="6" fill="var(--bg-card)" stroke="var(--border)" stroke-width="0.5"/>
+          <text class="title-text" x="420" y="856" style="font-size: 12px;">→ 改进方向(report 用)</text>
+          <text class="sub-text" x="420" y="872">时间桶可调,Item Dense 可造,(k,v) 对可加权</text>
+        </g>
+
+        <g>
+          <rect x="40" y="892" width="700" height="46" rx="6" fill="var(--bg-card)" stroke="var(--border)" stroke-width="0.5"/>
+          <text class="title-text" x="60" y="912" style="font-size: 12px;">→ 代码文件:dataset.py 负责读、model.py 定义 embedding 表、ns_groups.json 决定特征分组策略</text>
+          <text class="sub-text" x="60" y="928">理解数据形态 = 理解为什么 baseline 代码长成这样</text>
+        </g>
+
+        <text class="sub-text" x="380" y="975" text-anchor="middle" style="font-weight:500;">📝 写 Report 时,本章对应:</text>
+        <text class="sub-text" x="380" y="995" text-anchor="middle">Section 4.1 Dataset · 6 大类列、4 个域、规模、隐私</text>
+        <text class="sub-text" x="380" y="1015" text-anchor="middle">Section 4.2 Preprocessing · 时间桶、对齐结构、扁平→张量的过程</text>
+        <text class="sub-text" x="380" y="1035" text-anchor="middle">Section 5.1 Setup · 100 万样本、训练/验证集划分</text>
+        <text class="sub-text" x="380" y="1063" text-anchor="middle" style="font-family: var(--mono); fill: var(--ink-faint); font-size: 10px;">数据形态 → 模型设计 → 实验结果,这是论文的逻辑链</text>
+      </g>
+    </svg>
+
+    <div class="legend">
+      <div class="legend-item"><span class="legend-dot" style="background: var(--bg-indigo); border: 1px solid var(--indigo);"></span>用户/Domain A</div>
+      <div class="legend-item"><span class="legend-dot" style="background: var(--bg-teal); border: 1px solid var(--teal);"></span>商品/Domain B</div>
+      <div class="legend-item"><span class="legend-dot" style="background: var(--bg-rust); border: 1px solid var(--rust);"></span>序列/Domain C</div>
+      <div class="legend-item"><span class="legend-dot" style="background: var(--bg-gold); border: 1px solid var(--gold);"></span>对齐/桶/Domain D</div>
+      <div class="legend-item"><span class="legend-dot" style="background: var(--bg-moss); border: 1px solid var(--moss);"></span>外部连接</div>
+    </div>
+  </div>
+
+
+  <!-- ═══════════════════ TOC ═══════════════════ -->
+  <div class="toc">
+    <h2>本笔记导航 · Contents</h2>
+    <p class="toc-summary">这一站回答的核心问题——"我手里的数据到底长什么样,有哪些细节会影响建模?"</p>
+    <ul class="toc-list">
+      <li>
+        <span class="toc-num">壹</span>
+        <span><a class="toc-link" href="#s1">数据集总览</a></span>
+        <span class="toc-desc">来源 · 规模 · 6 大类列 · 隐私机制</span>
+      </li>
+      <li>
+        <span class="toc-num">贰</span>
+        <span><a class="toc-link" href="#s2">120 列详解</a></span>
+        <span class="toc-desc">每一类列的具体形态 · ⭐ User Dense 的对齐结构</span>
+      </li>
+      <li>
+        <span class="toc-num">叁</span>
+        <span><a class="toc-link" href="#s3">4 个行为域</a></span>
+        <span class="toc-desc">列范围分布 · 域内多列对齐 · 时间桶机制</span>
+      </li>
+      <li>
+        <span class="toc-num">肆</span>
+        <span><a class="toc-link" href="#s4">两种数据格式</a></span>
+        <span class="toc-desc">Demo 嵌套 vs 正式扁平 · 实操陷阱</span>
+      </li>
+      <li>
+        <span class="toc-num">伍</span>
+        <span><a class="toc-link" href="#s5">隐含 Insight + 自检</a></span>
+        <span class="toc-desc">3 条改进方向 · 4 个验证问题</span>
+      </li>
+    </ul>
+  </div>
+
+
+  <!-- ═══════════════════ STATION 1 ═══════════════════ -->
+  <section class="station" id="s1">
+    <div class="station-marker">
+      <span class="station-num">壹 · Section I</span>
+      <span class="station-line"></span>
+    </div>
+    <h2 class="station-title">数据集总览</h2>
+    <p class="station-en">The opening statement — show the data's ID card</p>
+
+    <p>这一节的角色是<strong>"开场陈述"</strong>——快速把数据的"身份证"亮出来。</p>
+
+    <h3>5 个关键信息</h3>
+
+    <table>
+      <tr><th>项目</th><th>关键内容</th></tr>
+      <tr><td><strong>数据来源</strong></td><td>来自腾讯广告<strong>真实日志</strong>(real-world logs,不是合成数据)</td></tr>
+      <tr><td><strong>数据状态</strong></td><td>完全脱敏(fully anonymized)</td></tr>
+      <tr><td><strong>规模</strong></td><td>100 万样本(学术赛道) · 工业赛道 200 万</td></tr>
+      <tr><td><strong>结构</strong></td><td>120 列,扁平(flat)</td></tr>
+      <tr><td><strong>类别</strong></td><td>分 6 大类</td></tr>
+    </table>
+
+    <h3>"真实日志" vs 合成数据</h3>
+
+    <div class="compare">
+      <p style="margin-top: 0;"><strong>真实日志</strong> · 业务系统实际产生的数据 — 包含真实的长尾、噪声、异常值;在它上面验证的方法<strong>有工业意义</strong></p>
+      <p style="margin-bottom: 0;"><strong>合成数据</strong> · 程序伪造的"假用户"数据 — 干净但工业相关性弱</p>
+    </div>
+
+    <p style="font-size: 13px; color: var(--ink-soft); font-style: italic;">📝 写 report 时,可以强调 "real-world industrial logs" 而不是 "simulated data"——这本身就是加分点。</p>
+
+    <h3>"扁平" vs "嵌套"结构</h3>
+
+    <div class="compare">
+      <p style="margin-top: 0;"><strong>扁平结构</strong> · 每行就是一行,所有列并排放着 — 用 CSV 就能存,加载快</p>
+      <p style="margin-bottom: 0;"><strong>嵌套结构</strong> · 字段里藏着复杂结构 — 像 JSON 一样有层级</p>
+    </div>
+
+    <p>腾讯选了扁平结构。代价是:<strong>序列特征(本来是一串值)在扁平表里得存成字符串</strong>,代码读取时再 split 成数组。</p>
+
+    <h3>规模:100 万到底算大算小?</h3>
+
+    <table>
+      <tr><th>规模</th><th>例子</th></tr>
+      <tr><td>几万</td><td>学术玩具数据集(MovieLens-100K)</td></tr>
+      <tr><td>几十万</td><td>中等规模(MovieLens-1M)</td></tr>
+      <tr><td><strong>100 万</strong></td><td><strong>中大规模</strong> · 单卡 GPU 一天能跑完</td></tr>
+      <tr><td>几亿</td><td>工业级(Criteo 4.5 亿)</td></tr>
+    </table>
+
+    <div class="insight">
+      <p>学术赛道把规模压到 100 万,意味着<strong>方法本身的创新而非工程能力是竞争点</strong>——单卡能跑得动,鼓励快速迭代。</p>
+    </div>
+
+    <h3>隐私保护机制</h3>
+
+    <p>"完全脱敏"具体怎么做的?</p>
+
+    <ul class="refined">
+      <li>所有<strong>稀疏特征</strong>都是匿名整数 ID</li>
+      <li>所有<strong>稠密特征</strong>都是固定长度 float 向量</li>
+      <li>没有原始内容(无文字、图片、URL)</li>
+      <li>没有 PII(个人可识别信息)</li>
+    </ul>
+
+    <div class="alert">
+      <p style="margin-top: 0;"><strong>关键约束</strong>:不能用预训练 LLM/CV 模型做特征工程。</p>
+      <p style="margin-bottom: 0;">→ 这反而让<strong>方法论更纯粹</strong>:所有创新必须发生在<strong>架构设计、注意力机制、训练策略</strong>上,而不是"借力外部预训练模型作弊"。</p>
+    </div>
+  </section>
+
+
+  <!-- ═══════════════════ STATION 2 ═══════════════════ -->
+  <section class="station" id="s2">
+    <div class="station-marker">
+      <span class="station-num">贰 · Section II</span>
+      <span class="station-line"></span>
+    </div>
+    <h2 class="station-title">120 列详解</h2>
+    <p class="station-en">Six categories, each with its own personality</p>
+
+    <h3>3 种数据类型</h3>
+
+    <p>这一节会反复出现 3 种类型,先搞清楚:</p>
+
+    <table>
+      <tr><th>类型</th><th>说明</th><th>例子</th></tr>
+      <tr><td><code>int64</code> / <code>int32</code></td><td>单个整数</td><td><code>user_id = 87234691</code></td></tr>
+      <tr><td><code>list&lt;int64&gt;</code></td><td>一串整数</td><td><code>seq = [556712, 887341, 661203]</code></td></tr>
+      <tr><td><code>list&lt;float&gt;</code></td><td>一串小数</td><td><code>dense = [10.5, 20.0, 15.5]</code></td></tr>
+    </table>
+
+    <h3>6 大类的详细对照</h3>
+
+    <div class="type-grid">
+      <div class="type-card type-id">
+        <span class="type-num">类别 1</span>
+        <h4>ID & Label</h4>
+        <p class="type-meta">5 列 · int64/int32</p>
+        <p>元数据 + 监督信号:<code>user_id, item_id, label_type, label_time, timestamp</code>。不是模型输入特征,而是身份证 + 答案。</p>
+      </div>
+
+      <div class="type-card type-uint">
+        <span class="type-num">类别 2</span>
+        <h4>User Int Features</h4>
+        <p class="type-meta">46 列 · int64 / list&lt;int64&gt;</p>
+        <p>用户离散特征(年龄、性别、兴趣标签等)。<strong>35 标量 + 11 多值</strong>。</p>
+      </div>
+
+      <div class="type-card type-udense">
+        <span class="type-num">类别 3 ⭐</span>
+        <h4>User Dense Features</h4>
+        <p class="type-meta">10 列 · list&lt;float&gt;</p>
+        <p><strong>2 列预训练 embedding(SUM, LMF4Ads)+ 8 列与 Int 列对齐的 (key, value) 对</strong>。</p>
+      </div>
+
+      <div class="type-card type-iint">
+        <span class="type-num">类别 4</span>
+        <h4>Item Int Features</h4>
+        <p class="type-meta">14 列 · int64 / list&lt;int64&gt;</p>
+        <p>商品离散特征(类目、类型、多标签)。<strong>13 标量 + 1 多值</strong>。</p>
+      </div>
+
+      <div class="type-card type-idense">
+        <span class="type-num">类别 5(空)</span>
+        <h4>Item Dense Features</h4>
+        <p class="type-meta">0 列</p>
+        <p>商品没有稠密特征。<strong>这是个潜在的 contribution 空间</strong>——可以人工造一些(点击率、热度等)。</p>
+      </div>
+
+      <div class="type-card type-seq">
+        <span class="type-num">类别 6</span>
+        <h4>Domain Sequence Features</h4>
+        <p class="type-meta">45 列 · list&lt;int64&gt;</p>
+        <p>4 个行为域的序列特征。占总数 38%,是数据集的"主战场"。下一节展开。</p>
+      </div>
+    </div>
+
+    <h3>关键概念:"标量" vs "多值"</h3>
+
+    <div class="compare">
+      <p style="margin-top: 0;"><strong>标量(scalar)</strong> · 每条样本一个数 · 例:<code>user_age = 30</code></p>
+      <p style="margin-bottom: 0;"><strong>多值(multi-value)</strong> · 每条样本一串数 · 例:<code>user_tags = [12, 89, 156, 203]</code>(用户被打了多个兴趣标签)</p>
+    </div>
+
+    <h4>多值 ≠ 序列</h4>
+
+    <table>
+      <tr><th></th><th>多值(多标签)</th><th>序列(行为时间线)</th></tr>
+      <tr><td><strong>顺序</strong></td><td>无意义</td><td><strong>有意义</strong>(时间先后)</td></tr>
+      <tr><td><strong>例子</strong></td><td>兴趣标签 [体育, 科技, 美食]</td><td>浏览历史 [A, B, C, D]</td></tr>
+      <tr><td><strong>用途</strong></td><td>描述用户的"画像"</td><td>描述用户的"演化"</td></tr>
+    </table>
+
+    <h3>⭐ User Dense 的对齐结构(本节精华)</h3>
+
+    <p>10 列 User Dense 拆开看:</p>
+
+    <h4>前 2 列:SUM 和 LMF4Ads</h4>
+
+    <p>这两个名字看起来很专业,其实就是<strong>两个预先训好的向量</strong>——腾讯内部用其他大模型预训练好的"用户画像向量",直接送给参赛者使用。</p>
+
+    <p style="font-size: 14px; color: var(--ink-soft);">→ 这是<strong>腾讯白送的预训练 embedding</strong>,可以直接拿来用,不用自己再训。</p>
+
+    <h4>后 8 列:与 Int 列逐元素对齐(本节最关键概念)</h4>
+
+    <div class="aligned-box">
+      <div class="aligned-row">
+        <span class="aligned-key">user_int_feats_62:</span>
+        <span class="aligned-val">[1, 2, 3]</span>
+        <span class="aligned-comment"># 实体 ID(类目 ID)</span>
+      </div>
+      <div class="aligned-row">
+        <span class="aligned-key">user_dense_feats_62:</span>
+        <span class="aligned-val">[10.5, 20.0, 15.5]</span>
+        <span class="aligned-comment"># 对应的统计量(停留时长)</span>
+      </div>
+    </div>
+
+    <p>这两列<strong>逐元素对齐</strong>:</p>
+
+    <table>
+      <tr><th>位置</th><th>int 值(标签)</th><th>dense 值(数值)</th><th>含义</th></tr>
+      <tr><td>第 1 个</td><td>类目 1</td><td>10.5 秒</td><td>用户在<strong>类目 1</strong>停留 10.5 秒</td></tr>
+      <tr><td>第 2 个</td><td>类目 2</td><td>20.0 秒</td><td>用户在<strong>类目 2</strong>停留 20.0 秒</td></tr>
+      <tr><td>第 3 个</td><td>类目 3</td><td>15.5 秒</td><td>用户在<strong>类目 3</strong>停留 15.5 秒</td></tr>
+    </table>
+
+    <div class="star">
+      <p style="margin-top: 0;">这是 <strong>(key, value) 对的存储方式</strong>。</p>
+      <p>单独存"类目"或单独存"时长"都不完整;<strong>对齐结构 = 同时保留两种信息,而且关联起来</strong>。</p>
+      <p style="margin-bottom: 0;">→ 它揭示了一种重要的特征建模思想:<strong>用 dense 给 sparse 做"权重"</strong>。</p>
+    </div>
+  </section>
+
+
+  <!-- ═══════════════════ STATION 3 ═══════════════════ -->
+  <section class="station" id="s3">
+    <div class="station-marker">
+      <span class="station-num">叁 · Section III</span>
+      <span class="station-line"></span>
+    </div>
+    <h2 class="station-title">4 个行为域</h2>
+    <p class="station-en">The most complex part of the dataset</p>
+
+    <h3>4 个域的列范围分布</h3>
+
+    <div class="domain-table">
+      <div class="domain-row">
+        <span>域名</span>
+        <span>列名范围</span>
+        <span>列数</span>
+      </div>
+      <div class="domain-row">
+        <span class="domain-tag tag-a">Domain A</span>
+        <span class="domain-cols">domain_a_seq_{38–46}</span>
+        <span class="domain-count">9</span>
+      </div>
+      <div class="domain-row">
+        <span class="domain-tag tag-b">Domain B</span>
+        <span class="domain-cols">domain_b_seq_{67–79, 88}</span>
+        <span class="domain-count">14</span>
+      </div>
+      <div class="domain-row">
+        <span class="domain-tag tag-c">Domain C</span>
+        <span class="domain-cols">domain_c_seq_{27–37, 47}</span>
+        <span class="domain-count">12</span>
+      </div>
+      <div class="domain-row">
+        <span class="domain-tag tag-d">Domain D</span>
+        <span class="domain-cols">domain_d_seq_{17–26}</span>
+        <span class="domain-count">10</span>
+      </div>
+    </div>
+
+    <p style="font-size: 14px; color: var(--ink-soft);">9 + 14 + 12 + 10 = <strong>45 列</strong> ✅(对得上 Domain Sequence 总数)</p>
+
+    <div class="alert">
+      <p style="margin-top: 0;"><strong>注意 B 和 C 的"不连续"</strong>:Domain B 占 67–79 + 第 88 列;Domain C 占 27–37 + 第 47 列。</p>
+      <p style="margin-bottom: 0;">→ 4 个域<strong>分散在 120 列的不同位置</strong>。<code>dataset.py</code> 必须用列名映射把散乱的列归类到 4 个域里(<code>seq_domains = ["a", "b", "c", "d"]</code>)。</p>
+    </div>
+
+    <h3>4 个域可能代表什么?</h3>
+
+    <p>腾讯没明说,可能的含义:</p>
+
+    <table>
+      <tr><th>维度</th><th>4 个域可能的含义</th></tr>
+      <tr><td><strong>行为类型</strong></td><td>曝光 / 点击 / 收藏 / 转化</td></tr>
+      <tr><td><strong>产品场景</strong></td><td>微信 / QQ / 腾讯视频 / 腾讯新闻</td></tr>
+      <tr><td><strong>内容类型</strong></td><td>视频广告 / 图文广告 / Banner</td></tr>
+    </table>
+
+    <div class="insight">
+      <p><strong>"语义不可知"反而是学术优点</strong>:你设计的方法对未知语义的多域数据都适用,而不是"针对腾讯数据特调"。写 report 时只写 "4 heterogeneous behavior domains",不要瞎猜具体含义。</p>
+    </div>
+
+    <h3>域内多列的对齐结构</h3>
+
+    <p>每个域内 9~14 列<strong>逐元素对齐</strong>,共同描述同一段行为序列的不同侧面:</p>
+
+    <div class="aligned-box">
+      <div class="aligned-row">
+        <span class="aligned-key">domain_a_seq_38:</span>
+        <span class="aligned-val">[1001, 1024, 2055, 3088]</span>
+        <span class="aligned-comment"># 商品 ID 序列</span>
+      </div>
+      <div class="aligned-row">
+        <span class="aligned-key">domain_a_seq_39:</span>
+        <span class="aligned-val">[10, 10, 25, 30]</span>
+        <span class="aligned-comment"># 这些商品的类目 ID</span>
+      </div>
+      <div class="aligned-row">
+        <span class="aligned-key">domain_a_seq_40:</span>
+        <span class="aligned-val">[1672531200, ...]</span>
+        <span class="aligned-comment"># 对应的时间戳</span>
+      </div>
+    </div>
+
+    <p>把上面的列放在一起,<strong>横着读</strong>:</p>
+
+    <table>
+      <tr><th>时间位置</th><th>商品 ID</th><th>类目 ID</th><th>时间戳</th></tr>
+      <tr><td>第 1 次行为</td><td>1001</td><td>10</td><td>1672531200</td></tr>
+      <tr><td>第 2 次行为</td><td>1024</td><td>10</td><td>...</td></tr>
+      <tr><td>第 3 次行为</td><td>2055</td><td>25</td><td>...</td></tr>
+      <tr><td>第 4 次行为</td><td>3088</td><td>30</td><td>...</td></tr>
+    </table>
+
+    <p>→ 一行就是这位用户在 Domain A 里的<strong>一次完整行为</strong>。</p>
+
+    <h3>时间桶机制(time bucketization)</h3>
+
+    <h4>原始时间戳的问题</h4>
+
+    <pre><code>domain_a_seq_40 = [1672531200, 1672617600, 1672704000, ...]
+                    ↑           ↑           ↑
+                    Unix 时间戳(秒,从 1970 年算起)</code></pre>
+
+    <p>数字本身没意义。直接喂给模型不行(数太大,数值范围乱)。</p>
+
+    <h4>解决方案:65 个时间桶</h4>
+
+    <p>把"两次行为之间的时间差"分成 <strong>65 个桶</strong>:</p>
+
+    <pre><code>桶 0:  0~5 秒       ← "刚刚发生"
+桶 1:  5~10 秒
+桶 2:  10~30 秒
+...
+桶 30: 1 小时左右
+...
+桶 64: 接近 1 年    ← "很久以前"</code></pre>
+
+    <p>→ 时间戳被转成<strong>桶 ID</strong>(0~64 之间的整数)。</p>
+
+    <table>
+      <tr><th>原因</th><th>说明</th></tr>
+      <tr><td><strong>数值范围统一</strong></td><td>都变成小整数,适合 embedding</td></tr>
+      <tr><td><strong>粗粒度更稳</strong></td><td>模型不关心"4 秒前 vs 5 秒前",但关心"几分钟前 vs 几个月前"</td></tr>
+      <tr><td><strong>桶可以学 embedding</strong></td><td>每个桶变成一个向量,模型学"刚刚"和"很久以前"的语义差别</td></tr>
+    </table>
+
+    <p style="font-size: 13px; color: var(--ink-soft); font-style: italic;">📁 代码定位:<code>dataset.py · BUCKET_BOUNDARIES</code>(line 110-121)。这是一个常量列表,定义了 65 个桶的边界。</p>
+
+    <div class="insight">
+      <p><strong>这是个改进点</strong>:桶的边界是<strong>可调参数</strong>。你可以增加桶数、调整边界分布、用对数刻度——这是个简单但可能有效的改进方向,尤其针对"baseline 在长序列上效果差"。</p>
+    </div>
+  </section>
+
+
+  <!-- ═══════════════════ STATION 4 ═══════════════════ -->
+  <section class="station" id="s4">
+    <div class="station-marker">
+      <span class="station-num">肆 · Section IV</span>
+      <span class="station-line"></span>
+    </div>
+    <h2 class="station-title">两种数据格式</h2>
+    <p class="station-en">Don't confuse them — same data, different packaging</p>
+
+    <div class="alert">
+      <p style="margin-top: 0;"><strong>Demo 数据(7 列嵌套 struct)和正式比赛数据(120 列扁平)是<strong>同一份数据的两种打包方式</strong>。</strong></p>
+      <p style="margin-bottom: 0;">底层信息一样,代码处理方式不同。</p>
+    </div>
+
+    <h3>格式 1 · Demo 格式(7 列嵌套)</h3>
+
+    <p>Hugging Face 上的 <code>TAAC2026/data_sample_1000</code>,只有 7 列:</p>
+
+    <pre><code>user_id        (string)
+item_id        (int64)
+timestamp      (int64)
+label          ─ array of struct: [{action_time, action_type}]
+user_feature   ─ array of struct: [{feature_id, value_type, int_value, ...}]
+item_feature   ─ array of struct(同上)
+seq_feature    ─ struct, 包含 action_seq, content_seq, item_seq</code></pre>
+
+    <p>→ 每一列里<strong>藏着复杂的嵌套结构</strong>。</p>
+
+    <h3>格式 2 · 正式格式(120 列扁平)</h3>
+
+    <pre><code>user_id, item_id, label_type, label_time, timestamp,
+user_int_feats_1, ..., user_int_feats_46,
+user_dense_feats_56, ..., user_dense_feats_91,
+item_int_feats_92, ..., item_int_feats_119,
+domain_a_seq_38, ..., domain_d_seq_26</code></pre>
+
+    <p>→ 把上面的嵌套结构<strong>全部展平</strong>成 120 个独立列。</p>
+
+    <h3>为什么有两种?</h3>
+
+    <table>
+      <tr><th>格式</th><th>优势</th><th>用途</th></tr>
+      <tr><td>Demo</td><td>结构紧凑,人读起来好懂</td><td>本地开发、调试、写代码</td></tr>
+      <tr><td>正式</td><td>列式存储,加载快</td><td>真正训练时用</td></tr>
+    </table>
+
+    <div class="alert">
+      <p style="margin-top: 0;"><strong>实操陷阱</strong>:</p>
+      <ul class="refined" style="margin: 8px 0 0;">
+        <li>写代码时:用 Demo 数据(1000 行,本地能跑)调试逻辑</li>
+        <li>训练时:切换到正式格式(100 万行)</li>
+        <li>关键:你的 <code>dataset.py</code> 代码必须能处理"扁平 120 列"格式 — 别在 Demo 数据上写完代码,切到正式数据时才发现读不进去</li>
+      </ul>
+    </div>
+  </section>
+
+
+  <!-- ═══════════════════ STATION 5 ═══════════════════ -->
+  <section class="station" id="s5">
+    <div class="station-marker">
+      <span class="station-num">伍 · Section V</span>
+      <span class="station-line"></span>
+    </div>
+    <h2 class="station-title">隐含 Insight + 自检</h2>
+    <p class="station-en">Hidden gems & verification</p>
+
+    <h3>3 条隐含的 contribution 灵感</h3>
+
+    <p>这一站藏了好几条改进 baseline 的线索:</p>
+
+    <table>
+      <tr><th>改进方向</th><th>具体怎么做</th><th>性价比</th></tr>
+      <tr>
+        <td><strong>重设计时间桶</strong></td>
+        <td>改 <code>BUCKET_BOUNDARIES</code>,让短期更细、长期更粗</td>
+        <td>⭐⭐⭐ 改一个常量,可能有效</td>
+      </tr>
+      <tr>
+        <td><strong>(key, value) 加权</strong></td>
+        <td>把 8 列对齐结构改成"加权 embedding"而不是简单拼接</td>
+        <td>⭐⭐ 需要改 embedding 逻辑</td>
+      </tr>
+      <tr>
+        <td><strong>造商品 dense 特征</strong></td>
+        <td>Item Dense 是空的,可以人工造一些(点击率、热度)</td>
+        <td>⭐⭐⭐⭐ 简单但思路新颖</td>
+      </tr>
+      <tr>
+        <td><strong>SUM/LMF4Ads 不同用法</strong></td>
+        <td>这两个预训练向量怎么用是个问题——直接拼?attention?</td>
+        <td>⭐⭐⭐ 中等改动</td>
+      </tr>
+    </table>
+
+    <h3>3 个最关键的 insight</h3>
+
+    <table>
+      <tr><th>洞察</th><th>启发</th></tr>
+      <tr><td>(key, value) 对齐结构</td><td>User Dense 不是"独立的 10 列",而是和 Int 列绑定的(key=ID, value=统计量)。这种结构本身值得在 report 里点出</td></tr>
+      <tr><td>4 个域的列名不连续</td><td>数据加载需要专门的 column-to-domain 映射,baseline 已经写好了——别去改这部分</td></tr>
+      <tr><td>时间桶有 65 个,边界从 5 秒到 1 年</td><td>这是<strong>可调参数</strong>,是潜在的改进方向</td></tr>
+    </table>
+
+    <h3>自检四问</h3>
+
+    <details class="check">
+      <summary>
+        <span class="check-num">Q1</span>
+        <span>User Dense 中的"对齐结构"和 Domain Sequence 内部的"多列对齐"有什么共同点和不同点?</span>
+      </summary>
+      <div class="answer">
+        <p><strong>共同点</strong>:都是"多个列<strong>逐元素对齐</strong>",共同描述同一组实体的不同属性。</p>
+        <p><strong>不同点</strong>:</p>
+        <ul class="refined">
+          <li>User Dense 对齐:描述"<strong>静态</strong>用户画像的(类目, 统计量)对" — 没有时间顺序</li>
+          <li>Domain Seq 对齐:描述"<strong>动态</strong>行为序列的(商品, 类目, 时间戳, ...)对" — 有时间顺序</li>
+        </ul>
+        <p>→ 同样的"对齐"机制,在静态和动态两个层面都被使用了——这是腾讯 schema 设计的<strong>一致性</strong>。</p>
+      </div>
+    </details>
+
+    <details class="check">
+      <summary>
+        <span class="check-num">Q2</span>
+        <span>为什么时间戳要转成"桶 ID"而不是直接喂给模型?</span>
+      </summary>
+      <div class="answer">
+        <p>3 个原因:</p>
+        <ul class="refined">
+          <li><strong>数值范围</strong>:Unix 时间戳是几十亿的大数,直接喂会把数值范围搞乱</li>
+          <li><strong>粒度问题</strong>:模型关心"几分钟前 vs 几个月前",不关心"1672531200 vs 1672531205"</li>
+          <li><strong>可学习性</strong>:转成桶 ID 后,每个桶可以学 embedding,语义化"刚刚"和"很久以前"</li>
+        </ul>
+        <p>→ 这个技巧叫 <strong>time bucketization</strong>,是处理时间信号的标准做法。</p>
+      </div>
+    </details>
+
+    <details class="check">
+      <summary>
+        <span class="check-num">Q3</span>
+        <span>Demo 格式(7 列)和正式格式(120 列)是同一份数据,为什么要做两份?</span>
+      </summary>
+      <div class="answer">
+        <p>不是"两份不同数据",是<strong>同一份数据的两种打包方式</strong>:</p>
+        <ul class="refined">
+          <li><strong>Demo 格式</strong>:嵌套 struct,人读起来好懂,适合本地调试(只有 1000 行)</li>
+          <li><strong>正式格式</strong>:扁平 120 列,列式存储加载快,适合大规模训练(100 万行)</li>
+        </ul>
+        <p>⚠️ 实操陷阱:在 Demo 上写完的代码,如果直接切到正式数据,可能因为"格式不一样"而读不进去。<strong>你的 dataset.py 必须处理的是扁平 120 列格式</strong>,Demo 只是辅助。</p>
+      </div>
+    </details>
+
+    <details class="check">
+      <summary>
+        <span class="check-num">Q4</span>
+        <span>为什么 "Item Dense = 0 列" 是个值得关注的设计?</span>
+      </summary>
+      <div class="answer">
+        <p>商品在这份数据里只通过<strong>离散 ID</strong> 来表达,没有连续值的"画像"或"统计指标"。这意味着:</p>
+        <ul class="refined">
+          <li>模型必须完全靠 item embedding 来学习商品的"含义"</li>
+          <li>反过来,这给你们留了一个 <strong>contribution 空间</strong>——可以人工造一些商品的统计特征(比如点击率、出现频次),作为新的 dense 列加进去</li>
+        </ul>
+        <p>→ <strong>"空白"本身就是一个机会</strong>。</p>
+      </div>
+    </details>
+  </section>
+
+
+  <!-- ═══════════════════ NEXT ═══════════════════ -->
+  <div class="recap">
+    <h3>📍 阶段四可以探索的方向</h3>
+    <p style="font-size: 14px; color: var(--ink-soft); margin-top: 0;">数据形态搞清楚后,下一阶段可以转向"模型怎么吃这些数据":</p>
+    <ul>
+      <li><strong>「7 个 baseline 文件」</strong> — 每个文件分别在干什么(做菜比喻)</li>
+      <li><strong>「PCVRHyFormer 总览 + 三大 token」</strong> — NS / Sequence / Q tokens 怎么协作</li>
+      <li><strong>「dataset.py 完整流程」</strong> — 120 列怎么变成 PyTorch 张量</li>
+      <li><strong>「完整 forward 7 步」</strong> — 从原始 batch 到 logit 输出的全过程</li>
+    </ul>
+  </div>
+
+
+  <!-- ═══════════════════ FOOTER ═══════════════════ -->
+  <div class="footer">
+    阶段三笔记 · 由对话整理而成 · 待续 ✦
+  </div>
+
+</div>
+
+</body>
+</html>

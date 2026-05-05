@@ -1,0 +1,1381 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>学习笔记 · 阶段二 — 赛题 · The Problem</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Noto+Serif+SC:wght@400;500;600;700&family=Noto+Sans+SC:wght@300;400;500;600&family=JetBrains+Mono:wght@400;500&display=swap" rel="stylesheet">
+<style>
+  :root {
+    --bg: #F4EEE3;
+    --bg-paper: #FAF6EC;
+    --bg-soft: #EDE5D4;
+    --bg-card: #FFFCF5;
+
+    --ink: #2A2520;
+    --ink-soft: #5A4F44;
+    --ink-faint: #8A7E6F;
+
+    --teal: #1F5E55;
+    --rust: #A14828;
+    --gold: #8B6914;
+    --plum: #6B3F5C;
+    --moss: #4A6B2A;
+    --slate: #3D4D5C;
+
+    --bg-teal: #DAE8E2;
+    --bg-rust: #F0DCD0;
+    --bg-gold: #EFE3C8;
+    --bg-plum: #ECDCE5;
+    --bg-moss: #E1E8D0;
+    --bg-slate: #DDE5EA;
+
+    --border: rgba(42, 37, 32, 0.12);
+    --border-strong: rgba(42, 37, 32, 0.25);
+    --shadow-paper: 0 1px 2px rgba(42, 37, 32, 0.04), 0 4px 12px rgba(42, 37, 32, 0.06);
+
+    --serif: "Noto Serif SC", "Songti SC", "STSong", serif;
+    --sans: "Noto Sans SC", -apple-system, BlinkMacSystemFont, "PingFang SC", sans-serif;
+    --mono: "JetBrains Mono", ui-monospace, "SF Mono", Menlo, monospace;
+  }
+
+  @media (prefers-color-scheme: dark) {
+    :root {
+      --bg: #1A1714;
+      --bg-paper: #221E19;
+      --bg-soft: #2C2620;
+      --bg-card: #2A241E;
+
+      --ink: #E8E0D2;
+      --ink-soft: #B8AC9A;
+      --ink-faint: #847868;
+
+      --teal: #6FB5A4;
+      --rust: #E89070;
+      --gold: #D4A845;
+      --plum: #C390AC;
+      --moss: #98B870;
+      --slate: #8FA5B5;
+
+      --bg-teal: #1F3A35;
+      --bg-rust: #4A2818;
+      --bg-gold: #3F3018;
+      --bg-plum: #3D2832;
+      --bg-moss: #2E3A1F;
+      --bg-slate: #243038;
+
+      --border: rgba(232, 224, 210, 0.12);
+      --border-strong: rgba(232, 224, 210, 0.22);
+      --shadow-paper: 0 1px 2px rgba(0, 0, 0, 0.3), 0 4px 12px rgba(0, 0, 0, 0.2);
+    }
+  }
+
+  * { box-sizing: border-box; }
+  html { scroll-behavior: smooth; }
+
+  body {
+    margin: 0;
+    background: var(--bg);
+    background-image:
+      radial-gradient(circle at 20% 10%, rgba(161, 72, 40, 0.04) 0%, transparent 50%),
+      radial-gradient(circle at 80% 90%, rgba(31, 94, 85, 0.04) 0%, transparent 50%);
+    color: var(--ink);
+    font-family: var(--sans);
+    font-size: 16px;
+    line-height: 1.75;
+    -webkit-font-smoothing: antialiased;
+  }
+
+  .page {
+    max-width: 760px;
+    margin: 0 auto;
+    padding: 60px 32px 100px;
+  }
+
+  /* ───── Header ───── */
+  .masthead {
+    border-bottom: 1px solid var(--border-strong);
+    padding-bottom: 32px;
+    margin-bottom: 56px;
+  }
+
+  .masthead-meta {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    font-family: var(--mono);
+    font-size: 11px;
+    text-transform: uppercase;
+    letter-spacing: 0.15em;
+    color: var(--ink-faint);
+    margin-bottom: 24px;
+  }
+
+  .stage-badge {
+    display: inline-flex;
+    align-items: center;
+    gap: 8px;
+    padding: 4px 12px;
+    background: var(--bg-teal);
+    color: var(--teal);
+    border-radius: 2px;
+    font-weight: 500;
+  }
+  .stage-badge::before {
+    content: "";
+    width: 6px;
+    height: 6px;
+    background: var(--teal);
+    border-radius: 50%;
+  }
+
+  h1.title {
+    font-family: var(--serif);
+    font-size: 44px;
+    font-weight: 600;
+    line-height: 1.2;
+    margin: 0 0 12px;
+    letter-spacing: -0.01em;
+  }
+
+  .subtitle {
+    font-family: var(--serif);
+    font-size: 18px;
+    font-weight: 400;
+    color: var(--ink-soft);
+    font-style: italic;
+    margin: 0;
+  }
+
+  .preamble {
+    font-size: 16px;
+    color: var(--ink-soft);
+    line-height: 1.85;
+    margin: 32px 0 0;
+    padding: 20px 24px;
+    background: var(--bg-paper);
+    border-left: 2px solid var(--gold);
+    border-radius: 0 4px 4px 0;
+  }
+  .preamble strong { color: var(--ink); }
+
+  /* ───── TOC card ───── */
+  .toc {
+    background: var(--bg-card);
+    border: 1px solid var(--border);
+    border-radius: 8px;
+    padding: 28px 32px;
+    margin: 48px 0;
+    box-shadow: var(--shadow-paper);
+  }
+  .toc h2 {
+    font-family: var(--serif);
+    font-size: 14px;
+    text-transform: uppercase;
+    letter-spacing: 0.2em;
+    color: var(--ink-faint);
+    margin: 0 0 8px;
+    font-weight: 500;
+  }
+  .toc-summary {
+    font-family: var(--serif);
+    font-style: italic;
+    font-size: 15px;
+    color: var(--ink-soft);
+    margin: 0 0 24px;
+    padding-bottom: 20px;
+    border-bottom: 1px dashed var(--border);
+  }
+  .toc-list {
+    list-style: none;
+    padding: 0;
+    margin: 0;
+    display: flex;
+    flex-direction: column;
+    gap: 4px;
+  }
+  .toc-list > li {
+    padding: 10px 0;
+    border-bottom: 1px dashed var(--border);
+    display: grid;
+    grid-template-columns: 36px 1fr;
+    gap: 12px;
+    align-items: baseline;
+  }
+  .toc-list > li:last-child { border-bottom: none; }
+  .toc-num {
+    font-family: var(--mono);
+    font-size: 12px;
+    color: var(--ink-faint);
+  }
+  .toc-link {
+    color: var(--ink);
+    text-decoration: none;
+    font-weight: 500;
+    transition: color 0.2s;
+  }
+  .toc-link:hover { color: var(--rust); }
+  .toc-desc {
+    grid-column: 2;
+    color: var(--ink-faint);
+    font-size: 13.5px;
+    font-style: italic;
+    margin-top: 2px;
+  }
+
+  /* ───── Big map ───── */
+  .threemap {
+    background: var(--bg-paper);
+    border: 1px solid var(--border);
+    border-radius: 8px;
+    padding: 28px 24px;
+    margin: 32px 0;
+  }
+  .threemap-title {
+    font-family: var(--mono);
+    font-size: 11px;
+    text-transform: uppercase;
+    letter-spacing: 0.2em;
+    color: var(--ink-faint);
+    margin: 0 0 20px;
+    text-align: center;
+  }
+  .threemap-flow {
+    display: flex;
+    justify-content: space-between;
+    align-items: stretch;
+    gap: 12px;
+  }
+  .threemap-block {
+    flex: 1;
+    padding: 16px 14px;
+    border-radius: 6px;
+    text-align: center;
+    font-size: 13px;
+  }
+  .threemap-block .label {
+    font-family: var(--mono);
+    font-size: 10px;
+    text-transform: uppercase;
+    letter-spacing: 0.15em;
+    margin-bottom: 6px;
+    opacity: 0.75;
+  }
+  .threemap-block .what {
+    font-family: var(--serif);
+    font-weight: 600;
+    font-size: 15px;
+    margin-bottom: 4px;
+  }
+  .threemap-block .desc {
+    font-size: 12px;
+    opacity: 0.85;
+  }
+  .threemap-arrow {
+    align-self: center;
+    color: var(--ink-faint);
+    font-size: 18px;
+  }
+  .b1 { background: var(--bg-rust); color: var(--rust); }
+  .b2 { background: var(--bg-gold); color: var(--gold); }
+  .b3 { background: var(--bg-teal); color: var(--teal); }
+
+  @media (max-width: 640px) {
+    .threemap-flow { flex-direction: column; }
+    .threemap-arrow { transform: rotate(90deg); }
+  }
+
+  /* ───── Section ───── */
+  .station {
+    margin: 80px 0 0;
+    scroll-margin-top: 24px;
+  }
+  .station-marker {
+    display: flex;
+    align-items: center;
+    gap: 16px;
+    margin-bottom: 8px;
+  }
+  .station-num {
+    font-family: var(--serif);
+    font-size: 13px;
+    color: var(--rust);
+    text-transform: uppercase;
+    letter-spacing: 0.25em;
+    font-weight: 500;
+  }
+  .station-line {
+    flex: 1;
+    height: 1px;
+    background: var(--border);
+  }
+  h2.station-title {
+    font-family: var(--serif);
+    font-size: 32px;
+    font-weight: 600;
+    margin: 0 0 8px;
+    line-height: 1.25;
+    letter-spacing: -0.005em;
+  }
+  .station-en {
+    font-family: var(--serif);
+    font-style: italic;
+    color: var(--ink-faint);
+    font-size: 15px;
+    margin: 0 0 28px;
+  }
+
+  /* ───── Body ───── */
+  p { margin: 14px 0; }
+  h3 {
+    font-family: var(--serif);
+    font-size: 20px;
+    font-weight: 600;
+    margin: 36px 0 12px;
+    color: var(--ink);
+  }
+  h4 {
+    font-family: var(--sans);
+    font-size: 14px;
+    font-weight: 600;
+    margin: 24px 0 8px;
+    color: var(--ink);
+    text-transform: uppercase;
+    letter-spacing: 0.08em;
+  }
+  strong { color: var(--ink); font-weight: 600; }
+
+  ul.refined {
+    list-style: none;
+    padding: 0;
+    margin: 16px 0;
+  }
+  ul.refined li {
+    padding: 4px 0 4px 24px;
+    position: relative;
+  }
+  ul.refined li::before {
+    content: "—";
+    position: absolute;
+    left: 0;
+    color: var(--rust);
+    font-weight: 600;
+  }
+
+  /* ───── Pull quotes & callouts ───── */
+  .pullquote {
+    margin: 28px 0;
+    padding: 0 0 0 24px;
+    border-left: 3px solid var(--rust);
+    font-family: var(--serif);
+    font-size: 19px;
+    line-height: 1.6;
+    color: var(--ink);
+    font-style: italic;
+  }
+
+  .insight, .compare, .analogy, .alert {
+    margin: 28px 0;
+    padding: 18px 22px;
+    border-radius: 4px;
+  }
+  .insight { background: var(--bg-gold); }
+  .insight::before {
+    content: "💡 关键洞察";
+    display: block;
+    font-family: var(--mono);
+    font-size: 11px;
+    text-transform: uppercase;
+    letter-spacing: 0.15em;
+    color: var(--gold);
+    margin-bottom: 8px;
+    font-weight: 500;
+  }
+  .compare { background: var(--bg-teal); }
+  .compare::before {
+    content: "🔁 对比一下";
+    display: block;
+    font-family: var(--mono);
+    font-size: 11px;
+    text-transform: uppercase;
+    letter-spacing: 0.15em;
+    color: var(--teal);
+    margin-bottom: 8px;
+    font-weight: 500;
+  }
+  .alert { background: var(--bg-rust); }
+  .alert::before {
+    content: "⚠️ 重要警示";
+    display: block;
+    font-family: var(--mono);
+    font-size: 11px;
+    text-transform: uppercase;
+    letter-spacing: 0.15em;
+    color: var(--rust);
+    margin-bottom: 8px;
+    font-weight: 500;
+  }
+
+  .insight p:first-of-type, .compare p:first-of-type,
+  .alert p:first-of-type { margin-top: 0; }
+  .insight p:last-of-type, .compare p:last-of-type,
+  .alert p:last-of-type { margin-bottom: 0; }
+
+  .analogy {
+    background: var(--bg-card);
+    border: 1px solid var(--border);
+    border-radius: 6px;
+    box-shadow: var(--shadow-paper);
+    padding: 22px 26px;
+  }
+  .analogy-label {
+    display: inline-block;
+    font-family: var(--mono);
+    font-size: 10px;
+    text-transform: uppercase;
+    letter-spacing: 0.2em;
+    color: var(--ink-faint);
+    margin-bottom: 10px;
+    padding: 2px 8px;
+    background: var(--bg-soft);
+    border-radius: 2px;
+  }
+  .analogy-title {
+    font-family: var(--serif);
+    font-size: 18px;
+    font-weight: 600;
+    margin: 0 0 12px;
+    color: var(--ink);
+  }
+
+  /* ───── Tables ───── */
+  table {
+    width: 100%;
+    border-collapse: collapse;
+    margin: 24px 0;
+    font-size: 14px;
+    background: var(--bg-card);
+    border: 1px solid var(--border);
+    border-radius: 4px;
+    overflow: hidden;
+  }
+  th, td {
+    text-align: left;
+    padding: 12px 16px;
+    border-bottom: 1px solid var(--border);
+    vertical-align: top;
+  }
+  th {
+    background: var(--bg-soft);
+    font-weight: 600;
+    color: var(--ink-soft);
+    font-size: 12px;
+    text-transform: uppercase;
+    letter-spacing: 0.08em;
+  }
+  tr:last-child td { border-bottom: none; }
+
+  /* ───── Code ───── */
+  code {
+    font-family: var(--mono);
+    font-size: 13px;
+    background: var(--bg-soft);
+    padding: 2px 6px;
+    border-radius: 3px;
+    color: var(--rust);
+  }
+  pre {
+    background: var(--bg-paper);
+    border: 1px solid var(--border);
+    padding: 18px 20px;
+    border-radius: 4px;
+    overflow-x: auto;
+    font-family: var(--mono);
+    font-size: 12.5px;
+    line-height: 1.7;
+    margin: 20px 0;
+  }
+  pre code {
+    background: none;
+    padding: 0;
+    color: var(--ink);
+  }
+
+  /* ───── Pain point cards (Section 1) ───── */
+  .painpoints {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 16px;
+    margin: 24px 0;
+  }
+  @media (max-width: 640px) {
+    .painpoints { grid-template-columns: 1fr; }
+  }
+  .pain {
+    background: var(--bg-card);
+    border: 1px solid var(--border);
+    border-left: 4px solid var(--rust);
+    border-radius: 4px;
+    padding: 16px 18px;
+  }
+  .pain-num {
+    display: inline-block;
+    font-family: var(--mono);
+    font-size: 10px;
+    background: var(--bg-rust);
+    color: var(--rust);
+    padding: 2px 8px;
+    border-radius: 2px;
+    text-transform: uppercase;
+    letter-spacing: 0.15em;
+    margin-bottom: 8px;
+    font-weight: 500;
+  }
+  .pain-title {
+    font-family: var(--serif);
+    font-size: 17px;
+    font-weight: 600;
+    margin: 0 0 4px;
+  }
+  .pain-en {
+    font-family: var(--serif);
+    font-style: italic;
+    color: var(--ink-faint);
+    font-size: 13px;
+    margin: 0 0 8px;
+  }
+  .pain p {
+    font-size: 13.5px;
+    margin: 6px 0 0;
+    color: var(--ink-soft);
+  }
+
+  /* ───── Difficulty tab boxes (Section 2) ───── */
+  .difficulty {
+    background: var(--bg-card);
+    border: 1px solid var(--border);
+    border-radius: 6px;
+    margin: 16px 0;
+    overflow: hidden;
+    box-shadow: var(--shadow-paper);
+  }
+  .difficulty-header {
+    background: var(--bg-soft);
+    padding: 14px 22px;
+    display: flex;
+    align-items: center;
+    gap: 14px;
+    border-bottom: 1px solid var(--border);
+  }
+  .difficulty-num {
+    font-family: var(--serif);
+    font-size: 24px;
+    font-weight: 700;
+    color: var(--rust);
+    line-height: 1;
+  }
+  .difficulty-title {
+    font-family: var(--serif);
+    font-size: 18px;
+    font-weight: 600;
+  }
+  .difficulty-en {
+    font-family: var(--serif);
+    font-size: 12px;
+    font-style: italic;
+    color: var(--ink-faint);
+    margin-left: auto;
+  }
+  .difficulty-body {
+    padding: 18px 22px;
+  }
+  .difficulty-body > p:first-child { margin-top: 0; }
+  .difficulty-body > p:last-child { margin-bottom: 0; }
+
+  /* ───── Evolution trees (Section 1) ───── */
+  .trees {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 20px;
+    margin: 24px 0;
+  }
+  @media (max-width: 640px) { .trees { grid-template-columns: 1fr; } }
+  .tree {
+    background: var(--bg-card);
+    border: 1px solid var(--border);
+    border-radius: 6px;
+    padding: 20px 22px;
+  }
+  .tree h4 {
+    margin-top: 0;
+    text-transform: none;
+    letter-spacing: 0;
+    font-family: var(--serif);
+    font-size: 16px;
+    font-weight: 600;
+  }
+  .tree-en {
+    font-family: var(--serif);
+    font-style: italic;
+    color: var(--ink-faint);
+    font-size: 13px;
+    margin: -4px 0 14px;
+  }
+  .tree ol {
+    list-style: none;
+    padding: 0;
+    margin: 0;
+    counter-reset: gen;
+    font-family: var(--mono);
+    font-size: 12.5px;
+    line-height: 2;
+  }
+  .tree ol li {
+    padding-left: 16px;
+    position: relative;
+    color: var(--ink-soft);
+  }
+  .tree ol li::before {
+    content: "↓";
+    position: absolute;
+    left: 0;
+    color: var(--ink-faint);
+    font-size: 10px;
+  }
+  .tree ol li:first-child::before { content: "•"; }
+
+  /* ───── Self-check ───── */
+  details.check {
+    background: var(--bg-card);
+    border: 1px solid var(--border);
+    border-radius: 6px;
+    margin: 14px 0;
+    overflow: hidden;
+    transition: box-shadow 0.2s;
+  }
+  details.check[open] { box-shadow: var(--shadow-paper); }
+  details.check summary {
+    cursor: pointer;
+    padding: 16px 22px;
+    list-style: none;
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    font-weight: 500;
+    user-select: none;
+    transition: background 0.15s;
+  }
+  details.check summary::-webkit-details-marker { display: none; }
+  details.check summary:hover { background: var(--bg-soft); }
+  details.check summary::after {
+    content: "查看答案 →";
+    margin-left: auto;
+    font-family: var(--mono);
+    font-size: 11px;
+    color: var(--ink-faint);
+    text-transform: uppercase;
+    letter-spacing: 0.1em;
+  }
+  details.check[open] summary::after { content: "收起 ↑"; }
+  details.check .check-num {
+    font-family: var(--serif);
+    font-size: 24px;
+    font-weight: 600;
+    color: var(--rust);
+    min-width: 36px;
+  }
+  details.check .answer {
+    padding: 20px 22px 22px;
+    border-top: 1px solid var(--border);
+    background: var(--bg-paper);
+    font-size: 14.5px;
+    line-height: 1.75;
+  }
+  details.check .answer strong { color: var(--rust); }
+
+  /* ───── AUC visualization ───── */
+  .auc-viz {
+    background: var(--bg-card);
+    border: 1px solid var(--border);
+    border-radius: 6px;
+    padding: 22px 24px;
+    margin: 24px 0;
+    box-shadow: var(--shadow-paper);
+  }
+  .auc-viz table {
+    margin: 12px 0 0;
+    border: none;
+    font-family: var(--mono);
+    font-size: 12.5px;
+  }
+  .auc-viz th, .auc-viz td {
+    padding: 6px 12px;
+    border-bottom: 1px solid var(--border);
+  }
+  .row-pos { background: var(--bg-moss); }
+  .row-neg { background: var(--bg-rust); }
+
+  .auc-scale {
+    display: flex;
+    margin: 24px 0;
+    border-radius: 4px;
+    overflow: hidden;
+    height: 64px;
+    border: 1px solid var(--border);
+  }
+  .auc-scale-block {
+    flex: 1;
+    padding: 8px 12px;
+    color: white;
+    font-family: var(--mono);
+    font-size: 11px;
+    display: flex;
+    flex-direction: column;
+    justify-content: center;
+  }
+  .auc-scale-block .v {
+    font-family: var(--serif);
+    font-size: 18px;
+    font-weight: 700;
+    margin-bottom: 2px;
+  }
+  .auc-bad { background: #8B3A3A; }
+  .auc-mid { background: #A07A2C; }
+  .auc-good { background: #3A6B5A; }
+
+  /* ───── Pipeline ───── */
+  .pipeline {
+    background: var(--bg-paper);
+    border: 1px solid var(--border);
+    border-radius: 6px;
+    padding: 24px;
+    margin: 24px 0;
+    font-family: var(--mono);
+    font-size: 13px;
+  }
+
+  /* ───── Recap ───── */
+  .recap {
+    background: var(--bg-paper);
+    border: 1px dashed var(--border-strong);
+    border-radius: 6px;
+    padding: 28px 32px;
+    margin: 60px 0 0;
+  }
+  .recap h3 {
+    margin-top: 0;
+    color: var(--rust);
+  }
+  .recap ul {
+    list-style: none;
+    padding: 0;
+  }
+  .recap li {
+    padding: 10px 0;
+    border-bottom: 1px dashed var(--border);
+    font-size: 14.5px;
+  }
+  .recap li:last-child { border-bottom: none; }
+  .recap li::before {
+    content: "→ ";
+    color: var(--rust);
+    font-weight: 600;
+    margin-right: 6px;
+  }
+
+  .footer {
+    margin-top: 100px;
+    padding-top: 32px;
+    border-top: 1px solid var(--border-strong);
+    text-align: center;
+    color: var(--ink-faint);
+    font-size: 13px;
+    font-family: var(--serif);
+    font-style: italic;
+  }
+
+  @media (max-width: 640px) {
+    .page { padding: 40px 20px 80px; }
+    h1.title { font-size: 32px; }
+    h2.station-title { font-size: 24px; }
+  }
+</style>
+</head>
+<body>
+
+<div class="page">
+
+  <!-- ═══════════════════ HEADER ═══════════════════ -->
+  <header class="masthead">
+    <div class="masthead-meta">
+      <span>学习笔记 · STUDY NOTES</span>
+      <span class="stage-badge">阶段二 / Stage 2</span>
+    </div>
+    <h1 class="title">赛题 · The Problem</h1>
+    <p class="subtitle">从行业故事到评分规则——把"问题"完整定义出来</p>
+
+    <div class="preamble">
+      阶段一搭建了项目的<strong>整体心智模型</strong>(baseline 是什么、我们的角色、数据形态)。这一阶段聚焦在<strong>"问题本身"</strong>:这件事为什么值得做、技术上具体在解决什么、最后怎么判断输赢。这三个子节合起来,就是 report 的<strong>Introduction + Problem Formulation</strong> 章节的素材库。
+    </div>
+  </header>
+
+
+  <!-- ═══════════════════ THREE-MAP ═══════════════════ -->
+  <div class="threemap">
+    <h2 class="threemap-title">这一站的三个子节 · Three Sub-sections</h2>
+    <div class="threemap-flow">
+      <div class="threemap-block b1">
+        <div class="label">Sub 1</div>
+        <div class="what">为什么有这个比赛</div>
+        <div class="desc">行业故事 + 4 个工业痛点</div>
+      </div>
+      <div class="threemap-arrow">→</div>
+      <div class="threemap-block b2">
+        <div class="label">Sub 2</div>
+        <div class="what">技术任务定义</div>
+        <div class="desc">CTR 预测 + 4 个建模难点</div>
+      </div>
+      <div class="threemap-arrow">→</div>
+      <div class="threemap-block b3">
+        <div class="label">Sub 3</div>
+        <div class="what">评估方式</div>
+        <div class="desc">AUC 主指标 + 延迟硬约束</div>
+      </div>
+    </div>
+    <p style="text-align: center; font-family: var(--serif); font-style: italic; color: var(--ink-soft); font-size: 14px; margin: 20px 0 0;">
+      新闻稿 → 立项书 → 评分细则
+    </p>
+  </div>
+
+
+  <!-- ═══════════════════ TOC ═══════════════════ -->
+  <div class="toc">
+    <h2>本笔记导航 · Contents</h2>
+    <p class="toc-summary">这一站回答的核心问题——"我即将解决的问题到底是什么?"</p>
+    <ul class="toc-list">
+      <li>
+        <span class="toc-num">壹</span>
+        <span><a class="toc-link" href="#s1">为什么有这个比赛</a></span>
+        <span class="toc-desc">两条进化树 · 4 个工业痛点 · 比赛核心命题</span>
+      </li>
+      <li>
+        <span class="toc-num">贰</span>
+        <span><a class="toc-link" href="#s2">技术任务定义</a></span>
+        <span class="toc-desc">CTR = 二分类 · 输入输出 · 4 个建模难点</span>
+      </li>
+      <li>
+        <span class="toc-num">叁</span>
+        <span><a class="toc-link" href="#s3">评估方式</a></span>
+        <span class="toc-desc">AUC 是什么 · 为什么不用准确率 · 延迟约束</span>
+      </li>
+      <li>
+        <span class="toc-num">肆</span>
+        <span><a class="toc-link" href="#s4">整体回顾 + 自检</a></span>
+        <span class="toc-desc">把三节串起来 · 4 个验证问题</span>
+      </li>
+    </ul>
+  </div>
+
+
+  <!-- ═══════════════════ STATION 1 ═══════════════════ -->
+  <section class="station" id="s1">
+    <div class="station-marker">
+      <span class="station-num">壹 · Sub-Section I</span>
+      <span class="station-line"></span>
+    </div>
+    <h2 class="station-title">为什么有这个比赛?</h2>
+    <p class="station-en">The narrative foundation for the report's Introduction</p>
+
+    <p>阶段一第四站讲过"两类模型融合不了"——那只是<strong>新闻标题</strong>。这一节讲<strong>新闻全文</strong>:这个分裂是怎么产生的、为什么 20 年没解决、具体造成了哪 4 个痛点。</p>
+
+    <h3>历史背景:两条独立繁衍 15 年的"进化树"</h3>
+
+    <p>guide 给了两份模型进化史。<strong>名字不需要记住</strong>——它们的作用只有一个:告诉你"两条路线都各自繁衍了 15 年,各有完整的祖谱"。</p>
+
+    <div class="trees">
+      <div class="tree">
+        <h4>路线 1 · 特征交互模型</h4>
+        <p class="tree-en">Feature Interaction Models</p>
+        <ol>
+          <li>FM (2010)</li>
+          <li>Wide & Deep (2016)</li>
+          <li>DeepFM (2017)</li>
+          <li>DCN / DCNv2 (2017/20)</li>
+          <li>xDeepFM (2018)</li>
+          <li>AutoInt (2019)</li>
+          <li>FinalMLP (2023)</li>
+          <li>Wukong (2024)</li>
+        </ol>
+      </div>
+      <div class="tree">
+        <h4>路线 2 · 序列模型</h4>
+        <p class="tree-en">Sequential Recommendation</p>
+        <ol>
+          <li>GRU4Rec (2015)</li>
+          <li>DIN (2018)</li>
+          <li>DIEN (2019)</li>
+          <li>SASRec (2018)</li>
+          <li>BERT4Rec (2019)</li>
+          <li>BST (2019)</li>
+          <li>TWIN/TWIN-V2 (23/24)</li>
+          <li>HSTU (2024)</li>
+        </ol>
+      </div>
+    </div>
+
+    <div class="insight">
+      <p>这两份名单告诉你:不是没人做过、不是缺论文,真正难的是<strong>"融合"这件事本身</strong>——各做各的容易,合起来难。</p>
+      <p style="font-size: 13px; color: var(--ink-soft); margin-top: 10px;">📝 写 Related Work 时,从每条线挑 3~5 个代表作引用就够了(比如静态侧:DeepFM、DCN、Wukong;序列侧:DIN、SASRec、HSTU)。</p>
+    </div>
+
+    <h3>核心矛盾:分裂造成的 4 个工业痛点</h3>
+
+    <p>这是这一节<strong>最有价值的内容</strong>——它是 report Introduction 第二段的直接素材。</p>
+
+    <div class="painpoints">
+      <div class="pain">
+        <span class="pain-num">痛点 #1</span>
+        <h4 class="pain-title">跨范式交互浅</h4>
+        <p class="pain-en">Shallow cross-paradigm interaction</p>
+        <p>两类模型的输出最后只是<strong>简单拼接</strong>,没有真正交流——两个翻译员各翻一段话给老板,但他俩之间不互相讨论。</p>
+      </div>
+      <div class="pain">
+        <span class="pain-num">痛点 #2</span>
+        <h4 class="pain-title">优化目标不一致</h4>
+        <p class="pain-en">Inconsistent optimization objectives</p>
+        <p>序列模型常用<strong>对比学习</strong>,特征模型用 <strong>BCE 损失</strong>——两个学习方向不同,强行拼接像让长跑选手和举重选手做同一套训练。</p>
+      </div>
+      <div class="pain">
+        <span class="pain-num">痛点 #3</span>
+        <h4 class="pain-title">扩展性受限</h4>
+        <p class="pain-en">Limited scalability</p>
+        <p>LLM 时代有 Scaling Law(变大就变好),推荐系统<strong>没有这性质</strong>——两个分支各自变大都很快饱和,吃不到 GPU 红利。</p>
+      </div>
+      <div class="pain">
+        <span class="pain-num">痛点 #4</span>
+        <h4 class="pain-title">硬件复杂度高</h4>
+        <p class="pain-en">Increasing hardware complexity</p>
+        <p>两套不同的<strong>计算图、优化器、部署方式</strong>——升级、调试、出 bug 都要在两个世界里来回跳,运维很贵。</p>
+      </div>
+    </div>
+
+    <h3>比赛的核心命题(直接可写进 report)</h3>
+
+    <div class="pullquote">
+      "设计一个统一的、可堆叠的模型块(Unified Block),把这两类信息无缝融合,提升 CTR 预测的准确度。同时鼓励探索推荐系统的 Scaling Law。"
+    </div>
+
+    <table>
+      <tr><th>关键词</th><th>含义</th><th>为什么重要</th></tr>
+      <tr><td><strong>Unified Block</strong></td><td>能同时吃静态+序列的"模块"</td><td>这是 PCVRHyFormer 的设计哲学</td></tr>
+      <tr><td><strong>可堆叠</strong></td><td>像 Transformer 层一样堆 N 层</td><td>对应 baseline 的 <code>num_hyformer_blocks=2</code></td></tr>
+      <tr><td><strong>Scaling Law</strong></td><td>越大越好的规律</td><td>暗示腾讯希望大家探索更大模型(但要顾延迟)</td></tr>
+    </table>
+
+    <h3>这一节的故事弧线</h3>
+
+    <pre><code>🌱 起源(2010-2015)        推荐系统出现两条独立技术路线
+        ↓
+🌳 各自繁荣(2015-2024)    两条路线各自迭代 15 年,越来越复杂
+        ↓
+⚠️  矛盾积累              分裂带来 4 个具体痛点
+        ↓
+🎯 比赛诞生(2026)        腾讯出手:谁能设计统一架构,我给奖金
+        ↓
+🚀 你们入场              拿了 baseline,准备改进</code></pre>
+
+    <p style="font-style: italic; color: var(--ink-soft);">→ 写 Introduction 时,基本就是把这条弧线用学术语言重写一遍。</p>
+  </section>
+
+
+  <!-- ═══════════════════ STATION 2 ═══════════════════ -->
+  <section class="station" id="s2">
+    <div class="station-marker">
+      <span class="station-num">贰 · Sub-Section II</span>
+      <span class="station-line"></span>
+    </div>
+    <h2 class="station-title">技术任务定义</h2>
+    <p class="station-en">From abstract pain to a computable, scorable task</p>
+
+    <p>这一节把上一节的抽象痛点<strong>包装成具体的可计算任务</strong>。如果上一节是新闻稿,这一节就是<strong>项目立项书</strong>——任务叫什么、给什么、要什么、难在哪。</p>
+
+    <h3>① 任务名:CTR 预测</h3>
+
+    <table>
+      <tr><th>任务全名</th><td><strong>CTR = Click-Through Rate(点击通过率)</strong></td></tr>
+      <tr><th>任务类型</th><td>二分类 · Binary Classification</td></tr>
+      <tr><th>答案空间</th><td>只有两个选项:点 / 不点</td></tr>
+      <tr><th>地位</th><td>互联网广告业的核心算法 · 学术界 15 年论文都为它服务</td></tr>
+    </table>
+
+    <div class="compare">
+      <p style="margin-top: 0;"><strong>二分类</strong> · 答案只有两个 · 例:这封邮件是垃圾邮件吗?这个广告会被点吗?</p>
+      <p><strong>多分类</strong> · 多个选项 · 例:这张图是猫/狗/兔子?</p>
+      <p style="margin-bottom: 0;"><strong>回归</strong> · 一个连续数字 · 例:这套房子值多少钱?</p>
+    </div>
+
+    <h3>② 输入 → 输出</h3>
+
+    <table>
+      <tr><th>输入</th><td>用户 + 候选广告 + 用户在 4 个域的行为序列(就是阶段一讲的 120 列)</td></tr>
+      <tr><th>输出</th><td>[0, 1] 之间的<strong>概率</strong>,代表"会不会点击"</td></tr>
+      <tr><th>监督信号</th><td>真实 label(0/1):每条样本都标注了实际有没有被点</td></tr>
+    </table>
+
+    <h4>为什么不直接输出 0/1?</h4>
+
+    <ul class="refined">
+      <li><strong>概率支持排序</strong>——广告系统拿到所有候选的概率后,按概率排序,把最有可能被点的排在前面展示</li>
+      <li><strong>训练上更稳</strong>——损失函数(BCE/Focal Loss)基于概率,这是行业标准做法</li>
+    </ul>
+
+    <p style="font-size: 13px; color: var(--ink-soft); font-style: italic;">📁 文件追踪:这一步的逻辑写在 <code>model.py</code> 里的 <code>clsfier</code> 模块。</p>
+
+    <h3>③ 四个层次的难点</h3>
+
+    <p>这是这一节的<strong>核心</strong>——告诉你为什么这件事不能简单地用一个 MLP 解决。</p>
+
+    <div class="difficulty">
+      <div class="difficulty-header">
+        <span class="difficulty-num">1</span>
+        <span class="difficulty-title">特征极度稀疏且高维</span>
+        <span class="difficulty-en">High-dimensional sparsity</span>
+      </div>
+      <div class="difficulty-body">
+        <p><strong>"高维"</strong> = 特征种类太多;<strong>"稀疏"</strong> = 每条样本里大部分特征都是 0 或缺失。</p>
+        <p>具体场景:用户 ID 上亿、商品 ID 几百万。每条样本里只有 1 个用户 ID 和 1 个商品 ID,但理论上的可能取值上亿。</p>
+        <p><strong>One-hot 不可行</strong>:用户 ID 10 亿个 → one-hot 向量长 10 亿 → 100 万样本要 10<sup>15</sup> 个数字。</p>
+        <p><strong>解决方案 Embedding</strong>:每个 ID 对应一个 64 维的稠密向量,让模型自己学。但 1 亿 × 64 ≈ 25 GB 显存,普通 GPU 也吃不消。</p>
+        <p style="font-size: 13px; color: var(--ink-soft); font-style: italic; margin-bottom: 0;">📁 baseline 用 <code>emb_skip_threshold=1000000</code>:vocab 超过 100 万的特征跳过 embedding,这是工程妥协。</p>
+      </div>
+    </div>
+
+    <div class="difficulty">
+      <div class="difficulty-header">
+        <span class="difficulty-num">2</span>
+        <span class="difficulty-title">行为序列又长又异构</span>
+        <span class="difficulty-en">Long & heterogeneous sequences</span>
+      </div>
+      <div class="difficulty-body">
+        <p><strong>"长"</strong>:用户有几百到几千次历史行为。baseline 截断长度:Domain a/b 是 256,c/d 是 <strong>512</strong>——比一句话的 token 数还长。Transformer 处理长序列有 O(L²) 复杂度,序列翻倍计算量变 4 倍。</p>
+        <p><strong>"异构"</strong> = heterogeneous,4 个域的行为来自<strong>完全不同的场景</strong>——频率不同、含义不同、字段也不同。</p>
+
+        <h4 style="margin-top: 16px;">融合方式是开放问题</h4>
+        <table style="margin: 8px 0;">
+          <tr><th>方法</th><th>思路</th><th>缺点</th></tr>
+          <tr><td>简单拼接</td><td>4 域各自编码,最后拼成长向量</td><td>浅融合,无交流</td></tr>
+          <tr><td>共享编码器</td><td>4 域用同一个 Transformer</td><td>抹掉域间差异</td></tr>
+          <tr><td>Cross attention</td><td>让 4 域互相看</td><td>计算爆炸</td></tr>
+          <tr><td><strong>Query Token</strong></td><td>baseline 用的方法 ⭐</td><td>你们要研究的</td></tr>
+        </table>
+        <p style="font-size: 13px; color: var(--ink-soft); font-style: italic; margin-bottom: 0;">📁 <code>dataset.py · seq_domains</code>:每个域独立处理后再交给模型融合。</p>
+      </div>
+    </div>
+
+    <div class="difficulty">
+      <div class="difficulty-header">
+        <span class="difficulty-num">3</span>
+        <span class="difficulty-title">静态特征和序列特征的"统一"</span>
+        <span class="difficulty-en">Static-sequential fusion</span>
+      </div>
+      <div class="difficulty-body">
+        <p>这是上一节"痛点 #1(浅融合)"的具体技术版本。</p>
+
+        <p><strong>传统做法</strong>:序列编码器 → 一个向量,静态特征 → 一个向量,拼起来送分类器——两个分支整个学习过程<strong>互相不知道对方在干嘛</strong>。</p>
+
+        <div class="analogy" style="margin: 16px 0;">
+          <span class="analogy-label">具体例子 · Concrete Example</span>
+          <h4 class="analogy-title" style="font-size: 16px;">健身用户的故事</h4>
+          <p style="margin-top: 0; font-size: 14px;"><strong>静态画像</strong>:30 岁、男、北京、IT 行业<br>
+          <strong>最近序列</strong>:看了健身器材 → 运动鞋 → 蛋白粉</p>
+          <p style="font-size: 14px;">浅融合:静态分支学到"IT 男爱看科技产品",序列分支学到"最近关注健身"——两个独立结论。</p>
+          <p style="margin-bottom: 0; font-size: 14px;"><strong>深度融合的洞察</strong>:"30 岁北京 IT 男 + 最近关注健身 = 新晋健身爱好者,需要入门款而非专业款"——这种"组合后才出现的洞察",浅融合根本捞不到。</p>
+        </div>
+        <p style="font-size: 13px; color: var(--ink-soft); font-style: italic; margin-bottom: 0;">📁 PCVRHyFormer 的解决方案:<code>MultiSeqHyFormerBlock</code>——每一层都做 4 步操作,让两类信息在每一层互相打交道。</p>
+      </div>
+    </div>
+
+    <div class="difficulty">
+      <div class="difficulty-header">
+        <span class="difficulty-num">4</span>
+        <span class="difficulty-title">推理延迟限制</span>
+        <span class="difficulty-en">Inference latency budget</span>
+      </div>
+      <div class="difficulty-body">
+        <p><strong>训练 ≠ 推理</strong>:</p>
+        <table style="margin: 8px 0;">
+          <tr><th>阶段</th><th>在做什么</th><th>时间敏感吗</th></tr>
+          <tr><td>训练</td><td>在历史数据上反复学习</td><td>不敏感(慢一点没事)</td></tr>
+          <tr><td><strong>推理</strong></td><td>给当下请求做预测</td><td><strong>极其敏感</strong></td></tr>
+        </table>
+
+        <p><strong>工业硬约束</strong>:单次请求 < 50 ms(整个链路),模型本身 < 20 ms。</p>
+
+        <p><strong>这给你们的"指南针"</strong>:</p>
+        <table style="margin: 8px 0;">
+          <tr><th>改动方向</th><th>延迟影响</th></tr>
+          <tr><td>把 <code>num_hyformer_blocks</code> 从 2 加到 8</td><td>⚠️ 计算量 4 倍,可能超时</td></tr>
+          <tr><td>把 <code>d_model</code> 从 64 加到 256</td><td>⚠️ 内存和计算翻倍</td></tr>
+          <tr><td>更精巧的特征工程</td><td>✅ 延迟开销小</td></tr>
+          <tr><td>改进 <code>ns_groups.json</code></td><td>✅ 不影响推理速度</td></tr>
+        </table>
+        <p style="margin-bottom: 0;">→ 那些<strong>不显著增加推理时间</strong>的改动,是性价比最高的方向。</p>
+      </div>
+    </div>
+  </section>
+
+
+  <!-- ═══════════════════ STATION 3 ═══════════════════ -->
+  <section class="station" id="s3">
+    <div class="station-marker">
+      <span class="station-num">叁 · Sub-Section III</span>
+      <span class="station-line"></span>
+    </div>
+    <h2 class="station-title">评估方式</h2>
+    <p class="station-en">How "winning" is defined: AUC + Latency</p>
+
+    <p>这一节回答:<strong>比赛怎么判断输赢?谁才算"做得好"?</strong></p>
+
+    <h3>① 主指标:AUC of ROC</h3>
+
+    <table>
+      <tr><th>缩写</th><td><strong>AUC</strong> = Area Under the Curve(曲线下面积)<br><strong>ROC</strong> = Receiver Operating Characteristic</td></tr>
+      <tr><th>口诀</th><td><strong>"模型把'会点的人'排在'不会点的人'前面"的能力</strong></td></tr>
+    </table>
+
+    <h4>用一对样本理解 AUC</h4>
+
+    <p>AUC 在问的核心问题:</p>
+
+    <div class="pullquote">
+      "随机抽一对样本,一个真实 label=1,一个 label=0,模型给 label=1 那个的概率<strong>更高</strong>的可能性有多大?"
+    </div>
+
+    <div class="auc-viz">
+      <p style="margin-top: 0; font-size: 14px;">假设有 10 条样本(5 正 5 负),配对后看模型有没有"排对":</p>
+      <table>
+        <tr><th>样本</th><th>真实 label</th><th>模型预测</th></tr>
+        <tr class="row-pos"><td>#1</td><td>1(点了)</td><td>0.92 ✅</td></tr>
+        <tr class="row-neg"><td>#3</td><td>0(没点)</td><td>0.81</td></tr>
+        <tr class="row-pos"><td>#6</td><td>1</td><td>0.43 ❌(被 #3 排在了后面)</td></tr>
+        <tr class="row-neg"><td>#10</td><td>0</td><td>0.05 ✅</td></tr>
+      </table>
+      <p style="font-size: 13px; color: var(--ink-soft); margin-bottom: 0;">所有"正负配对"中"模型把正样本排得更高"的比例 = AUC。</p>
+    </div>
+
+    <h4>三个特殊值,记住它们</h4>
+
+    <div class="auc-scale">
+      <div class="auc-scale-block auc-bad">
+        <div class="v">0.0</div>
+        <div>反向完美</div>
+      </div>
+      <div class="auc-scale-block auc-mid">
+        <div class="v">0.5</div>
+        <div>随机猜</div>
+      </div>
+      <div class="auc-scale-block auc-good">
+        <div class="v">1.0</div>
+        <div>完美</div>
+      </div>
+    </div>
+
+    <h4>为什么用 AUC,不用准确率?</h4>
+
+    <div class="alert">
+      <p style="margin-top: 0;"><strong>CTR 数据极度不平衡</strong>:真实点击率只有 1%~5%,正负样本比例约 1:30~1:100。</p>
+      <p style="margin-bottom: 0;">在这种数据上,一个<strong>"全部预测不点击"的作弊模型也能拿 95%+ 准确率</strong>——但它实际毫无用处,<strong>AUC 会立刻揭穿它(=0.5,等于随机猜)</strong>。</p>
+    </div>
+
+    <div class="insight">
+      <p>CTR 预测的关键不是"对/错",而是<strong>"排序"</strong>——把最可能点的人排在前面。AUC 衡量的就是排序能力,所以是这类任务的<strong>金标准</strong>。</p>
+    </div>
+
+    <h4>AUC 提升的"零点零零几"算多吗?</h4>
+
+    <table>
+      <tr><th>提升幅度</th><th>意义</th></tr>
+      <tr><td>+0.001</td><td>可以接受(已经能写论文)</td></tr>
+      <tr><td>+0.005</td><td>不错的改进</td></tr>
+      <tr><td>+0.01</td><td>显著改进(论文里大书特书)</td></tr>
+      <tr><td>+0.05</td><td>极其罕见(可能是搞错了)</td></tr>
+    </table>
+
+    <p style="font-size: 14px; color: var(--ink-soft); font-style: italic;">→ 不要被小数点吓到。CTR 任务里 0.001 的提升对应每年多赚几千万——这就是工程师为它拼命的原因。</p>
+
+    <h3>② 硬约束:推理延迟限制</h3>
+
+    <div class="compare">
+      <p style="margin-top: 0;"><strong>软约束</strong> · 不达标会扣分,但还能参赛(例:"希望模型不要太大")</p>
+      <p style="margin-bottom: 0;"><strong>硬约束</strong> · 不达标<strong>直接淘汰</strong>(例:"超过延迟预算的提交直接作废")</p>
+    </div>
+
+    <p>延迟限制是<strong>硬约束</strong>——即使 AUC 全场最高,只要慢了 1 ms,整个提交作废,等于没参加。</p>
+
+    <h4>"动态公布"是什么意思</h4>
+    <ul class="refined">
+      <li>腾讯<strong>没有事先告诉具体数字</strong>,会在比赛过程中根据情况调整</li>
+      <li>防止参赛者针对固定数字过拟合(把延迟刚好压到 19.9 ms 应付 20 ms 限制)</li>
+      <li>根据硬件实测动态调整,保证公平</li>
+    </ul>
+
+    <h4>Report 怎么写延迟?(实用 tip)</h4>
+    <pre><code>✅ "Our model achieves X AUC subject to the
+    official latency constraint."
+   ← 用条件式语言,数字变了不尴尬
+
+❌ "Our model has 17.3 ms latency, well within
+    the 20 ms budget."
+   ← 写死数字,数字一变就过时</code></pre>
+
+    <h3>③ 两个机制合起来 = "赢"的标准</h3>
+
+    <pre><code>                 ┌────────────────────┐
+所有提交  ────► │  Step 1:延迟检查  │  ── 超时 ──► ❌ 直接作废
+                 └─────────┬──────────┘
+                           │ 通过
+                           ↓
+                 ┌────────────────────┐
+                 │  Step 2:AUC 评分  │  ── 越高越好
+                 └─────────┬──────────┘
+                           ↓
+                       排行榜名次</code></pre>
+
+    <p style="font-style: italic; color: var(--ink-soft);">→ <strong>延迟是入场券,AUC 是分数。两关都过才有意义。</strong></p>
+  </section>
+
+
+  <!-- ═══════════════════ STATION 4: RECAP + SELF-CHECK ═══════════════════ -->
+  <section class="station" id="s4">
+    <div class="station-marker">
+      <span class="station-num">肆 · Recap & Self-Check</span>
+      <span class="station-line"></span>
+    </div>
+    <h2 class="station-title">整体回顾 + 自检</h2>
+    <p class="station-en">Tying it all together</p>
+
+    <h3>三节之间的关系图</h3>
+
+    <pre><code>      ┌─────────────────────────────────────────────┐
+      │  这件事为什么值得做?(故事 / 行业故事)        │
+      │  ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━ │
+      │  Sub 1:为什么有这个比赛                     │
+      │     ↓ 4 个工业痛点                          │
+      └─────────────────────────────────────────────┘
+                          │
+                          ↓
+      ┌─────────────────────────────────────────────┐
+      │  这件事具体在做什么?(任务 / 立项书)        │
+      │  ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━ │
+      │  Sub 2:技术任务定义                        │
+      │     ↓ CTR 预测 + 4 个建模难点                │
+      └─────────────────────────────────────────────┘
+                          │
+                          ↓
+      ┌─────────────────────────────────────────────┐
+      │  怎么判断输赢?(规则 / 评分细则)           │
+      │  ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━ │
+      │  Sub 3:评估方式                            │
+      │     ↓ AUC 主指标 + 延迟硬约束                │
+      └─────────────────────────────────────────────┘</code></pre>
+
+    <div class="insight">
+      <p><strong>三节合起来的整体作用</strong>:把项目的"problem space"完整定义出来——从最高层的行业意义,到具体技术任务,再到评分规则。这就是 report 中 <strong>Section 1(Introduction)+ Section 3(Problem Formulation)+ Section 5.1(Experimental Setup)</strong> 的素材。</p>
+    </div>
+
+    <h3>对应到 report 章节</h3>
+    <table>
+      <tr><th>笔记内容</th><th>Report 章节</th></tr>
+      <tr><td>Sub 1 · 行业痛点 + 故事弧线</td><td><strong>Section 1: Introduction</strong></td></tr>
+      <tr><td>Sub 2 · CTR 任务定义 + 输入输出</td><td><strong>Section 3: Problem Formulation</strong></td></tr>
+      <tr><td>Sub 2 · 4 个建模难点</td><td><strong>Section 1 motivation 段 + Section 4 method 段</strong></td></tr>
+      <tr><td>Sub 3 · AUC + 延迟约束</td><td><strong>Section 5.1: Experimental Setup</strong></td></tr>
+    </table>
+
+    <h3>自检四问</h3>
+    <p>能答出下面 4 题,说明这一站的内容都消化了。</p>
+
+    <details class="check">
+      <summary>
+        <span class="check-num">Q1</span>
+        <span>为什么 CTR 任务里"全部预测不点击"的模型能拿很高的准确率?</span>
+      </summary>
+      <div class="answer">
+        <p>因为 CTR 数据<strong>极度不平衡</strong>——真实点击率只有 1%~5%。如果有 100 条样本里只有 3 条是点击,一个全部预测"不点击"的模型也能拿 <strong>97% 准确率</strong>。</p>
+        <p>但这个模型完全没用——它从不识别真正会点的人。<strong>AUC 会立刻揭穿它(=0.5)</strong>,因为 AUC 衡量的是"把正样本排在负样本前面"的能力,跟具体阈值无关。</p>
+      </div>
+    </details>
+
+    <details class="check">
+      <summary>
+        <span class="check-num">Q2</span>
+        <span>为什么 4 个建模难点里,"推理延迟"和其他三个性质不一样?</span>
+      </summary>
+      <div class="answer">
+        <p>前 3 个难点(稀疏、长序列、融合)都是<strong>"模型设计层面的挑战"</strong>——你可以用更精巧的算法解决。</p>
+        <p>但<strong>推理延迟</strong>是<strong>"硬性的工程约束"</strong>——它不是"难做",而是"做了也作废"。它实际上给你们做改进时立了一个<strong>边界</strong>:不能为了 AUC 无脑堆参数,所有改动都要在延迟预算内。</p>
+        <p>所以延迟既出现在 Sub 2 的"难点"里,也出现在 Sub 3 的"评估方式"里——它两者兼具。</p>
+      </div>
+    </details>
+
+    <details class="check">
+      <summary>
+        <span class="check-num">Q3</span>
+        <span>"两类模型融合"这件事,为什么 15 年都没解决?</span>
+      </summary>
+      <div class="answer">
+        <p>不是没人做过,也不是缺论文——两条进化树都各自繁衍了 15 年,有几十篇代表作。</p>
+        <p>难的是:</p>
+        <ul class="refined">
+          <li><strong>设计哲学冲突</strong>(浅融合无法捕捉跨模式洞察)</li>
+          <li><strong>训练目标对不齐</strong>(对比学习 vs BCE)</li>
+          <li><strong>scaling 行为不同</strong>(各自变大都饱和)</li>
+          <li><strong>工程实现复杂</strong>(两套计算图)</li>
+        </ul>
+        <p>需要的不是"再加一个新模型",而是<strong>设计哲学层面的统一架构</strong>——这就是 PCVRHyFormer 想做的。</p>
+      </div>
+    </details>
+
+    <details class="check">
+      <summary>
+        <span class="check-num">Q4</span>
+        <span>如果你写 report 的 Introduction,要怎么开头?</span>
+      </summary>
+      <div class="answer">
+        <p>大致结构(这是 NeurIPS 论文的标准套路):</p>
+        <ul class="refined">
+          <li><strong>第 1 段</strong>:背景——推荐系统两条技术路线,15 年独立繁衍</li>
+          <li><strong>第 2 段</strong>:问题——4 个工业痛点(浅融合 / 目标不一 / 难 scale / 难运维)</li>
+          <li><strong>第 3 段</strong>:已有工作 + 它们的不足</li>
+          <li><strong>第 4 段</strong>:本文贡献——"我们提出 X,在 baseline 上做了 A、B、C 三个改进,实验证明..."(3-4 个 bullet)</li>
+        </ul>
+        <p>前 2 段几乎全部从 Sub 1 来;第 3 段从 Sub 2 的难点 + Related Work 来;第 4 段需要等队友的实验结果。</p>
+      </div>
+    </details>
+  </section>
+
+
+  <!-- ═══════════════════ NEXT ═══════════════════ -->
+  <div class="recap">
+    <h3>📍 阶段三可以探索的方向</h3>
+    <p style="font-size: 14px; color: var(--ink-soft); margin-top: 0;">阶段二把"问题空间"完整定义了。阶段三可以转向"工具空间"——你手上有什么:</p>
+    <ul>
+      <li><strong>「数据」章节细看</strong> — 120 列的更细致拆解(每个类别具体含义)</li>
+      <li><strong>「7 个 baseline 文件」</strong> — 每个文件分别在干什么(做菜比喻)</li>
+      <li><strong>「PCVRHyFormer 总览 + 三大核心概念」</strong> — NS / Sequence / Q tokens 怎么协作</li>
+      <li><strong>完整数据流 7 步</strong> — 从原始 batch 到 logit 输出的全过程</li>
+    </ul>
+  </div>
+
+
+  <!-- ═══════════════════ FOOTER ═══════════════════ -->
+  <div class="footer">
+    阶段二笔记 · 由对话整理而成 · 待续 ✦
+  </div>
+
+</div>
+
+</body>
+</html>

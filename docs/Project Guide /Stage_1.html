@@ -1,0 +1,1080 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>学习笔记 · 阶段一 — TAAC 2026 项目理解</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Noto+Serif+SC:wght@400;500;600;700&family=Noto+Sans+SC:wght@300;400;500;600&family=JetBrains+Mono:wght@400;500&display=swap" rel="stylesheet">
+<style>
+  :root {
+    --bg: #F4EEE3;
+    --bg-paper: #FAF6EC;
+    --bg-soft: #EDE5D4;
+    --bg-card: #FFFCF5;
+    --bg-ink: #2A2520;
+
+    --ink: #2A2520;
+    --ink-soft: #5A4F44;
+    --ink-faint: #8A7E6F;
+
+    --teal: #1F5E55;
+    --rust: #A14828;
+    --gold: #8B6914;
+    --plum: #6B3F5C;
+    --moss: #4A6B2A;
+    --slate: #3D4D5C;
+
+    --bg-teal: #DAE8E2;
+    --bg-rust: #F0DCD0;
+    --bg-gold: #EFE3C8;
+    --bg-plum: #ECDCE5;
+    --bg-moss: #E1E8D0;
+    --bg-slate: #DDE5EA;
+
+    --border: rgba(42, 37, 32, 0.12);
+    --border-strong: rgba(42, 37, 32, 0.25);
+    --shadow-paper: 0 1px 2px rgba(42, 37, 32, 0.04), 0 4px 12px rgba(42, 37, 32, 0.06);
+
+    --serif: "Noto Serif SC", "Songti SC", "STSong", serif;
+    --sans: "Noto Sans SC", -apple-system, BlinkMacSystemFont, "PingFang SC", sans-serif;
+    --mono: "JetBrains Mono", ui-monospace, "SF Mono", Menlo, monospace;
+  }
+
+  @media (prefers-color-scheme: dark) {
+    :root {
+      --bg: #1A1714;
+      --bg-paper: #221E19;
+      --bg-soft: #2C2620;
+      --bg-card: #2A241E;
+      --bg-ink: #E8E0D2;
+
+      --ink: #E8E0D2;
+      --ink-soft: #B8AC9A;
+      --ink-faint: #847868;
+
+      --teal: #6FB5A4;
+      --rust: #E89070;
+      --gold: #D4A845;
+      --plum: #C390AC;
+      --moss: #98B870;
+      --slate: #8FA5B5;
+
+      --bg-teal: #1F3A35;
+      --bg-rust: #4A2818;
+      --bg-gold: #3F3018;
+      --bg-plum: #3D2832;
+      --bg-moss: #2E3A1F;
+      --bg-slate: #243038;
+
+      --border: rgba(232, 224, 210, 0.12);
+      --border-strong: rgba(232, 224, 210, 0.22);
+      --shadow-paper: 0 1px 2px rgba(0, 0, 0, 0.3), 0 4px 12px rgba(0, 0, 0, 0.2);
+    }
+  }
+
+  * { box-sizing: border-box; }
+
+  html {
+    scroll-behavior: smooth;
+  }
+
+  body {
+    margin: 0;
+    background: var(--bg);
+    background-image:
+      radial-gradient(circle at 20% 10%, rgba(161, 72, 40, 0.04) 0%, transparent 50%),
+      radial-gradient(circle at 80% 90%, rgba(31, 94, 85, 0.04) 0%, transparent 50%);
+    color: var(--ink);
+    font-family: var(--sans);
+    font-size: 16px;
+    line-height: 1.75;
+    -webkit-font-smoothing: antialiased;
+  }
+
+  .page {
+    max-width: 760px;
+    margin: 0 auto;
+    padding: 60px 32px 100px;
+  }
+
+  /* ───── Header ───── */
+  .masthead {
+    border-bottom: 1px solid var(--border-strong);
+    padding-bottom: 32px;
+    margin-bottom: 56px;
+  }
+
+  .masthead-meta {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    font-family: var(--mono);
+    font-size: 11px;
+    text-transform: uppercase;
+    letter-spacing: 0.15em;
+    color: var(--ink-faint);
+    margin-bottom: 24px;
+  }
+
+  .stage-badge {
+    display: inline-flex;
+    align-items: center;
+    gap: 8px;
+    padding: 4px 12px;
+    background: var(--bg-rust);
+    color: var(--rust);
+    border-radius: 2px;
+    font-weight: 500;
+  }
+  .stage-badge::before {
+    content: "";
+    width: 6px;
+    height: 6px;
+    background: var(--rust);
+    border-radius: 50%;
+  }
+
+  h1.title {
+    font-family: var(--serif);
+    font-size: 44px;
+    font-weight: 600;
+    line-height: 1.2;
+    margin: 0 0 12px;
+    letter-spacing: -0.01em;
+  }
+
+  .subtitle {
+    font-family: var(--serif);
+    font-size: 18px;
+    font-weight: 400;
+    color: var(--ink-soft);
+    font-style: italic;
+    margin: 0;
+  }
+
+  .preamble {
+    font-size: 16px;
+    color: var(--ink-soft);
+    line-height: 1.85;
+    margin: 32px 0 0;
+    padding: 20px 24px;
+    background: var(--bg-paper);
+    border-left: 2px solid var(--gold);
+    border-radius: 0 4px 4px 0;
+  }
+  .preamble strong { color: var(--ink); }
+
+  /* ───── Path overview ───── */
+  .path-overview {
+    background: var(--bg-card);
+    border: 1px solid var(--border);
+    border-radius: 8px;
+    padding: 28px 32px;
+    margin: 48px 0;
+    box-shadow: var(--shadow-paper);
+  }
+
+  .path-title {
+    font-family: var(--serif);
+    font-size: 14px;
+    text-transform: uppercase;
+    letter-spacing: 0.2em;
+    color: var(--ink-faint);
+    margin: 0 0 20px;
+    font-weight: 500;
+  }
+
+  .path-list {
+    list-style: none;
+    padding: 0;
+    margin: 0;
+    display: flex;
+    flex-direction: column;
+    gap: 4px;
+  }
+
+  .path-list li {
+    display: flex;
+    gap: 16px;
+    align-items: baseline;
+    padding: 8px 0;
+    border-bottom: 1px dashed var(--border);
+  }
+  .path-list li:last-child { border-bottom: none; }
+
+  .path-num {
+    font-family: var(--mono);
+    font-size: 12px;
+    color: var(--ink-faint);
+    flex-shrink: 0;
+    min-width: 28px;
+  }
+
+  .path-link {
+    color: var(--ink);
+    text-decoration: none;
+    font-weight: 500;
+    transition: color 0.2s;
+  }
+  .path-link:hover { color: var(--rust); }
+
+  .path-desc {
+    color: var(--ink-faint);
+    font-size: 14px;
+    margin-left: auto;
+    font-style: italic;
+  }
+
+  /* ───── Station headers ───── */
+  .station {
+    margin: 80px 0 0;
+    scroll-margin-top: 24px;
+  }
+
+  .station-marker {
+    display: flex;
+    align-items: center;
+    gap: 16px;
+    margin-bottom: 8px;
+  }
+
+  .station-num {
+    font-family: var(--serif);
+    font-size: 13px;
+    color: var(--rust);
+    text-transform: uppercase;
+    letter-spacing: 0.25em;
+    font-weight: 500;
+  }
+
+  .station-line {
+    flex: 1;
+    height: 1px;
+    background: var(--border);
+  }
+
+  h2.station-title {
+    font-family: var(--serif);
+    font-size: 32px;
+    font-weight: 600;
+    margin: 0 0 8px;
+    line-height: 1.25;
+    letter-spacing: -0.005em;
+  }
+
+  .station-en {
+    font-family: var(--serif);
+    font-style: italic;
+    color: var(--ink-faint);
+    font-size: 15px;
+    margin: 0 0 28px;
+  }
+
+  /* ───── Body text ───── */
+  p { margin: 14px 0; }
+
+  h3 {
+    font-family: var(--serif);
+    font-size: 20px;
+    font-weight: 600;
+    margin: 36px 0 12px;
+    color: var(--ink);
+  }
+
+  h4 {
+    font-family: var(--sans);
+    font-size: 15px;
+    font-weight: 600;
+    margin: 24px 0 8px;
+    color: var(--ink);
+    text-transform: uppercase;
+    letter-spacing: 0.08em;
+  }
+
+  strong { color: var(--ink); font-weight: 600; }
+
+  /* ───── Pull quotes ───── */
+  .pullquote {
+    margin: 28px 0;
+    padding: 0 0 0 24px;
+    border-left: 3px solid var(--rust);
+    font-family: var(--serif);
+    font-size: 19px;
+    line-height: 1.6;
+    color: var(--ink);
+    font-style: italic;
+  }
+
+  /* ───── Insight box ───── */
+  .insight {
+    margin: 28px 0;
+    padding: 18px 22px;
+    background: var(--bg-gold);
+    border-radius: 4px;
+    position: relative;
+  }
+  .insight::before {
+    content: "💡 关键洞察";
+    display: block;
+    font-family: var(--mono);
+    font-size: 11px;
+    text-transform: uppercase;
+    letter-spacing: 0.15em;
+    color: var(--gold);
+    margin-bottom: 8px;
+    font-weight: 500;
+  }
+  .insight p:first-of-type { margin-top: 0; }
+  .insight p:last-of-type { margin-bottom: 0; }
+
+  .compare {
+    margin: 28px 0;
+    padding: 18px 22px;
+    background: var(--bg-teal);
+    border-radius: 4px;
+  }
+  .compare::before {
+    content: "🔁 对比一下";
+    display: block;
+    font-family: var(--mono);
+    font-size: 11px;
+    text-transform: uppercase;
+    letter-spacing: 0.15em;
+    color: var(--teal);
+    margin-bottom: 8px;
+    font-weight: 500;
+  }
+
+  .myself {
+    margin: 28px 0;
+    padding: 18px 22px;
+    background: var(--bg-plum);
+    border-radius: 4px;
+  }
+  .myself::before {
+    content: "🪞 我之前的理解";
+    display: block;
+    font-family: var(--mono);
+    font-size: 11px;
+    text-transform: uppercase;
+    letter-spacing: 0.15em;
+    color: var(--plum);
+    margin-bottom: 8px;
+    font-weight: 500;
+  }
+
+  .correction {
+    margin: 28px 0;
+    padding: 18px 22px;
+    background: var(--bg-moss);
+    border-radius: 4px;
+  }
+  .correction::before {
+    content: "✏️ 校正/补充";
+    display: block;
+    font-family: var(--mono);
+    font-size: 11px;
+    text-transform: uppercase;
+    letter-spacing: 0.15em;
+    color: var(--moss);
+    margin-bottom: 8px;
+    font-weight: 500;
+  }
+
+  /* ───── Tables ───── */
+  table {
+    width: 100%;
+    border-collapse: collapse;
+    margin: 24px 0;
+    font-size: 14px;
+    background: var(--bg-card);
+    border: 1px solid var(--border);
+    border-radius: 4px;
+    overflow: hidden;
+  }
+  th, td {
+    text-align: left;
+    padding: 12px 16px;
+    border-bottom: 1px solid var(--border);
+    vertical-align: top;
+  }
+  th {
+    background: var(--bg-soft);
+    font-family: var(--sans);
+    font-weight: 600;
+    color: var(--ink-soft);
+    font-size: 12px;
+    text-transform: uppercase;
+    letter-spacing: 0.08em;
+  }
+  tr:last-child td { border-bottom: none; }
+
+  /* ───── Code ───── */
+  code {
+    font-family: var(--mono);
+    font-size: 13px;
+    background: var(--bg-soft);
+    padding: 2px 6px;
+    border-radius: 3px;
+    color: var(--rust);
+  }
+
+  pre {
+    background: var(--bg-paper);
+    border: 1px solid var(--border);
+    padding: 18px 20px;
+    border-radius: 4px;
+    overflow-x: auto;
+    font-family: var(--mono);
+    font-size: 12.5px;
+    line-height: 1.7;
+    margin: 20px 0;
+  }
+  pre code {
+    background: none;
+    padding: 0;
+    color: var(--ink);
+  }
+
+  /* ───── Analogy box ───── */
+  .analogy {
+    margin: 28px 0;
+    padding: 22px 26px;
+    background: var(--bg-card);
+    border: 1px solid var(--border);
+    border-radius: 6px;
+    box-shadow: var(--shadow-paper);
+  }
+  .analogy-label {
+    display: inline-block;
+    font-family: var(--mono);
+    font-size: 10px;
+    text-transform: uppercase;
+    letter-spacing: 0.2em;
+    color: var(--ink-faint);
+    margin-bottom: 10px;
+    padding: 2px 8px;
+    background: var(--bg-soft);
+    border-radius: 2px;
+  }
+  .analogy-title {
+    font-family: var(--serif);
+    font-size: 18px;
+    font-weight: 600;
+    margin: 0 0 12px;
+    color: var(--ink);
+  }
+
+  /* ───── Self-check ───── */
+  details.check {
+    background: var(--bg-card);
+    border: 1px solid var(--border);
+    border-radius: 6px;
+    margin: 14px 0;
+    overflow: hidden;
+    transition: box-shadow 0.2s;
+  }
+  details.check[open] { box-shadow: var(--shadow-paper); }
+
+  details.check summary {
+    cursor: pointer;
+    padding: 16px 22px;
+    list-style: none;
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    font-weight: 500;
+    user-select: none;
+    transition: background 0.15s;
+  }
+  details.check summary::-webkit-details-marker { display: none; }
+  details.check summary:hover { background: var(--bg-soft); }
+  details.check summary::after {
+    content: "查看答案 →";
+    margin-left: auto;
+    font-family: var(--mono);
+    font-size: 11px;
+    color: var(--ink-faint);
+    text-transform: uppercase;
+    letter-spacing: 0.1em;
+  }
+  details.check[open] summary::after { content: "收起 ↑"; }
+
+  details.check .check-num {
+    font-family: var(--serif);
+    font-size: 24px;
+    font-weight: 600;
+    color: var(--rust);
+    min-width: 36px;
+  }
+
+  details.check .answer {
+    padding: 20px 22px 22px;
+    border-top: 1px solid var(--border);
+    background: var(--bg-paper);
+    font-size: 14.5px;
+    line-height: 1.75;
+  }
+  details.check .answer strong { color: var(--rust); }
+
+  /* ───── Diagram ───── */
+  .diagram {
+    margin: 28px 0;
+    padding: 24px;
+    background: var(--bg-card);
+    border: 1px solid var(--border);
+    border-radius: 6px;
+  }
+
+  /* ───── Triangle pyramid ───── */
+  .pyramid {
+    margin: 28px 0;
+    display: flex;
+    flex-direction: column;
+    gap: 6px;
+  }
+  .pyramid-row {
+    padding: 16px 20px;
+    border-radius: 4px;
+    font-family: var(--serif);
+  }
+  .pyramid-row .label {
+    font-family: var(--mono);
+    font-size: 10px;
+    text-transform: uppercase;
+    letter-spacing: 0.2em;
+    margin-bottom: 4px;
+    opacity: 0.8;
+  }
+  .pyramid-row .content {
+    font-size: 16px;
+    font-weight: 500;
+  }
+  .pyramid .why { background: var(--bg-rust); color: var(--rust); width: 100%; }
+  .pyramid .what { background: var(--bg-gold); color: var(--gold); width: 80%; align-self: center; }
+  .pyramid .how { background: var(--bg-teal); color: var(--teal); width: 60%; align-self: center; }
+
+  /* ───── Bullet refinement ───── */
+  ul.refined {
+    list-style: none;
+    padding: 0;
+    margin: 16px 0;
+  }
+  ul.refined li {
+    padding: 4px 0 4px 24px;
+    position: relative;
+  }
+  ul.refined li::before {
+    content: "—";
+    position: absolute;
+    left: 0;
+    color: var(--rust);
+    font-weight: 600;
+  }
+
+  /* ───── Footer ───── */
+  .footer {
+    margin-top: 100px;
+    padding-top: 32px;
+    border-top: 1px solid var(--border-strong);
+    text-align: center;
+    color: var(--ink-faint);
+    font-size: 13px;
+    font-family: var(--serif);
+    font-style: italic;
+  }
+
+  .next-steps {
+    background: var(--bg-paper);
+    border: 1px dashed var(--border-strong);
+    border-radius: 6px;
+    padding: 28px 32px;
+    margin: 60px 0 0;
+  }
+  .next-steps h3 {
+    margin-top: 0;
+    color: var(--rust);
+  }
+  .next-steps ul {
+    list-style: none;
+    padding: 0;
+  }
+  .next-steps li {
+    padding: 10px 0;
+    border-bottom: 1px dashed var(--border);
+    font-size: 14.5px;
+  }
+  .next-steps li:last-child { border-bottom: none; }
+  .next-steps li::before {
+    content: "→ ";
+    color: var(--rust);
+    font-weight: 600;
+    margin-right: 6px;
+  }
+
+  /* ───── Responsive ───── */
+  @media (max-width: 640px) {
+    .page { padding: 40px 20px 80px; }
+    h1.title { font-size: 32px; }
+    h2.station-title { font-size: 24px; }
+    .pyramid-row { width: 100% !important; }
+    .path-list li { flex-direction: column; gap: 4px; }
+    .path-desc { margin-left: 0; }
+  }
+</style>
+</head>
+<body>
+
+<div class="page">
+
+  <!-- ═══════════════════ HEADER ═══════════════════ -->
+  <header class="masthead">
+    <div class="masthead-meta">
+      <span>学习笔记 · STUDY NOTES</span>
+      <span class="stage-badge">阶段一 / Stage 1</span>
+    </div>
+    <h1 class="title">从"不太清楚"到"建立心智模型"</h1>
+    <p class="subtitle">TAAC 2026 项目理解 · 第一轮整理</p>
+
+    <div class="preamble">
+      这份笔记记录了我从一开始<strong>对整个 project 完全没头绪</strong>的状态,经过几轮对话,逐步搭建起<strong>对项目核心概念的初步认识</strong>。它不是 guide 的复述,而是<strong>"我自己想通了什么"</strong>的回放——所以保留了"我之前的理解" vs "校正后的理解"这种结构,方便我回头看自己卡过哪里。
+    </div>
+  </header>
+
+  <!-- ═══════════════════ PATH OVERVIEW ═══════════════════ -->
+  <div class="path-overview">
+    <h2 class="path-title">学习路径 · The Journey</h2>
+    <ul class="path-list">
+      <li>
+        <span class="path-num">壹</span>
+        <a class="path-link" href="#s1">什么是 baseline</a>
+        <span class="path-desc">起点 + 对照组</span>
+      </li>
+      <li>
+        <span class="path-num">贰</span>
+        <a class="path-link" href="#s2">我们的角色定位</a>
+        <span class="path-desc">改良者 ≠ 发明家</span>
+      </li>
+      <li>
+        <span class="path-num">叁</span>
+        <a class="path-link" href="#s3">30秒电梯演讲拆解</a>
+        <span class="path-desc">WHY / WHAT / HOW</span>
+      </li>
+      <li>
+        <span class="path-num">肆</span>
+        <a class="path-link" href="#s4">两类模型的本质区别</a>
+        <span class="path-desc">同一份数据,不同视角</span>
+      </li>
+      <li>
+        <span class="path-num">伍</span>
+        <a class="path-link" href="#s5">数据的真实面貌</a>
+        <span class="path-desc">脱敏 / 100万 / 120列 / 4域</span>
+      </li>
+      <li>
+        <span class="path-num">陆</span>
+        <a class="path-link" href="#s6">自检三问</a>
+        <span class="path-desc">验证理解</span>
+      </li>
+    </ul>
+  </div>
+
+
+  <!-- ═══════════════════ STATION 1 ═══════════════════ -->
+  <section class="station" id="s1">
+    <div class="station-marker">
+      <span class="station-num">第一站 · Station I</span>
+      <span class="station-line"></span>
+    </div>
+    <h2 class="station-title">什么是 baseline?</h2>
+    <p class="station-en">Establishing the starting line</p>
+
+    <p>这是整个项目里最容易被默认"你已经懂了"的术语,也是我最先卡住的地方。</p>
+
+    <p>在 AI 比赛和学术研究里,<strong>baseline = 一个已经能跑通、有合理效果、被当成"起跑线"的现成方案</strong>。它同时扮演两个角色:</p>
+
+    <table>
+      <tr>
+        <th style="width: 30%;">角色</th>
+        <th>含义</th>
+      </tr>
+      <tr>
+        <td><strong>起点</strong>(脚手架)</td>
+        <td>主办方先做好一个"过得去"的方案,代码、模型、训练流程全部打包好。我不需要从一张白纸开始。</td>
+      </tr>
+      <tr>
+        <td><strong>对照组</strong>(参照系)</td>
+        <td>我所有的改动,都要拿原始版本来对比。baseline 的 AUC 是 0.78,我改完是 0.81,这个 +0.03 才是<strong>我的贡献</strong>。</td>
+      </tr>
+    </table>
+
+    <div class="analogy">
+      <span class="analogy-label">比喻 · Analogy</span>
+      <h4 class="analogy-title">🍳 改良红烧肉</h4>
+      <p style="margin: 0;">报名一个烹饪比赛。主办方说"做一道改良版红烧肉",并且<strong>直接给我一份完整能用的红烧肉菜谱</strong>。我的任务不是从买肉开始,而是<strong>在这份菜谱上做改良</strong>——换种糖、加点八角、调整火候——然后比一比改完的版本是不是更好吃。</p>
+      <p style="margin: 12px 0 0; color: var(--ink-soft); font-size: 14px;">guide 里那"7 个文件"(<code>run.sh</code> / <code>train.py</code> / <code>model.py</code>...)就是腾讯发来的这份完整菜谱。</p>
+    </div>
+
+    <div class="insight">
+      <p>baseline 是<strong>别人的工作</strong>。我只能拿"在 baseline 上做的改动"作为自己的 contribution。把整个 baseline 写成"Our Method" = 学术不端。</p>
+    </div>
+  </section>
+
+
+  <!-- ═══════════════════ STATION 2 ═══════════════════ -->
+  <section class="station" id="s2">
+    <div class="station-marker">
+      <span class="station-num">第二站 · Station II</span>
+      <span class="station-line"></span>
+    </div>
+    <h2 class="station-title">我们的角色定位</h2>
+    <p class="station-en">Improvers, not inventors</p>
+
+    <p>抓到了一句最核心的认知:</p>
+
+    <div class="pullquote">
+      "本质上,我们是在原有的基础上做 improvement,而不是从 0 开始打满全场。"
+    </div>
+
+    <p>这不是偷懒,而是<strong>学术研究和工业实践的标准做法</strong>。几乎所有论文都遵循这个套路:</p>
+
+    <ul class="refined">
+      <li>先承认"前人做了 A"</li>
+      <li>再说"A 有个问题 / 还可以更好"</li>
+      <li>最后讲"我们提出 B,在 A 上做了 X、Y、Z 三个改动,效果提升了多少"</li>
+    </ul>
+
+    <h3>为什么必须基于 baseline,而不是从零开始</h3>
+
+    <table>
+      <tr><th style="width: 22%;">原因</th><th>说明</th></tr>
+      <tr><td><strong>时间</strong></td><td>课程只剩 5 天。从零设计一个工业级推荐模型 → 几个月。课程项目完成不了这个体量。</td></tr>
+      <tr><td><strong>公平比较</strong></td><td>每队各自从 0 开始 → 数据预处理、训练流程、评测方式全不一样,根本比不出谁的"模型创新"更好。统一 baseline = 控制变量,只比较"我的改动"。这就是科学方法。</td></tr>
+      <tr><td><strong>真问题</strong></td><td>工业界的工程师 99% 的时间不是在"发明新模型",而是在"接手一个已有系统、找到瓶颈、做改进、证明改进有效"。比赛模拟的就是这种场景。</td></tr>
+    </table>
+
+    <h3>什么样的"改进"才有说服力</h3>
+
+    <p>每一个改动都要满足两点:</p>
+
+    <div class="compare">
+      <p><strong>Motivation(动机)</strong> · 你为什么改这个地方?是发现了 baseline 的什么缺陷?</p>
+      <p><strong>Evidence(证据)</strong> · 改完之后真的更好了吗?用对比实验(消融实验)证明。</p>
+    </div>
+
+    <div class="analogy">
+      <span class="analogy-label">反例 vs 正例</span>
+      <h4 class="analogy-title">怎么写改动才不被审稿人质疑</h4>
+      <p style="color: var(--rust); margin-top: 0;"><strong>❌ 反例:</strong>"我们把 <code>num_heads</code> 从 4 改成 8,AUC 提升了 0.001。"<br>
+      <span style="color: var(--ink-soft); font-size: 14px;">→ 没动机、提升微弱、像瞎试。</span></p>
+      <p style="color: var(--moss);"><strong>✅ 正例:</strong>"我们注意到 baseline 在长序列(domain c, d)上效果差,猜测时间桶粒度太粗。我们把 <code>num_time_buckets</code> 从 65 增加到 128,并在 ablation 中验证了这一改动在长序列上贡献了 +0.008 AUC,而在短序列上几乎没变化。"<br>
+      <span style="color: var(--ink-soft); font-size: 14px;">→ 有观察、有假设、有验证、效果可解释。</span></p>
+    </div>
+
+    <div class="insight">
+      <p><strong>核心心智模型:</strong>我的角色是<strong>模型改良者</strong>,不是模型发明家。我的价值在于:找到 baseline 的弱点 + 提出针对性的改动 + 用实验证明改动有效。这三件事做得清楚,就是一篇好 report。</p>
+    </div>
+  </section>
+
+
+  <!-- ═══════════════════ STATION 3 ═══════════════════ -->
+  <section class="station" id="s3">
+    <div class="station-marker">
+      <span class="station-num">第三站 · Station III</span>
+      <span class="station-line"></span>
+    </div>
+    <h2 class="station-title">30秒电梯演讲拆解</h2>
+    <p class="station-en">Anatomy of the elevator pitch</p>
+
+    <p>guide 开篇那段"如果有人突然问'你们这个项目在做什么?'就照这段讲"的演讲,其实是把整个项目压缩进了三句话。每句话回答一个问题:</p>
+
+    <div class="pyramid">
+      <div class="pyramid-row why">
+        <div class="label">第一句 · Why</div>
+        <div class="content">两类 AI 模型一直没法很好地融合(行业难题)</div>
+      </div>
+      <div class="pyramid-row what">
+        <div class="label">第二句 · What</div>
+        <div class="content">在 100 万脱敏广告日志上做 CTR 预测(具体任务)</div>
+      </div>
+      <div class="pyramid-row how">
+        <div class="label">第三句 · How</div>
+        <div class="content">在腾讯 baseline 上改进 + 写 9 页 report(我的角色)</div>
+      </div>
+    </div>
+
+    <h3>三句话的功能</h3>
+
+    <table>
+      <tr><th>句子</th><th>它在回答的问题</th><th>对应的 Level</th></tr>
+      <tr><td>第一句 · Why</td><td>这件事<strong>有意义</strong>吗?</td><td>Level 1 行业难题</td></tr>
+      <tr><td>第二句 · What</td><td>具体在做什么?<strong>可执行</strong>吗?</td><td>Level 2/3 比赛任务</td></tr>
+      <tr><td>第三句 · How</td><td>我的<strong>贡献边界</strong>在哪?</td><td>Level 4 课程交付</td></tr>
+    </table>
+
+    <div class="insight">
+      <p><strong>电梯演讲的设计原理</strong>:从抽象到具体,层层收紧。第一句让对方觉得"哦这事儿值得做",第二句让对方明白"具体在做什么",第三句让对方知道"你的位置在哪里"。任何人(队友/教授/面试官)看完都能立刻 get 我的项目。</p>
+    </div>
+
+    <p style="font-size: 14px; color: var(--ink-soft); font-style: italic; margin-top: 24px;">
+      自检练习:不看原文,试着用一句话讲——"我在参加一个广告推荐的比赛,工业界一直有个难题是两种 AI 模型融合不好。我们拿了腾讯给的 baseline 代码,在它基础上做改进,最后要交一篇 9 页报告。"
+    </p>
+  </section>
+
+
+  <!-- ═══════════════════ STATION 4 ═══════════════════ -->
+  <section class="station" id="s4">
+    <div class="station-marker">
+      <span class="station-num">第四站 · Station IV</span>
+      <span class="station-line"></span>
+    </div>
+    <h2 class="station-title">两类模型的本质区别</h2>
+    <p class="station-en">Feature Interaction vs. Sequential — same data, different lenses</p>
+
+    <h3>名词对照</h3>
+    <table>
+      <tr><th>中文</th><th>英文</th><th>关键词</th></tr>
+      <tr><td>特征交互模型</td><td><em>Feature Interaction Models</em></td><td>静态属性、标签组合</td></tr>
+      <tr><td>序列模型</td><td><em>Sequential Recommendation Models</em></td><td>行为时间线、演化趋势</td></tr>
+    </table>
+
+    <h3>本质区别</h3>
+
+    <div class="myself">
+      <p><strong>我之前的理解:</strong>特征交互模型针对"有标签的用户",序列模型针对"可能没有标签、只有行为顺序的用户"。两者关注的是<strong>不同的数据</strong>。</p>
+    </div>
+
+    <div class="correction">
+      <p><strong>更精确的理解:</strong>两个模型<strong>面对的是同一个用户的同一份数据</strong>,只是各自<strong>关注不同维度</strong>。</p>
+      <p>序列里的每一个"行为"本身也带很多属性标签(商品ID、类目、品牌、价格、时间戳)。所以序列模型也"看得到"标签——它只是更关注<strong>这些标签随时间的演化</strong>。</p>
+    </div>
+
+    <div class="analogy">
+      <span class="analogy-label">比喻 · Analogy</span>
+      <h4 class="analogy-title">🩺 两位医生看同一份病历</h4>
+      <p style="margin-top: 0;"><strong>特征交互模型 = 内科医生</strong>:看你的化验单(年龄/血型/各项指标),关注当下身体状态的各个数字之间的<strong>组合</strong>。</p>
+      <p><strong>序列模型 = 病史专家</strong>:翻你过去 3 年的就诊记录时间线(去年咳嗽、半年前过敏、上周失眠),关注症状随时间的<strong>演变</strong>。</p>
+      <p style="margin-bottom: 0; color: var(--ink-soft); font-size: 14px;">同一份病历,两位医生看到的是同一个人,但提取出的信息维度不同。</p>
+    </div>
+
+    <h3>核心矛盾:为什么"两边都有信息"≠"已经融合了"?</h3>
+
+    <p>关键在于<strong>融合发生在"模型内部"还是"模型外部"</strong>:</p>
+
+    <pre><code>❌ 浅融合(shallow fusion) · 现有做法
+   模型A处理静态  → 输出向量 A
+   模型B处理序列  → 输出向量 B
+   最后 [A; B] 拼一起 ← 信息浪费严重
+
+✅ 深度融合(deep fusion) · 比赛要的
+   一个统一模型,在"思考"过程中
+   静态信息和序列信息互相影响、互相印证</code></pre>
+
+    <p>用警局破案的比喻来讲:现状是侦探 A 写一份报告 + 侦探 B 写一份报告 + 管理层硬拼接两份结论。比赛要的是<strong>训练一位新型侦探</strong>,他自己一个人就能同时看档案 + 看录像,而且能在脑子里把两类信息相互印证。</p>
+
+    <div class="insight">
+      <p>PCVRHyFormer 名字里的 <strong>"Hy" = Hybrid(混合)</strong>。它的设计目标就是把两类信息融合在<strong>同一个大脑</strong>里——这是整个项目要解决的核心命题。</p>
+    </div>
+  </section>
+
+
+  <!-- ═══════════════════ STATION 5 ═══════════════════ -->
+  <section class="station" id="s5">
+    <div class="station-marker">
+      <span class="station-num">第五站 · Station V</span>
+      <span class="station-line"></span>
+    </div>
+    <h2 class="station-title">数据的真实面貌</h2>
+    <p class="station-en">100万 / 120列 / 4域 / 脱敏 — what each really means</p>
+
+    <h3>① 脱敏(Anonymization)</h3>
+
+    <p><strong>字面意思:</strong>把"敏感信息"脱掉——去掉所有能识别到具体个人的内容。</p>
+
+    <div class="compare">
+      <p style="margin-top: 0;"><strong>原始数据(违法,不能给):</strong><br>
+      <code style="color: var(--ink);">用户:张伟,身份证310...,手机139...,昨天14:23点了《王者荣耀》广告</code></p>
+      <p style="margin-bottom: 0;"><strong>脱敏后(发出来的):</strong><br>
+      <code style="color: var(--ink);">用户:user_id=87234691,特征列1=15,特征列2=3,昨天点了 item_id=556712</code></p>
+    </div>
+
+    <p style="color: var(--ink-soft); font-style: italic; margin: 16px 0;">所有原本有意义的信息(姓名、地点、广告内容、用户兴趣类别)都变成了纯数字 ID 或抽象数值。</p>
+
+    <h3 style="color: var(--rust);">这对建模意味着什么?</h3>
+
+    <ul class="refined">
+      <li>不能用预训练 LLM/CV 模型做特征工程(因为没有自然语言或图片可以理解)</li>
+      <li>所有 ID 必须靠 embedding 学习(让模型自己摸索每个 ID 的"含义")</li>
+      <li>模型学的是<strong>统计模式</strong>,不是<strong>语义理解</strong></li>
+    </ul>
+
+    <p style="color: var(--ink-soft); font-style: italic;">— 这有点像"探索黑暗地图":数据是真实的,但每个标签的含义需要模型自己从模式中"猜"出来。</p>
+
+    <h3>② 100 万样本的真实含义</h3>
+
+    <div class="myself">
+      <p><strong>我之前的理解:</strong>100 万样本 = 100 万个人。</p>
+    </div>
+
+    <div class="correction">
+      <p><strong>正确理解:</strong>100 万样本 = 100 万次"曝光记录"(曝光 = 一次"用户看到广告"的事件)。同一个人可以出现多次。</p>
+    </div>
+
+    <pre><code>样本编号  用户ID    时间       广告      点了吗?
+─────────────────────────────────────────────
+1        user_A   08:00:23  广告 X    否(0)
+2        user_A   08:05:41  广告 Y    是(1)   ← 同一个人
+3        user_B   08:10:23  广告 X    是(1)
+4        user_A   14:30:12  广告 Z    否(0)   ← 同一个人,时隔6小时
+...</code></pre>
+
+    <p><strong>关键认知:</strong></p>
+    <ul class="refined">
+      <li>每条样本都有<strong>精确时间戳</strong>(到秒甚至毫秒),所以同一个用户基本不会"同一时间出现两次"</li>
+      <li>不同用户<strong>可以同一时刻出现</strong>(整个广告系统是全网同时运行的)</li>
+      <li>时间间隔完全不规则,取决于用户使用习惯(重度用户密集出现,轻度用户稀疏出现)</li>
+      <li>背后真实的人数<strong>少于</strong> 100 万,可能只有几十万,但他们累积起来产生了 100 万次曝光</li>
+    </ul>
+
+    <h3>③ 120 列的内部结构</h3>
+
+    <p>每条样本(每一行)有 120 个特征列。这 120 列<strong>不是同一类性质</strong>:</p>
+
+    <pre><code>120 列总览(单个样本视角)
+──────────────────────────────────────────────
+🔖 ID 和 label              5 列    "这条记录的元数据 + 答案"
+👤 用户静态特征             56 列   "这个用户是谁"  (46 离散 + 10 稠密)
+📦 商品静态特征             14 列   "这个广告是什么"
+📜 用户行为序列             45 列   "这个用户最近在干什么"
+                                   └── 分散在 4 个域(a/b/c/d)
+                                   └── 每列装的是一串值,不是一个值
+──────────────────────────────────────────────</code></pre>
+
+    <h3>④ 序列列 vs 普通列</h3>
+
+    <div class="compare">
+      <p style="margin-top: 0;"><strong>普通列(装一个值):</strong></p>
+      <pre style="margin: 8px 0 16px;"><code>user_age = 30
+user_gender = "male"</code></pre>
+
+      <p><strong>序列列(装一串值,带顺序):</strong></p>
+      <pre style="margin: 8px 0 0;"><code>seq_a_item_id = [556712, 887341, 661203, 998765, 113344, ...]
+                  ↑       ↑       ↑       ↑       ↑
+                  最早    →    →    →    →    最近的行为</code></pre>
+    </div>
+
+    <h3>⑤ 4 个行为域(domains a / b / c / d)</h3>
+
+    <p>"行为域"指<strong>用户行为发生的不同场景</strong>。同一个用户在不同场景下行为模式不同,把他们分开处理,模型才能在每个语境里看清规律。</p>
+
+    <div class="analogy">
+      <span class="analogy-label">比喻 · Analogy</span>
+      <h4 class="analogy-title">🛒 超市的会员系统</h4>
+      <p style="margin-top: 0;">同一位顾客在超市里穿梭于<strong>不同区域</strong>,每个区域都有他独立的行为时间线:</p>
+      <table style="margin-top: 12px;">
+        <tr><th>区域(域)</th><th>这位顾客的行为</th></tr>
+        <tr><td>🥬 生鲜区</td><td>周一西兰花 → 周二三文鱼 → 周三牛排</td></tr>
+        <tr><td>📚 书籍区</td><td>翻3本小说 → 买1本经济学</td></tr>
+        <tr><td>👕 服装区</td><td>试穿2件外套 → 没买</td></tr>
+        <tr><td>☕ 咖啡区</td><td>每天早上必买拿铁</td></tr>
+      </table>
+      <p style="margin-top: 16px; margin-bottom: 0; font-size: 14px; color: var(--ink-soft);">如果把所有区域的行为搅成一个长流水账(西兰花 → 小说 → 拿铁 → 三文鱼...),模型会一脸懵。<strong>分域处理 → 每个域自成一个语境 → 模型在每个语境里看清规律 → 最后融合</strong>。</p>
+    </div>
+
+    <p>腾讯的 4 个域(a/b/c/d)具体是什么没有公开(因为脱敏),但可以推测代表 4 类不同性质的业务场景或行为类型(信息流 / 搜索 / 视频 / 应用 等)。<strong>具体是什么不重要,知道"4 类不同的行为序列,模型分开处理"就够了</strong>。</p>
+
+    <h3>⑥ 串起所有概念的整体图景</h3>
+
+    <pre><code>数据是真实但脱敏的
+        ↓
+100 万条曝光记录(不是 100 万个人)
+        ↓
+每条记录有 120 个特征列
+        ├── 静态特征(用户/商品标签)        ← 特征交互模型擅长
+        └── 4 个域的行为序列                ← 序列模型擅长
+                ↓
+        两类信息都在数据里,但传统模型只能"各管一摊"
+                ↓
+        比赛要的是:用一个统一模型,内部深度融合两类信息
+                ↓
+        预测:这次曝光会不会被点击(0/1)</code></pre>
+  </section>
+
+
+  <!-- ═══════════════════ STATION 6 ═══════════════════ -->
+  <section class="station" id="s6">
+    <div class="station-marker">
+      <span class="station-num">第六站 · Station VI</span>
+      <span class="station-line"></span>
+    </div>
+    <h2 class="station-title">自检三问</h2>
+    <p class="station-en">Three checkpoint questions</p>
+
+    <p>如果能答出下面三题,说明前五站的内容都消化了。先尝试自己回答,再展开看答案。</p>
+
+    <details class="check">
+      <summary>
+        <span class="check-num">Q1</span>
+        <span>同一个用户在 100 万样本里出现 5 次,这 5 次的"用户静态特征(46 列)"是一样的吗?</span>
+      </summary>
+      <div class="answer">
+        <p><strong>基本上一样</strong>(因为他还是同一个人,年龄/性别这些短期不变)。</p>
+        <p>但他的 <strong>"行为序列(45 列)" 会不一样</strong>,因为每一次曝光发生时,他过去的行为时间线<strong>截止点</strong>都不同。</p>
+        <p style="font-size: 13px; color: var(--ink-soft); font-style: italic;">想象你的朋友圈:你"今天发的内容"是固定的,但"你过去看过别人发的内容"取决于"你现在打开 APP 的那一刻"——这个截止点每次都不同。</p>
+      </div>
+    </details>
+
+    <details class="check">
+      <summary>
+        <span class="check-num">Q2</span>
+        <span>一个序列列(比如 <code>seq_a_item_id</code>)和一个普通列(比如 <code>user_age</code>)最大的区别是什么?</span>
+      </summary>
+      <div class="answer">
+        <p><strong>普通列装一个值,序列列装一串值(list)。</strong></p>
+        <p>而且序列列还隐含<strong>顺序信息</strong>——位置 1 的元素比位置 5 的元素发生得早。这种顺序本身就是信号。</p>
+      </div>
+    </details>
+
+    <details class="check">
+      <summary>
+        <span class="check-num">Q3</span>
+        <span>如果腾讯不脱敏,直接给"用户A在3月15日看了《王者荣耀》广告",这种数据反而更难处理吗?</span>
+      </summary>
+      <div class="answer">
+        <p><strong>难处理多了</strong>:</p>
+        <ul class="refined">
+          <li>涉及隐私法律风险(GDPR / 个保法)</li>
+          <li>需要 NLP 特征提取(分词、语义、情感)</li>
+          <li>不同广告之间没法直接比较(《王者荣耀》和《和平精英》的"语义距离"怎么算?)</li>
+          <li>引入了无关的语言学复杂度</li>
+        </ul>
+        <p>脱敏成纯 ID 反而<strong>让模型设计专注在"模式发现"上</strong>,排除了所有语义噪音。所以"脱敏"不是数据的缺陷,是<strong>对建模任务的简化</strong>。</p>
+      </div>
+    </details>
+  </section>
+
+
+  <!-- ═══════════════════ NEXT STEPS ═══════════════════ -->
+  <div class="next-steps">
+    <h3>📍 下一站可以探索的方向</h3>
+    <p style="font-size: 14px; color: var(--ink-soft); margin-top: 0;">阶段一搭建了"项目是什么 + 数据长什么样"的基础。阶段二可以继续往下挖:</p>
+    <ul>
+      <li><strong>PCVRHyFormer 内部到底怎么"融合"</strong>?(三种 token: NS / Sequence / Q 的协作机制)</li>
+      <li><strong>CTR 预测的具体过程</strong>?(数据进模型,0~1 概率怎么出来的)</li>
+      <li><strong>120 列里"静态"和"序列"具体怎么不一样</strong>?(数据形态的进一步差别)</li>
+      <li><strong>报告里"我们的工作"和"baseline"怎么写才不被质疑</strong>?(report 章节结构)</li>
+      <li><strong>消融实验(Ablation Study)是什么</strong>?(怎么用实验证明改动有效)</li>
+    </ul>
+  </div>
+
+
+  <!-- ═══════════════════ FOOTER ═══════════════════ -->
+  <div class="footer">
+    阶段一笔记 · 由对话整理而成 · 待续 ✦
+  </div>
+
+</div>
+
+</body>
+</html>
