@@ -1,0 +1,2054 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>TAAC 2026 · Report 写作 Roadmap</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Fraunces:opsz,wght@9..144,400;9..144,500;9..144,600;9..144,700;9..144,800&family=Noto+Sans+SC:wght@300;400;500;600;700&family=JetBrains+Mono:wght@400;500&display=swap" rel="stylesheet">
+<style>
+  :root {
+    /* Paper / Editorial palette — continuity with stages_1_to_3_summary */
+    --bg: #F2EBDD;
+    --bg-paper: #F8F2E2;
+    --bg-soft: #EAE0CC;
+    --bg-card: #FCF8EC;
+    --bg-deep: #1F1A14;
+
+    --ink: #1F1A14;
+    --ink-soft: #4A4036;
+    --ink-faint: #7A6F5F;
+
+    /* Accent palette */
+    --rust: #9A4423;          /* Section 1 — Introduction */
+    --teal: #1F5E55;          /* Section 2 — Related Work */
+    --gold: #8B6914;          /* Section 3 — Problem + Dataset */
+    --plum: #6B3F5C;          /* Section 4.1 — Baseline */
+    --moss: #4A6B2A;          /* "Writeable now" / Available */
+    --slate: #3D4D5C;         /* Format / Reference */
+    --indigo: #4A4178;        /* Mindmap accents */
+    --crimson: #8B2D2D;       /* Warnings / locked */
+
+    /* Soft backgrounds */
+    --bg-rust: #EFD5C5;
+    --bg-teal: #D1E2DC;
+    --bg-gold: #ECE0C2;
+    --bg-plum: #E8D6E0;
+    --bg-moss: #DCE6CB;
+    --bg-slate: #D6E0E6;
+    --bg-indigo: #DCD8E8;
+    --bg-crimson: #F0D4D4;
+
+    --border: rgba(31, 26, 20, 0.13);
+    --border-strong: rgba(31, 26, 20, 0.28);
+    --shadow-soft: 0 2px 8px rgba(31, 26, 20, 0.06);
+    --shadow-card: 0 4px 20px rgba(31, 26, 20, 0.08);
+    --shadow-deep: 0 8px 32px rgba(31, 26, 20, 0.15);
+
+    --serif: "Fraunces", "Noto Serif SC", "Songti SC", serif;
+    --sans: "Noto Sans SC", -apple-system, BlinkMacSystemFont, "PingFang SC", sans-serif;
+    --mono: "JetBrains Mono", ui-monospace, "SF Mono", Menlo, monospace;
+  }
+
+  @media (prefers-color-scheme: dark) {
+    :root {
+      --bg: #16130E;
+      --bg-paper: #1C1812;
+      --bg-soft: #252017;
+      --bg-card: #1F1B14;
+      --bg-deep: #0A0805;
+
+      --ink: #E8E0CD;
+      --ink-soft: #B8AE96;
+      --ink-faint: #847A65;
+
+      --rust: #D9755C;
+      --teal: #5DBAA8;
+      --gold: #D4A847;
+      --plum: #C088A8;
+      --moss: #99C46A;
+      --slate: #8AA3B5;
+      --indigo: #9690D4;
+      --crimson: #D87878;
+
+      --bg-rust: #4A2410;
+      --bg-teal: #173E37;
+      --bg-gold: #4A3810;
+      --bg-plum: #3D2236;
+      --bg-moss: #2A4015;
+      --bg-slate: #1F2D38;
+      --bg-indigo: #2A2750;
+      --bg-crimson: #3D1B1B;
+
+      --border: rgba(232, 224, 205, 0.13);
+      --border-strong: rgba(232, 224, 205, 0.28);
+    }
+  }
+
+  * { box-sizing: border-box; margin: 0; padding: 0; }
+
+  html { scroll-behavior: smooth; }
+
+  body {
+    background: var(--bg);
+    color: var(--ink);
+    font-family: var(--sans);
+    font-size: 15px;
+    line-height: 1.7;
+    -webkit-font-smoothing: antialiased;
+    background-image:
+      radial-gradient(circle at 20% 10%, rgba(154, 68, 35, 0.04) 0%, transparent 40%),
+      radial-gradient(circle at 80% 80%, rgba(31, 94, 85, 0.04) 0%, transparent 40%),
+      radial-gradient(circle at 50% 50%, rgba(139, 105, 20, 0.025) 0%, transparent 50%);
+  }
+
+  .container {
+    max-width: 1180px;
+    margin: 0 auto;
+    padding: 0 32px;
+  }
+
+  /* ═══════════════════════ HERO ═══════════════════════ */
+  .hero {
+    padding: 80px 0 48px;
+    border-bottom: 1px solid var(--border);
+    margin-bottom: 64px;
+    position: relative;
+  }
+
+  .hero::before {
+    content: "";
+    position: absolute;
+    top: 0;
+    left: 0;
+    right: 0;
+    height: 4px;
+    background: linear-gradient(90deg,
+      var(--rust) 0%, var(--rust) 25%,
+      var(--teal) 25%, var(--teal) 50%,
+      var(--gold) 50%, var(--gold) 75%,
+      var(--plum) 75%, var(--plum) 100%);
+  }
+
+  .meta-line {
+    font-family: var(--mono);
+    font-size: 11px;
+    text-transform: uppercase;
+    letter-spacing: 0.18em;
+    color: var(--ink-faint);
+    margin-bottom: 24px;
+    display: flex;
+    gap: 24px;
+    flex-wrap: wrap;
+    align-items: center;
+  }
+
+  .meta-line span.dot { color: var(--rust); }
+
+  .hero h1 {
+    font-family: var(--serif);
+    font-size: clamp(40px, 6vw, 68px);
+    font-weight: 500;
+    line-height: 1.05;
+    letter-spacing: -0.02em;
+    margin-bottom: 16px;
+  }
+  .hero h1 em {
+    font-style: italic;
+    color: var(--rust);
+    font-weight: 400;
+  }
+
+  .hero .subtitle {
+    font-family: var(--serif);
+    font-size: 22px;
+    font-weight: 400;
+    color: var(--ink-soft);
+    font-style: italic;
+    line-height: 1.5;
+    max-width: 720px;
+    margin-bottom: 36px;
+  }
+
+  .hero-chips {
+    display: flex;
+    gap: 12px;
+    flex-wrap: wrap;
+    margin-top: 24px;
+  }
+  .chip {
+    display: inline-flex;
+    align-items: center;
+    gap: 8px;
+    padding: 8px 16px;
+    border-radius: 100px;
+    background: var(--bg-card);
+    border: 1px solid var(--border);
+    font-size: 13px;
+    font-weight: 500;
+    color: var(--ink-soft);
+  }
+  .chip strong { color: var(--ink); font-weight: 600; }
+  .chip-deadline {
+    background: var(--bg-crimson);
+    color: var(--crimson);
+    border-color: var(--crimson);
+  }
+  .chip-deadline strong { color: var(--crimson); }
+
+  /* ═══════════════════════ SECTION HEADERS ═══════════════════════ */
+  .section-marker {
+    font-family: var(--mono);
+    font-size: 11px;
+    letter-spacing: 0.2em;
+    text-transform: uppercase;
+    color: var(--ink-faint);
+    margin-bottom: 12px;
+  }
+
+  h2.major {
+    font-family: var(--serif);
+    font-size: clamp(28px, 4vw, 42px);
+    font-weight: 500;
+    line-height: 1.2;
+    letter-spacing: -0.015em;
+    margin-bottom: 20px;
+  }
+  h2.major em { font-style: italic; }
+
+  .lede {
+    font-family: var(--serif);
+    font-size: 18px;
+    line-height: 1.65;
+    color: var(--ink-soft);
+    max-width: 820px;
+    margin-bottom: 40px;
+  }
+
+  /* ═══════════════════════ FORMAT REFERENCE BAR ═══════════════════════ */
+  .format-bar {
+    background: var(--bg-card);
+    border: 1px solid var(--border);
+    border-radius: 16px;
+    padding: 28px 32px;
+    margin-bottom: 80px;
+    position: relative;
+    overflow: hidden;
+  }
+  .format-bar::before {
+    content: "";
+    position: absolute;
+    left: 0;
+    top: 0;
+    bottom: 0;
+    width: 4px;
+    background: var(--slate);
+  }
+  .format-bar h3 {
+    font-family: var(--serif);
+    font-size: 20px;
+    font-weight: 600;
+    margin-bottom: 16px;
+    color: var(--slate);
+  }
+  .format-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(180px, 1fr));
+    gap: 20px;
+  }
+  .format-item {
+    border-left: 1px solid var(--border);
+    padding-left: 16px;
+  }
+  .format-item .label {
+    font-family: var(--mono);
+    font-size: 10px;
+    letter-spacing: 0.1em;
+    text-transform: uppercase;
+    color: var(--ink-faint);
+    margin-bottom: 4px;
+  }
+  .format-item .value {
+    font-family: var(--serif);
+    font-size: 17px;
+    font-weight: 500;
+    color: var(--ink);
+  }
+  .format-item .note {
+    font-size: 12px;
+    color: var(--ink-soft);
+    margin-top: 4px;
+  }
+
+  /* ═══════════════════════ MINDMAP CONTAINER ═══════════════════════ */
+  .mindmap-section {
+    margin-bottom: 96px;
+  }
+  .mindmap-frame {
+    background: var(--bg-paper);
+    border: 1px solid var(--border);
+    border-radius: 20px;
+    padding: 32px;
+    overflow-x: auto;
+    box-shadow: var(--shadow-card);
+  }
+  .mindmap-frame svg {
+    width: 100%;
+    height: auto;
+    display: block;
+    min-width: 700px;
+  }
+  .mindmap-legend {
+    display: flex;
+    gap: 24px;
+    flex-wrap: wrap;
+    margin-top: 24px;
+    padding-top: 20px;
+    border-top: 1px dashed var(--border);
+    font-size: 13px;
+  }
+  .legend-dot {
+    display: inline-flex;
+    align-items: center;
+    gap: 8px;
+    color: var(--ink-soft);
+  }
+  .legend-dot::before {
+    content: "";
+    width: 12px;
+    height: 12px;
+    border-radius: 3px;
+    background: var(--ink);
+  }
+  .legend-dot.green::before { background: var(--moss); }
+  .legend-dot.amber::before { background: var(--gold); }
+  .legend-dot.red::before { background: var(--crimson); }
+  .legend-dot.gray::before { background: var(--ink-faint); }
+
+  /* ═══════════════════════ STRATEGY SECTION ═══════════════════════ */
+  .strategy {
+    background: var(--bg-card);
+    border: 1px solid var(--border);
+    border-radius: 20px;
+    padding: 40px 44px;
+    margin-bottom: 96px;
+    box-shadow: var(--shadow-card);
+  }
+  .strategy h3 {
+    font-family: var(--serif);
+    font-size: 24px;
+    font-weight: 500;
+    margin-bottom: 8px;
+  }
+  .strategy h3 em { font-style: italic; color: var(--rust); }
+  .strategy .lede-small {
+    font-family: var(--serif);
+    font-size: 17px;
+    color: var(--ink-soft);
+    margin-bottom: 32px;
+    font-style: italic;
+  }
+  .day-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+    gap: 16px;
+  }
+  .day-card {
+    background: var(--bg-paper);
+    border: 1px solid var(--border);
+    border-radius: 12px;
+    padding: 18px;
+    position: relative;
+  }
+  .day-card .day-num {
+    font-family: var(--mono);
+    font-size: 11px;
+    letter-spacing: 0.15em;
+    text-transform: uppercase;
+    color: var(--ink-faint);
+    margin-bottom: 6px;
+  }
+  .day-card .day-title {
+    font-family: var(--serif);
+    font-size: 18px;
+    font-weight: 600;
+    margin-bottom: 6px;
+  }
+  .day-card .day-desc {
+    font-size: 13px;
+    color: var(--ink-soft);
+    line-height: 1.55;
+  }
+  .day-card.locked {
+    background: repeating-linear-gradient(
+      45deg,
+      var(--bg-paper),
+      var(--bg-paper) 10px,
+      var(--bg-soft) 10px,
+      var(--bg-soft) 11px
+    );
+    opacity: 0.7;
+  }
+  .day-card.locked .day-title { color: var(--ink-faint); }
+
+  /* ═══════════════════════ SECTION CARDS ═══════════════════════ */
+  .section-card {
+    background: var(--bg-card);
+    border: 1px solid var(--border);
+    border-radius: 20px;
+    margin-bottom: 56px;
+    overflow: hidden;
+    box-shadow: var(--shadow-card);
+    position: relative;
+  }
+
+  .section-card-header {
+    padding: 32px 40px 20px;
+    border-bottom: 1px solid var(--border);
+    position: relative;
+  }
+  .section-card-header::before {
+    content: "";
+    position: absolute;
+    left: 0;
+    top: 0;
+    bottom: 0;
+    width: 6px;
+  }
+
+  .card-rust .section-card-header::before { background: var(--rust); }
+  .card-teal .section-card-header::before { background: var(--teal); }
+  .card-gold .section-card-header::before { background: var(--gold); }
+  .card-plum .section-card-header::before { background: var(--plum); }
+
+  .card-tag {
+    display: inline-flex;
+    align-items: center;
+    gap: 8px;
+    font-family: var(--mono);
+    font-size: 11px;
+    letter-spacing: 0.15em;
+    text-transform: uppercase;
+    margin-bottom: 14px;
+  }
+  .card-rust .card-tag { color: var(--rust); }
+  .card-teal .card-tag { color: var(--teal); }
+  .card-gold .card-tag { color: var(--gold); }
+  .card-plum .card-tag { color: var(--plum); }
+
+  .card-rust .section-card-header { background: linear-gradient(180deg, rgba(154,68,35,0.04), transparent); }
+  .card-teal .section-card-header { background: linear-gradient(180deg, rgba(31,94,85,0.04), transparent); }
+  .card-gold .section-card-header { background: linear-gradient(180deg, rgba(139,105,20,0.04), transparent); }
+  .card-plum .section-card-header { background: linear-gradient(180deg, rgba(107,63,92,0.04), transparent); }
+
+  .section-card-title {
+    font-family: var(--serif);
+    font-size: 32px;
+    font-weight: 500;
+    line-height: 1.15;
+    margin-bottom: 8px;
+    letter-spacing: -0.01em;
+  }
+  .section-card-title em { font-style: italic; }
+  .section-card-subtitle {
+    font-family: var(--serif);
+    font-size: 17px;
+    color: var(--ink-soft);
+    font-style: italic;
+    line-height: 1.5;
+  }
+
+  .stat-row {
+    display: flex;
+    gap: 32px;
+    flex-wrap: wrap;
+    margin-top: 20px;
+    padding-top: 16px;
+    border-top: 1px dashed var(--border);
+  }
+  .stat-item {
+    display: flex;
+    flex-direction: column;
+    gap: 2px;
+  }
+  .stat-label {
+    font-family: var(--mono);
+    font-size: 10px;
+    letter-spacing: 0.15em;
+    text-transform: uppercase;
+    color: var(--ink-faint);
+  }
+  .stat-value {
+    font-family: var(--serif);
+    font-size: 18px;
+    font-weight: 500;
+  }
+
+  .section-card-body {
+    padding: 32px 40px 40px;
+  }
+
+  .card-section {
+    margin-bottom: 36px;
+  }
+  .card-section:last-child { margin-bottom: 0; }
+
+  .card-section-heading {
+    font-family: var(--serif);
+    font-size: 19px;
+    font-weight: 600;
+    margin-bottom: 16px;
+    display: flex;
+    align-items: center;
+    gap: 10px;
+  }
+  .card-section-heading .heading-num {
+    font-family: var(--mono);
+    font-size: 12px;
+    letter-spacing: 0.1em;
+    color: var(--ink-faint);
+    background: var(--bg-soft);
+    padding: 3px 8px;
+    border-radius: 4px;
+  }
+
+  /* Subsection list (the structural breakdown) */
+  .subsec-list {
+    list-style: none;
+    padding: 0;
+  }
+  .subsec-item {
+    background: var(--bg-paper);
+    border: 1px solid var(--border);
+    border-radius: 10px;
+    padding: 16px 20px;
+    margin-bottom: 12px;
+  }
+  .subsec-title {
+    font-family: var(--serif);
+    font-size: 16px;
+    font-weight: 600;
+    margin-bottom: 6px;
+    display: flex;
+    justify-content: space-between;
+    align-items: baseline;
+    gap: 12px;
+  }
+  .subsec-words {
+    font-family: var(--mono);
+    font-size: 11px;
+    color: var(--ink-faint);
+    font-weight: 400;
+    flex-shrink: 0;
+  }
+  .subsec-content {
+    font-size: 14px;
+    color: var(--ink-soft);
+    line-height: 1.65;
+  }
+
+  /* Content checklist */
+  .checklist {
+    list-style: none;
+    padding: 0;
+  }
+  .check-item {
+    display: flex;
+    gap: 12px;
+    padding: 10px 0;
+    border-bottom: 1px dashed var(--border);
+    align-items: flex-start;
+  }
+  .check-item:last-child { border-bottom: none; }
+  .check-marker {
+    flex-shrink: 0;
+    width: 20px;
+    height: 20px;
+    border: 1.5px solid var(--border-strong);
+    border-radius: 4px;
+    margin-top: 2px;
+    cursor: pointer;
+    transition: all 0.15s;
+    background: transparent;
+    position: relative;
+  }
+  .check-marker:hover {
+    border-color: var(--moss);
+    background: var(--bg-moss);
+  }
+  .check-marker.done {
+    background: var(--moss);
+    border-color: var(--moss);
+  }
+  .check-marker.done::after {
+    content: "✓";
+    position: absolute;
+    top: 50%;
+    left: 50%;
+    transform: translate(-50%, -50%);
+    color: white;
+    font-size: 13px;
+    font-weight: 700;
+  }
+  .check-content {
+    flex: 1;
+    font-size: 14px;
+    line-height: 1.6;
+  }
+  .check-content strong {
+    font-family: var(--serif);
+    font-weight: 600;
+    color: var(--ink);
+  }
+  .check-source {
+    font-family: var(--mono);
+    font-size: 10px;
+    color: var(--ink-faint);
+    background: var(--bg-soft);
+    padding: 2px 6px;
+    border-radius: 4px;
+    margin-left: 6px;
+  }
+
+  /* English template box */
+  .template-box {
+    background: var(--bg-deep);
+    color: #E8E0CD;
+    border-radius: 12px;
+    padding: 24px 28px;
+    margin: 16px 0;
+    font-family: var(--serif);
+    font-size: 15px;
+    line-height: 1.75;
+    position: relative;
+  }
+  .template-box::before {
+    content: "EN · DRAFT";
+    position: absolute;
+    top: 12px;
+    right: 16px;
+    font-family: var(--mono);
+    font-size: 10px;
+    letter-spacing: 0.18em;
+    color: rgba(232, 224, 205, 0.4);
+  }
+  .template-box em {
+    color: #D4A847;
+    font-style: italic;
+  }
+  .template-box .placeholder {
+    color: #D9755C;
+    font-style: italic;
+    background: rgba(154, 68, 35, 0.15);
+    padding: 1px 6px;
+    border-radius: 3px;
+  }
+  .template-box p {
+    margin-bottom: 12px;
+  }
+  .template-box p:last-child { margin-bottom: 0; }
+
+  /* Warning / Don't forget box */
+  .warn-box {
+    background: var(--bg-crimson);
+    border: 1px solid var(--crimson);
+    border-radius: 10px;
+    padding: 16px 20px;
+    margin: 16px 0;
+    color: var(--ink);
+    font-size: 14px;
+    line-height: 1.6;
+  }
+  .warn-box strong {
+    color: var(--crimson);
+    font-weight: 700;
+  }
+  .warn-box .warn-label {
+    font-family: var(--mono);
+    font-size: 10px;
+    letter-spacing: 0.18em;
+    text-transform: uppercase;
+    color: var(--crimson);
+    margin-bottom: 6px;
+  }
+
+  /* Tip box */
+  .tip-box {
+    background: var(--bg-moss);
+    border-left: 3px solid var(--moss);
+    border-radius: 6px;
+    padding: 14px 18px;
+    margin: 16px 0;
+    font-size: 14px;
+    line-height: 1.6;
+  }
+  .tip-box strong {
+    color: var(--moss);
+    font-weight: 700;
+  }
+
+  /* Source / citation refs */
+  .src-list {
+    display: flex;
+    flex-direction: column;
+    gap: 8px;
+  }
+  .src-item {
+    display: flex;
+    gap: 12px;
+    align-items: center;
+    padding: 10px 14px;
+    background: var(--bg-paper);
+    border-radius: 8px;
+    border: 1px solid var(--border);
+    font-size: 13px;
+  }
+  .src-icon {
+    width: 28px;
+    height: 28px;
+    background: var(--bg-soft);
+    border-radius: 6px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    flex-shrink: 0;
+    font-size: 14px;
+  }
+  .src-name {
+    font-family: var(--mono);
+    font-size: 12px;
+    color: var(--ink);
+  }
+  .src-desc {
+    color: var(--ink-soft);
+    margin-left: auto;
+    font-size: 12px;
+  }
+
+  /* Tabs (for switching content/template view) */
+  .tabs {
+    display: flex;
+    gap: 4px;
+    border-bottom: 1px solid var(--border);
+    margin-bottom: 16px;
+  }
+  .tab-btn {
+    background: none;
+    border: none;
+    padding: 10px 16px;
+    font-family: var(--sans);
+    font-size: 13px;
+    font-weight: 500;
+    color: var(--ink-faint);
+    cursor: pointer;
+    border-bottom: 2px solid transparent;
+    transition: all 0.15s;
+    margin-bottom: -1px;
+  }
+  .tab-btn:hover { color: var(--ink-soft); }
+  .tab-btn.active {
+    color: var(--ink);
+    border-bottom-color: var(--ink);
+  }
+  .tab-panel { display: none; }
+  .tab-panel.active { display: block; }
+
+  /* ═══════════════════════ DEPENDENCY MAP ═══════════════════════ */
+  .dep-section {
+    margin-bottom: 96px;
+  }
+
+  /* ═══════════════════════ TIPS GRID ═══════════════════════ */
+  .tips-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
+    gap: 20px;
+    margin-bottom: 96px;
+  }
+  .tip-card {
+    background: var(--bg-card);
+    border: 1px solid var(--border);
+    border-radius: 14px;
+    padding: 24px 26px;
+  }
+  .tip-card h4 {
+    font-family: var(--serif);
+    font-size: 18px;
+    font-weight: 600;
+    margin-bottom: 10px;
+    display: flex;
+    align-items: center;
+    gap: 10px;
+  }
+  .tip-card h4 .num {
+    font-family: var(--mono);
+    font-size: 11px;
+    color: var(--ink-faint);
+    letter-spacing: 0.1em;
+  }
+  .tip-card p {
+    font-size: 14px;
+    color: var(--ink-soft);
+    line-height: 1.65;
+  }
+  .tip-card p + p { margin-top: 8px; }
+
+  /* ═══════════════════════ FOOTER ═══════════════════════ */
+  .footer {
+    margin-top: 96px;
+    padding: 40px 0 80px;
+    border-top: 1px solid var(--border);
+    text-align: center;
+    color: var(--ink-faint);
+    font-size: 13px;
+  }
+  .footer .next-steps {
+    background: var(--bg-card);
+    border: 1px solid var(--border);
+    border-radius: 14px;
+    padding: 32px;
+    margin: 32px auto 24px;
+    max-width: 720px;
+    text-align: left;
+  }
+  .footer .next-steps h4 {
+    font-family: var(--serif);
+    font-size: 19px;
+    font-weight: 600;
+    margin-bottom: 12px;
+    color: var(--ink);
+  }
+  .footer .next-steps ul {
+    margin-left: 20px;
+    color: var(--ink-soft);
+    font-size: 14px;
+    line-height: 1.8;
+  }
+
+  /* Floating progress indicator */
+  .progress-pill {
+    position: fixed;
+    bottom: 24px;
+    right: 24px;
+    background: var(--bg-deep);
+    color: #E8E0CD;
+    border-radius: 100px;
+    padding: 12px 20px;
+    font-family: var(--mono);
+    font-size: 12px;
+    box-shadow: var(--shadow-deep);
+    z-index: 100;
+    display: flex;
+    align-items: center;
+    gap: 10px;
+  }
+  .progress-pill .progress-bar {
+    width: 80px;
+    height: 4px;
+    background: rgba(232, 224, 205, 0.15);
+    border-radius: 2px;
+    overflow: hidden;
+    position: relative;
+  }
+  .progress-pill .progress-fill {
+    height: 100%;
+    background: var(--moss);
+    transition: width 0.3s;
+    width: 0%;
+  }
+
+  /* Code inline */
+  code {
+    font-family: var(--mono);
+    font-size: 0.88em;
+    background: var(--bg-soft);
+    padding: 1px 6px;
+    border-radius: 3px;
+    color: var(--ink);
+  }
+
+  /* Responsive */
+  @media (max-width: 768px) {
+    .container { padding: 0 20px; }
+    .hero { padding: 48px 0 32px; }
+    .section-card-header,
+    .section-card-body {
+      padding-left: 24px;
+      padding-right: 24px;
+    }
+    .stat-row { gap: 20px; }
+    .progress-pill {
+      bottom: 12px;
+      right: 12px;
+      padding: 8px 14px;
+      font-size: 11px;
+    }
+  }
+</style>
+</head>
+<body>
+
+<div class="container">
+
+  <!-- ═══════════════════ HERO ═══════════════════ -->
+  <header class="hero">
+    <div class="meta-line">
+      <span><span class="dot">●</span> TAAC 2026 · Course Project</span>
+      <span>Stage 4 · Writing Phase</span>
+      <span>Updated · May 5, 2026</span>
+    </div>
+    <h1>Report 写作 <em>Roadmap</em></h1>
+    <p class="subtitle">
+      把 Stage 1–3 积累的理解,转化成 9 页 NeurIPS 风格论文。<br>
+      这份 roadmap 告诉你 — 现在该写哪部分、写什么、怎么写。
+    </p>
+    <div class="hero-chips">
+      <span class="chip"><strong>9 pages</strong> · 正文上限</span>
+      <span class="chip"><strong>NeurIPS 2025</strong> · LaTeX style</span>
+      <span class="chip"><strong>4 / 6</strong> sections 现可写</span>
+      <span class="chip chip-deadline"><strong>May 9</strong> · 截止</span>
+    </div>
+  </header>
+
+  <!-- ═══════════════════ FORMAT REFERENCE ═══════════════════ -->
+  <section class="format-bar">
+    <h3>📐 Format Quick Reference · NeurIPS 2025</h3>
+    <div class="format-grid">
+      <div class="format-item">
+        <div class="label">Body Font</div>
+        <div class="value">Times New Roman 10pt</div>
+        <div class="note">Vertical leading: 11pt</div>
+      </div>
+      <div class="format-item">
+        <div class="label">Text Block</div>
+        <div class="value">5.5″ × 9″</div>
+        <div class="note">Left margin: 1.5″</div>
+      </div>
+      <div class="format-item">
+        <div class="label">Title</div>
+        <div class="value">17pt Bold Centered</div>
+        <div class="note">Two horizontal rules</div>
+      </div>
+      <div class="format-item">
+        <div class="label">Headings</div>
+        <div class="value">L1 12pt · L2/3 10pt</div>
+        <div class="note">All bold, lowercase</div>
+      </div>
+      <div class="format-item">
+        <div class="label">Page Limit</div>
+        <div class="value">9 pages body</div>
+        <div class="note">Refs / appendix excluded</div>
+      </div>
+      <div class="format-item">
+        <div class="label">Citations</div>
+        <div class="value">natbib package</div>
+        <div class="note">Author/year or numeric</div>
+      </div>
+    </div>
+  </section>
+
+  <!-- ═══════════════════ MASTER MINDMAP ═══════════════════ -->
+  <section class="mindmap-section">
+    <div class="section-marker">§ 01 · The Big Picture</div>
+    <h2 class="major">9 页 Report 的 <em>section 地图</em></h2>
+    <p class="lede">
+      整篇 report 由 6 个主要 section 组成。其中 4 个不依赖队友的实验,你现在就能动笔;
+      另外 2 个(Method 的细节 + Experiments)需要等队友把代码和实验数据发过来。
+    </p>
+
+    <div class="mindmap-frame">
+      <svg viewBox="0 0 1100 580" xmlns="http://www.w3.org/2000/svg">
+        <!-- Definitions -->
+        <defs>
+          <marker id="arrow-flow" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="6" markerHeight="6" orient="auto">
+            <path d="M 0 0 L 10 5 L 0 10 z" fill="#7A6F5F"/>
+          </marker>
+          <marker id="arrow-flow-dim" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="6" markerHeight="6" orient="auto">
+            <path d="M 0 0 L 10 5 L 0 10 z" fill="#B8AE96" opacity="0.5"/>
+          </marker>
+        </defs>
+
+        <!-- Background grid (blueprint feel) -->
+        <pattern id="grid" width="40" height="40" patternUnits="userSpaceOnUse">
+          <path d="M 40 0 L 0 0 0 40" fill="none" stroke="rgba(31,26,20,0.04)" stroke-width="0.5"/>
+        </pattern>
+        <rect width="1100" height="580" fill="url(#grid)"/>
+
+        <!-- Title strip -->
+        <text x="40" y="35" font-family="JetBrains Mono" font-size="11" letter-spacing="2" fill="#7A6F5F">
+          REPORT MAP · 9 PAGES · NEURIPS 2025
+        </text>
+        <line x1="40" y1="50" x2="320" y2="50" stroke="#1F1A14" stroke-width="2"/>
+        <line x1="40" y1="55" x2="200" y2="55" stroke="#1F1A14" stroke-width="0.5"/>
+
+        <!-- Center: The Report -->
+        <g>
+          <rect x="450" y="240" width="200" height="100" rx="14" fill="#FCF8EC" stroke="#1F1A14" stroke-width="2"/>
+          <text x="550" y="280" font-family="Fraunces" font-size="20" font-weight="600" text-anchor="middle" fill="#1F1A14">9-page</text>
+          <text x="550" y="305" font-family="Fraunces" font-size="20" font-weight="600" text-anchor="middle" fill="#1F1A14">NeurIPS Report</text>
+          <text x="550" y="325" font-family="JetBrains Mono" font-size="10" letter-spacing="1.5" text-anchor="middle" fill="#7A6F5F">DUE MAY 9</text>
+        </g>
+
+        <!-- Section 1: Introduction -->
+        <g>
+          <rect x="60" y="80" width="220" height="80" rx="12" fill="#EFD5C5" stroke="#9A4423" stroke-width="1.5"/>
+          <text x="75" y="105" font-family="JetBrains Mono" font-size="10" letter-spacing="1.5" fill="#9A4423">§ 1 · ~1 PG</text>
+          <text x="75" y="130" font-family="Fraunces" font-size="17" font-weight="600" fill="#1F1A14">Introduction</text>
+          <text x="75" y="148" font-family="Noto Sans SC" font-size="11" fill="#4A4036">背景 + 痛点 + 贡献</text>
+          <circle cx="265" cy="100" r="6" fill="#4A6B2A"/>
+        </g>
+
+        <!-- Section 2: Related Work -->
+        <g>
+          <rect x="60" y="180" width="220" height="80" rx="12" fill="#D1E2DC" stroke="#1F5E55" stroke-width="1.5"/>
+          <text x="75" y="205" font-family="JetBrains Mono" font-size="10" letter-spacing="1.5" fill="#1F5E55">§ 2 · ~1 PG</text>
+          <text x="75" y="230" font-family="Fraunces" font-size="17" font-weight="600" fill="#1F1A14">Related Work</text>
+          <text x="75" y="248" font-family="Noto Sans SC" font-size="11" fill="#4A4036">两条进化树 · 三篇对比</text>
+          <circle cx="265" cy="200" r="6" fill="#4A6B2A"/>
+        </g>
+
+        <!-- Section 3: Problem + Dataset -->
+        <g>
+          <rect x="60" y="280" width="220" height="80" rx="12" fill="#ECE0C2" stroke="#8B6914" stroke-width="1.5"/>
+          <text x="75" y="305" font-family="JetBrains Mono" font-size="10" letter-spacing="1.5" fill="#8B6914">§ 3 · ~1 PG</text>
+          <text x="75" y="330" font-family="Fraunces" font-size="17" font-weight="600" fill="#1F1A14">Problem + Dataset</text>
+          <text x="75" y="348" font-family="Noto Sans SC" font-size="11" fill="#4A4036">CTR 形式化 · 120 列</text>
+          <circle cx="265" cy="300" r="6" fill="#4A6B2A"/>
+        </g>
+
+        <!-- Section 4.1: Baseline -->
+        <g>
+          <rect x="60" y="380" width="220" height="80" rx="12" fill="#E8D6E0" stroke="#6B3F5C" stroke-width="1.5"/>
+          <text x="75" y="405" font-family="JetBrains Mono" font-size="10" letter-spacing="1.5" fill="#6B3F5C">§ 4.1 · ~1.5 PG</text>
+          <text x="75" y="430" font-family="Fraunces" font-size="17" font-weight="600" fill="#1F1A14">Baseline Architecture</text>
+          <text x="75" y="448" font-family="Noto Sans SC" font-size="11" fill="#4A4036">PCVRHyFormer 描述</text>
+          <circle cx="265" cy="400" r="6" fill="#4A6B2A"/>
+        </g>
+
+        <!-- Section 4.2: Our Method (LOCKED) -->
+        <g opacity="0.55">
+          <rect x="820" y="80" width="220" height="80" rx="12" fill="#F0D4D4" stroke="#8B2D2D" stroke-width="1.5" stroke-dasharray="6,4"/>
+          <text x="835" y="105" font-family="JetBrains Mono" font-size="10" letter-spacing="1.5" fill="#8B2D2D">§ 4.2 · ~1.5–2 PG</text>
+          <text x="835" y="130" font-family="Fraunces" font-size="17" font-weight="600" fill="#1F1A14">Our Method ⭐</text>
+          <text x="835" y="148" font-family="Noto Sans SC" font-size="11" fill="#4A4036">你们的修改 · 等队友</text>
+          <circle cx="1025" cy="100" r="6" fill="#8B2D2D"/>
+        </g>
+
+        <!-- Section 5: Experiments (LOCKED) -->
+        <g opacity="0.55">
+          <rect x="820" y="180" width="220" height="80" rx="12" fill="#F0D4D4" stroke="#8B2D2D" stroke-width="1.5" stroke-dasharray="6,4"/>
+          <text x="835" y="205" font-family="JetBrains Mono" font-size="10" letter-spacing="1.5" fill="#8B2D2D">§ 5 · ~2 PG</text>
+          <text x="835" y="230" font-family="Fraunces" font-size="17" font-weight="600" fill="#1F1A14">Experiments</text>
+          <text x="835" y="248" font-family="Noto Sans SC" font-size="11" fill="#4A4036">AUC + 消融 · 等队友</text>
+          <circle cx="1025" cy="200" r="6" fill="#8B2D2D"/>
+        </g>
+
+        <!-- Section 6: Conclusion -->
+        <g>
+          <rect x="820" y="280" width="220" height="80" rx="12" fill="#ECE0C2" stroke="#8B6914" stroke-width="1.5" stroke-dasharray="3,3"/>
+          <text x="835" y="305" font-family="JetBrains Mono" font-size="10" letter-spacing="1.5" fill="#8B6914">§ 6 · ~0.5 PG</text>
+          <text x="835" y="330" font-family="Fraunces" font-size="17" font-weight="600" fill="#1F1A14">Conclusion</text>
+          <text x="835" y="348" font-family="Noto Sans SC" font-size="11" fill="#4A4036">部分可写 · 留尾巴</text>
+          <circle cx="1025" cy="300" r="6" fill="#8B6914"/>
+        </g>
+
+        <!-- References -->
+        <g>
+          <rect x="820" y="380" width="220" height="80" rx="12" fill="#F8F2E2" stroke="#7A6F5F" stroke-width="1.5"/>
+          <text x="835" y="405" font-family="JetBrains Mono" font-size="10" letter-spacing="1.5" fill="#7A6F5F">REFERENCES · NO LIMIT</text>
+          <text x="835" y="430" font-family="Fraunces" font-size="17" font-weight="600" fill="#1F1A14">References</text>
+          <text x="835" y="448" font-family="Noto Sans SC" font-size="11" fill="#4A4036">15–20 篇 · 不计页数</text>
+          <circle cx="1025" cy="400" r="6" fill="#4A6B2A"/>
+        </g>
+
+        <!-- Arrows to center -->
+        <path d="M 280 120 Q 380 200 450 270" fill="none" stroke="#7A6F5F" stroke-width="1.5" marker-end="url(#arrow-flow)"/>
+        <path d="M 280 220 Q 380 240 450 280" fill="none" stroke="#7A6F5F" stroke-width="1.5" marker-end="url(#arrow-flow)"/>
+        <path d="M 280 320 Q 380 310 450 300" fill="none" stroke="#7A6F5F" stroke-width="1.5" marker-end="url(#arrow-flow)"/>
+        <path d="M 280 420 Q 380 380 450 320" fill="none" stroke="#7A6F5F" stroke-width="1.5" marker-end="url(#arrow-flow)"/>
+        <path d="M 820 120 Q 720 200 650 270" fill="none" stroke="#B8AE96" stroke-width="1.5" stroke-dasharray="4,3" marker-end="url(#arrow-flow-dim)" opacity="0.7"/>
+        <path d="M 820 220 Q 720 240 650 280" fill="none" stroke="#B8AE96" stroke-width="1.5" stroke-dasharray="4,3" marker-end="url(#arrow-flow-dim)" opacity="0.7"/>
+        <path d="M 820 320 Q 720 310 650 300" fill="none" stroke="#7A6F5F" stroke-width="1.5" marker-end="url(#arrow-flow)"/>
+        <path d="M 820 420 Q 720 380 650 320" fill="none" stroke="#7A6F5F" stroke-width="1.5" marker-end="url(#arrow-flow)"/>
+
+        <!-- Axis labels -->
+        <text x="170" y="510" font-family="JetBrains Mono" font-size="10" letter-spacing="1.5" text-anchor="middle" fill="#7A6F5F">FRONT MATTER · INDEPENDENT</text>
+        <text x="930" y="510" font-family="JetBrains Mono" font-size="10" letter-spacing="1.5" text-anchor="middle" fill="#7A6F5F">BACK MATTER · DEPENDS ON DATA</text>
+
+        <!-- Bottom annotations -->
+        <line x1="60" y1="525" x2="280" y2="525" stroke="#4A6B2A" stroke-width="2"/>
+        <text x="170" y="545" font-family="Noto Sans SC" font-size="11" text-anchor="middle" fill="#4A6B2A" font-weight="500">现在可写 · 已有全部素材</text>
+
+        <line x1="820" y1="525" x2="1040" y2="525" stroke="#8B2D2D" stroke-width="2" stroke-dasharray="4,3"/>
+        <text x="930" y="545" font-family="Noto Sans SC" font-size="11" text-anchor="middle" fill="#8B2D2D" font-weight="500">需要队友的实验数据</text>
+      </svg>
+    </div>
+
+    <div class="mindmap-legend">
+      <span class="legend-dot green">绿点 = 现可写 · 素材齐全</span>
+      <span class="legend-dot amber">琥珀 = 部分可写 · 有框架</span>
+      <span class="legend-dot red">红点 = 锁定 · 等实验数据</span>
+      <span class="legend-dot gray">虚线 = 后期补完</span>
+    </div>
+  </section>
+
+  <!-- ═══════════════════ STRATEGY · WRITING ORDER ═══════════════════ -->
+  <section class="strategy">
+    <div class="section-marker">§ 02 · The Order</div>
+    <h3>建议写作顺序 · <em>从具体到抽象</em></h3>
+    <p class="lede-small">
+      不要按 1→2→3→4 的章节顺序写。先写最具体、最不需要构思的部分,Introduction 留到最后。
+      原因:Intro 是给整篇文章定调的,等你写完主体后,你才知道该怎么"开场"。
+    </p>
+
+    <div class="day-grid">
+      <div class="day-card">
+        <div class="day-num">DAY 1 · MAY 5</div>
+        <div class="day-title">§ 3 · Problem + Dataset</div>
+        <div class="day-desc">最具体的一节 — 数据 schema、120 列、4 个域。Stage 3 的笔记直接转译即可。</div>
+      </div>
+      <div class="day-card">
+        <div class="day-num">DAY 2 · MAY 6</div>
+        <div class="day-title">§ 4.1 · Baseline</div>
+        <div class="day-desc">描述 PCVRHyFormer 架构 + 三种 token + 关键模块。代码就在手上,有据可依。</div>
+      </div>
+      <div class="day-card">
+        <div class="day-num">DAY 3 · MAY 7</div>
+        <div class="day-title">§ 2 · Related Work</div>
+        <div class="day-desc">两条进化树 + InterFormer / OneTrans / HyFormer 对比。先把三篇 PDF 精读一遍。</div>
+      </div>
+      <div class="day-card">
+        <div class="day-num">DAY 4 · MAY 8</div>
+        <div class="day-title">§ 1 · Introduction</div>
+        <div class="day-desc">最后写。看着已写的主体,提炼 motivation + 4 痛点 + 贡献 bullet。</div>
+      </div>
+      <div class="day-card locked">
+        <div class="day-num">⏳ WAIT · TEAM</div>
+        <div class="day-title">§ 4.2 · Our Method</div>
+        <div class="day-desc">等队友 push 代码上 GitHub。先准备好框架(motivation 段落)。</div>
+      </div>
+      <div class="day-card locked">
+        <div class="day-num">⏳ WAIT · TEAM</div>
+        <div class="day-title">§ 5 · Experiments</div>
+        <div class="day-desc">等队友的 AUC、训练日志、消融数据。准备表格模板。</div>
+      </div>
+      <div class="day-card">
+        <div class="day-num">DAY 5 · MAY 9</div>
+        <div class="day-title">§ 6 + Refs + 整合</div>
+        <div class="day-desc">写 Conclusion · 整理 references · 全文校对 · 格式检查 · 提交。</div>
+      </div>
+    </div>
+  </section>
+
+  <!-- ═══════════════════ DETAILED SECTION CARDS ═══════════════════ -->
+  <div class="section-marker">§ 03 · Detailed Roadmap</div>
+  <h2 class="major">每个 section 的 <em>写作蓝图</em></h2>
+  <p class="lede">
+    按建议顺序排列(Section 3 → 4.1 → 2 → 1)。每张卡片包含:这一节在做什么、内容清单、英文模板段落、引用资源、注意事项。
+    每个内容点旁的复选框可点击勾选,帮你跟踪进度。
+  </p>
+
+  <!-- ═══════════ SECTION 3 · Problem + Dataset ═══════════ -->
+  <article class="section-card card-gold" id="sec3">
+    <div class="section-card-header">
+      <div class="card-tag">§ 3 · Day 1 · The Concrete Foundation</div>
+      <h3 class="section-card-title">Problem Formulation <em>and</em> Dataset</h3>
+      <p class="section-card-subtitle">
+        把抽象的"广告推荐"变成可计算的二分类任务,然后描述你手上的 120 列数据。
+      </p>
+      <div class="stat-row">
+        <div class="stat-item">
+          <span class="stat-label">Pages</span>
+          <span class="stat-value">~1.0</span>
+        </div>
+        <div class="stat-item">
+          <span class="stat-label">Words</span>
+          <span class="stat-value">~700</span>
+        </div>
+        <div class="stat-item">
+          <span class="stat-label">Difficulty</span>
+          <span class="stat-value">★☆☆☆☆</span>
+        </div>
+        <div class="stat-item">
+          <span class="stat-label">Source</span>
+          <span class="stat-value">Stage 3 笔记</span>
+        </div>
+      </div>
+    </div>
+
+    <div class="section-card-body">
+
+      <div class="card-section">
+        <div class="card-section-heading">
+          <span class="heading-num">3.A</span> Subsection Structure · 子段拆分
+        </div>
+        <ul class="subsec-list">
+          <li class="subsec-item">
+            <div class="subsec-title">3.1 · Task Formulation <span class="subsec-words">~150 words</span></div>
+            <div class="subsec-content">
+              形式化定义 CTR 预测:输入 x = (用户特征, 广告特征, 4 个域的序列), 输出 ŷ ∈ [0,1] 表示点击概率。
+              用 BCE loss 训练,真实 label y ∈ {0,1}。一段话 + 一个公式即可。
+            </div>
+          </li>
+          <li class="subsec-item">
+            <div class="subsec-title">3.2 · Dataset Overview <span class="subsec-words">~200 words</span></div>
+            <div class="subsec-content">
+              数据来源(腾讯真实日志)、规模(100 万样本,学术赛道)、扁平结构(120 列)、完全脱敏(no PII, no pre-trained models)。
+              强调 "real-world industrial logs"。
+            </div>
+          </li>
+          <li class="subsec-item">
+            <div class="subsec-title">3.3 · Feature Schema <span class="subsec-words">~250 words + 1 表</span></div>
+            <div class="subsec-content">
+              6 大类列(ID/Label · User Int · User Dense · Item Int · Item Dense · Domain Seq)。
+              用一张<strong>表格</strong>呈现最直观。强调 (key, value) 对齐结构。
+            </div>
+          </li>
+          <li class="subsec-item">
+            <div class="subsec-title">3.4 · Behavioral Domains <span class="subsec-words">~150 words</span></div>
+            <div class="subsec-content">
+              4 个异构行为域(A: 9 列, B: 14 列, C: 12 列, D: 10 列, 总计 45 列)。
+              强调"语义不可知"反而是建模优势 — 方法应对未知语义的多域数据通用。时间桶机制(65 个桶)。
+            </div>
+          </li>
+        </ul>
+      </div>
+
+      <div class="card-section">
+        <div class="card-section-heading">
+          <span class="heading-num">3.B</span> Content Checklist · 内容清单
+        </div>
+        <ul class="checklist">
+          <li class="check-item">
+            <button class="check-marker" onclick="toggleCheck(this)" aria-label="标记完成"></button>
+            <div class="check-content"><strong>CTR 形式化定义</strong> — 给出 input / output / loss 的数学表达 <span class="check-source">Stage 2 · 难点结构</span></div>
+          </li>
+          <li class="check-item">
+            <button class="check-marker" onclick="toggleCheck(this)" aria-label="标记完成"></button>
+            <div class="check-content"><strong>数据来源说明</strong> — 强调来自腾讯真实业务日志,不是合成数据 <span class="check-source">algo_qq_com.pdf</span></div>
+          </li>
+          <li class="check-item">
+            <button class="check-marker" onclick="toggleCheck(this)" aria-label="标记完成"></button>
+            <div class="check-content"><strong>脱敏说明</strong> — fully anonymized, no PII, no raw content (text/image/URL) <span class="check-source">algo_qq_com.pdf</span></div>
+          </li>
+          <li class="check-item">
+            <button class="check-marker" onclick="toggleCheck(this)" aria-label="标记完成"></button>
+            <div class="check-content"><strong>关键约束陈述</strong> — "Pre-trained LLM/CV models cannot be leveraged" <span class="check-source">官方原文</span></div>
+          </li>
+          <li class="check-item">
+            <button class="check-marker" onclick="toggleCheck(this)" aria-label="标记完成"></button>
+            <div class="check-content"><strong>120 列 schema 表</strong> — 6 大类 × 列数 × 数据类型(放一张 Table) <span class="check-source">Stage 3 · 6 大类</span></div>
+          </li>
+          <li class="check-item">
+            <button class="check-marker" onclick="toggleCheck(this)" aria-label="标记完成"></button>
+            <div class="check-content"><strong>(key, value) 对齐结构</strong> — User Dense 中 dense 列与 int 列逐元素配对(stats like dwell time, score) <span class="check-source">algo_qq_com.pdf</span></div>
+          </li>
+          <li class="check-item">
+            <button class="check-marker" onclick="toggleCheck(this)" aria-label="标记完成"></button>
+            <div class="check-content"><strong>4 个域的列分布</strong> — A: 38–46 / B: 67–79+88 / C: 27–37+47 / D: 17–26 <span class="check-source">algo_qq_com.pdf</span></div>
+          </li>
+          <li class="check-item">
+            <button class="check-marker" onclick="toggleCheck(this)" aria-label="标记完成"></button>
+            <div class="check-content"><strong>时间桶机制</strong> — 65 个 buckets,从 5 秒到 1 年,log-scale <span class="check-source">dataset.py · BUCKET_BOUNDARIES</span></div>
+          </li>
+          <li class="check-item">
+            <button class="check-marker" onclick="toggleCheck(this)" aria-label="标记完成"></button>
+            <div class="check-content"><strong>评价指标</strong> — AUC of ROC + 延迟约束(用 "subject to latency constraint") <span class="check-source">Stage 2 · 评估</span></div>
+          </li>
+        </ul>
+      </div>
+
+      <div class="card-section">
+        <div class="card-section-heading">
+          <span class="heading-num">3.C</span> English Template · 英文写作模板
+        </div>
+
+        <div class="tabs">
+          <button class="tab-btn active" onclick="switchTab(this, 'tpl-3-1')">3.1 Task</button>
+          <button class="tab-btn" onclick="switchTab(this, 'tpl-3-2')">3.2 Dataset</button>
+          <button class="tab-btn" onclick="switchTab(this, 'tpl-3-3')">3.3 Schema</button>
+          <button class="tab-btn" onclick="switchTab(this, 'tpl-3-4')">3.4 Domains</button>
+        </div>
+
+        <div class="tab-panel active" id="tpl-3-1">
+          <div class="template-box">
+            <p>We formulate <em>click-through rate (CTR) prediction</em> as a binary classification task. Given a user <em>u</em>, a candidate item <em>i</em>, and the user's historical behavior sequences across <span class="placeholder">D = 4</span> heterogeneous domains <em>S = {S<sub>a</sub>, S<sub>b</sub>, S<sub>c</sub>, S<sub>d</sub>}</em>, the model outputs a probability <em>ŷ = f(u, i, S) ∈ [0, 1]</em>.</p>
+            <p>The training objective is the standard binary cross-entropy loss: <em>L = −[y log ŷ + (1−y) log(1−ŷ)]</em>, where <em>y ∈ {0,1}</em> denotes whether the impression resulted in a click.</p>
+          </div>
+        </div>
+
+        <div class="tab-panel" id="tpl-3-2">
+          <div class="template-box">
+            <p>We use the <em>TAAC 2026 Academic Track</em> dataset, which consists of <span class="placeholder">~1M</span> impression records derived from real-world Tencent advertising logs. Each record corresponds to a single (user, item, timestamp) impression, augmented with the user's preceding behavior across multiple domains.</p>
+            <p>The dataset is <em>fully anonymized</em>: all sparse features are mapped to integer IDs, all dense features are presented as fixed-length float vectors, and no raw content (text, images, URLs) or personally identifiable information is preserved. As a consequence, <em>pre-trained language or vision models cannot be leveraged</em> for feature extraction — methodological contributions must come from architecture design rather than external knowledge transfer.</p>
+          </div>
+        </div>
+
+        <div class="tab-panel" id="tpl-3-3">
+          <div class="template-box">
+            <p>Each record is stored in a <em>flat schema of 120 columns</em>, partitioned into six categories (Table <span class="placeholder">X</span>): five ID/label columns, 46 user integer features (35 scalar + 11 multi-value), 10 user dense features, 14 item integer features, zero item dense features, and 45 domain sequence features distributed across four behavioral domains.</p>
+            <p>A distinctive feature of the schema is the <em>aligned (key, value) structure</em>: eight of the ten user-dense columns are <em>positionally aligned</em> with their integer counterparts, encoding per-element behavioral statistics (e.g., dwell time, interaction score) for the corresponding entity IDs.</p>
+          </div>
+        </div>
+
+        <div class="tab-panel" id="tpl-3-4">
+          <div class="template-box">
+            <p>The 45 sequence columns are partitioned into four <em>heterogeneous behavioral domains</em>, denoted A through D, with column counts 9 / 14 / 12 / 10 respectively. While the precise semantics of each domain are not disclosed by the dataset provider, the domains differ in average sequence length (256 for A/B, 512 for C/D) and likely correspond to distinct interaction modalities.</p>
+            <p>Within each domain, multiple columns are <em>positionally aligned</em>: the i-th element across all columns of domain d describes the i-th historical action (e.g., its item ID, category, timestamp). Continuous timestamps are discretized into <em>65 logarithmically-spaced buckets</em> ranging from seconds to years, so that the model receives a learnable temporal embedding rather than raw Unix time.</p>
+          </div>
+        </div>
+      </div>
+
+      <div class="card-section">
+        <div class="card-section-heading">
+          <span class="heading-num">3.D</span> Sources to Cite
+        </div>
+        <div class="src-list">
+          <div class="src-item">
+            <div class="src-icon">📋</div>
+            <div class="src-name">algo_qq_com.pdf</div>
+            <div class="src-desc">官方数据集白皮书 — 字段定义全部出自此</div>
+          </div>
+          <div class="src-item">
+            <div class="src-icon">💻</div>
+            <div class="src-name">dataset.py · BUCKET_BOUNDARIES</div>
+            <div class="src-desc">时间桶定义</div>
+          </div>
+          <div class="src-item">
+            <div class="src-icon">📖</div>
+            <div class="src-name">stage3_notes.html</div>
+            <div class="src-desc">你自己整理的中文思维导图</div>
+          </div>
+        </div>
+      </div>
+
+      <div class="warn-box">
+        <div class="warn-label">⚠ Don't forget</div>
+        <strong>不要瞎猜域的语义。</strong> 腾讯没有公开 A/B/C/D 具体业务,
+        report 里只能说 "heterogeneous behavioral domains" 或 "interaction modalities",
+        不要写"信息流 / 搜索 / 视频"这种猜测 — 这反而是<strong>学术优点</strong>(方法对未知语义通用)。
+      </div>
+    </div>
+  </article>
+
+  <!-- ═══════════ SECTION 4.1 · Baseline ═══════════ -->
+  <article class="section-card card-plum" id="sec41">
+    <div class="section-card-header">
+      <div class="card-tag">§ 4.1 · Day 2 · The Existing Solution</div>
+      <h3 class="section-card-title">Baseline Architecture <em>·</em> PCVRHyFormer</h3>
+      <p class="section-card-subtitle">
+        诚实地描述腾讯给的 baseline。这一节是你 Method 章节的基础 — 没有它,读者不知道你改了什么。
+      </p>
+      <div class="stat-row">
+        <div class="stat-item">
+          <span class="stat-label">Pages</span>
+          <span class="stat-value">~1.5</span>
+        </div>
+        <div class="stat-item">
+          <span class="stat-label">Words</span>
+          <span class="stat-value">~1000 + 1 图</span>
+        </div>
+        <div class="stat-item">
+          <span class="stat-label">Difficulty</span>
+          <span class="stat-value">★★★☆☆</span>
+        </div>
+        <div class="stat-item">
+          <span class="stat-label">Source</span>
+          <span class="stat-value">model.py · HyFormer 论文</span>
+        </div>
+      </div>
+    </div>
+
+    <div class="section-card-body">
+
+      <div class="card-section">
+        <div class="card-section-heading">
+          <span class="heading-num">4.1.A</span> Subsection Structure
+        </div>
+        <ul class="subsec-list">
+          <li class="subsec-item">
+            <div class="subsec-title">4.1.1 · Overview <span class="subsec-words">~120 words</span></div>
+            <div class="subsec-content">
+              一段话:PCVRHyFormer 是基于 HyFormer 的统一架构,核心由 N 层 <code>MultiSeqHyFormerBlock</code> 堆叠而成,每层并行处理 4 个域并融合静态特征。配一张架构图。
+            </div>
+          </li>
+          <li class="subsec-item">
+            <div class="subsec-title">4.1.2 · Embedding Layer <span class="subsec-words">~200 words</span></div>
+            <div class="subsec-content">
+              三种 embedding:稀疏 ID embedding(emb_skip_threshold=1M)、dense 特征 MLP 投影、时间桶 embedding。
+              如何处理 (key, value) 对齐特征。
+            </div>
+          </li>
+          <li class="subsec-item">
+            <div class="subsec-title">4.1.3 · Three Token Types <span class="subsec-words">~250 words</span></div>
+            <div class="subsec-content">
+              <strong>NS Tokens</strong>(static "档案夹") · <strong>Sequence Tokens</strong>(序列"录像") · <strong>Q Tokens</strong>(决策"问题")。
+              最关键的概念,要讲清楚每种 token 代表什么、维度多大、起什么作用。
+            </div>
+          </li>
+          <li class="subsec-item">
+            <div class="subsec-title">4.1.4 · MultiSeqHyFormerBlock <span class="subsec-words">~250 words</span></div>
+            <div class="subsec-content">
+              逐层流程:① 序列演化(self-attention with RoPE)→ ② Q-tokens 解码序列(cross-attention)→ ③ NS+Q+Seq token 融合 → ④ Query Boosting。
+              这是 baseline 实现深度融合的核心机制。
+            </div>
+          </li>
+          <li class="subsec-item">
+            <div class="subsec-title">4.1.5 · Output & Training <span class="subsec-words">~150 words</span></div>
+            <div class="subsec-content">
+              最后用 Q tokens 的聚合表示 + classifier (clsfier) 输出概率。
+              训练用 BCE,优化器、学习率、warmup、batch size 等。
+            </div>
+          </li>
+        </ul>
+      </div>
+
+      <div class="card-section">
+        <div class="card-section-heading">
+          <span class="heading-num">4.1.B</span> Content Checklist
+        </div>
+        <ul class="checklist">
+          <li class="check-item">
+            <button class="check-marker" onclick="toggleCheck(this)" aria-label="标记完成"></button>
+            <div class="check-content"><strong>整体结构图</strong>(Figure)— 画一张展示 NS / Seq / Q tokens 流向的架构图 <span class="check-source">必须有</span></div>
+          </li>
+          <li class="check-item">
+            <button class="check-marker" onclick="toggleCheck(this)" aria-label="标记完成"></button>
+            <div class="check-content"><strong>Embedding 策略</strong> — sparse table + dense MLP + time bucket emb,emb_skip_threshold=1M 的工程妥协 <span class="check-source">model.py</span></div>
+          </li>
+          <li class="check-item">
+            <button class="check-marker" onclick="toggleCheck(this)" aria-label="标记完成"></button>
+            <div class="check-content"><strong>NS Tokens 定义</strong> — 用户和商品静态特征经 GroupNSTokenizer / RankMixer 形成 <span class="check-source">model.py · NSTokenizer</span></div>
+          </li>
+          <li class="check-item">
+            <button class="check-marker" onclick="toggleCheck(this)" aria-label="标记完成"></button>
+            <div class="check-content"><strong>Sequence Tokens 定义</strong> — 4 个域的序列各自经域内编码 <span class="check-source">model.py · SeqEncoder</span></div>
+          </li>
+          <li class="check-item">
+            <button class="check-marker" onclick="toggleCheck(this)" aria-label="标记完成"></button>
+            <div class="check-content"><strong>Q Tokens 机制</strong> — num_queries 个可学习查询,跨域 attend 序列收集信息 <span class="check-source">model.py</span></div>
+          </li>
+          <li class="check-item">
+            <button class="check-marker" onclick="toggleCheck(this)" aria-label="标记完成"></button>
+            <div class="check-content"><strong>RoPE 位置编码</strong> — 序列内用旋转位置编码,处理变长序列 <span class="check-source">model.py · RotaryEmbedding</span></div>
+          </li>
+          <li class="check-item">
+            <button class="check-marker" onclick="toggleCheck(this)" aria-label="标记完成"></button>
+            <div class="check-content"><strong>Block 内的 4 步流程</strong> — Seq evolve → Q decode → token mix → query boost <span class="check-source">model.py · MultiSeqHyFormerBlock</span></div>
+          </li>
+          <li class="check-item">
+            <button class="check-marker" onclick="toggleCheck(this)" aria-label="标记完成"></button>
+            <div class="check-content"><strong>训练配置</strong> — optimizer, lr schedule, batch size, num_blocks=2, d_model=64 <span class="check-source">run.sh + train.py</span></div>
+          </li>
+          <li class="check-item">
+            <button class="check-marker" onclick="toggleCheck(this)" aria-label="标记完成"></button>
+            <div class="check-content"><strong>诚实声明</strong> — 一句话明确"this section describes the official baseline" <span class="check-source">学术诚信</span></div>
+          </li>
+        </ul>
+      </div>
+
+      <div class="card-section">
+        <div class="card-section-heading">
+          <span class="heading-num">4.1.C</span> English Template
+        </div>
+
+        <div class="tabs">
+          <button class="tab-btn active" onclick="switchTab(this, 'tpl-41-1')">Overview</button>
+          <button class="tab-btn" onclick="switchTab(this, 'tpl-41-2')">Tokens</button>
+          <button class="tab-btn" onclick="switchTab(this, 'tpl-41-3')">Block</button>
+        </div>
+
+        <div class="tab-panel active" id="tpl-41-1">
+          <div class="template-box">
+            <p>We build directly on the official baseline released by the competition organizers, denoted <em>PCVRHyFormer</em>. As clarified at the outset, <em>this section describes the baseline architecture</em>; our own modifications are deferred to Section 4.2.</p>
+            <p>PCVRHyFormer is a <em>hybrid Transformer</em> in the spirit of HyFormer <span class="placeholder">[Liu et al., 2026]</span>: it interleaves sequence modeling with feature interaction within a single stack of <em>N</em> identical blocks. The model takes the 120-column input described in Section 3 and produces a click probability via <em>N</em> stacked <em>MultiSeqHyFormerBlocks</em> followed by a final classifier head.</p>
+          </div>
+        </div>
+
+        <div class="tab-panel" id="tpl-41-2">
+          <div class="template-box">
+            <p>The block operates over three semantically distinct token types, jointly forming the unified token stream:</p>
+            <p><em>① Non-Sequential (NS) Tokens.</em> The user and item static features (Section 3.3) are aggregated into a fixed set of NS tokens via a tokenizer module. We follow the default <em>RankMixer</em> configuration with <span class="placeholder">5 user + 2 item</span> NS tokens.</p>
+            <p><em>② Sequence Tokens.</em> The four behavioral domains (A–D) are encoded independently. Each domain's per-position features are projected into <em>d<sub>model</sub></em>-dimensional embeddings, augmented with rotary position encoding (RoPE) and time-bucket embeddings.</p>
+            <p><em>③ Query (Q) Tokens.</em> A small set of <span class="placeholder">num_queries = 2</span> learnable query tokens act as a learnable <em>read-out</em>: they cross-attend over the sequence tokens of each domain to extract behaviorally relevant signals before being mixed with the NS tokens.</p>
+          </div>
+        </div>
+
+        <div class="tab-panel" id="tpl-41-3">
+          <div class="template-box">
+            <p>Each <em>MultiSeqHyFormerBlock</em> performs four sub-operations in succession:</p>
+            <p><em>(i) Sequence Evolution.</em> Within each domain, sequence tokens undergo causal self-attention with rotary position encoding, refining their per-position representations.</p>
+            <p><em>(ii) Query Decoding.</em> The Q tokens cross-attend over each domain's evolved sequence tokens, gathering one read-out vector per (query, domain) pair.</p>
+            <p><em>(iii) Token Mixing.</em> NS tokens, the gathered Q outputs, and the sequence tokens are concatenated into a unified stream of length <em>T = num_queries × num_sequences + num_ns</em>, then passed through a Transformer-style attention block. This is where deep static–sequential fusion takes place.</p>
+            <p><em>(iv) Query Boosting.</em> The refined Q-token slots are fed back as inputs to the next block's query decoding step, allowing the queries to progressively focus on more discriminative behavioral patterns.</p>
+            <p>After <em>N</em> blocks, the final Q tokens are pooled and passed through a feed-forward classifier (<em>clsfier</em>) producing the click probability ŷ.</p>
+          </div>
+        </div>
+      </div>
+
+      <div class="card-section">
+        <div class="card-section-heading">
+          <span class="heading-num">4.1.D</span> Sources to Cite
+        </div>
+        <div class="src-list">
+          <div class="src-item">
+            <div class="src-icon">💻</div>
+            <div class="src-name">model.py</div>
+            <div class="src-desc">所有架构细节的权威来源</div>
+          </div>
+          <div class="src-item">
+            <div class="src-icon">📚</div>
+            <div class="src-name">HyFormer paper</div>
+            <div class="src-desc">基础架构的论文来源</div>
+          </div>
+          <div class="src-item">
+            <div class="src-icon">⚙️</div>
+            <div class="src-name">run.sh + train.py</div>
+            <div class="src-desc">训练超参数</div>
+          </div>
+          <div class="src-item">
+            <div class="src-icon">📋</div>
+            <div class="src-name">ns_groups.json</div>
+            <div class="src-desc">NS token 分组方式</div>
+          </div>
+        </div>
+      </div>
+
+      <div class="warn-box">
+        <div class="warn-label">⚠ Critical · Honest Attribution</div>
+        <strong>这一节的所有内容都是腾讯的工作,不是你们的。</strong>
+        在小节开头明确声明"This section describes the official baseline (PCVRHyFormer);
+        our modifications are presented in Section 4.2."<br>
+        把整个 baseline 写成"Our Method"是<strong>严重的学术不端</strong>。
+      </div>
+
+      <div class="tip-box">
+        <strong>建议画的架构图:</strong> 一张总览图,从输入(120 列)到输出(ŷ),
+        中间清晰标出 NS / Seq / Q 三种 token 的颜色,以及 Block 内 4 步操作的流向。
+        可以参考 HyFormer 论文 Figure 2,改造成 PCVRHyFormer 的版本。
+      </div>
+    </div>
+  </article>
+
+  <!-- ═══════════ SECTION 2 · Related Work ═══════════ -->
+  <article class="section-card card-teal" id="sec2">
+    <div class="section-card-header">
+      <div class="card-tag">§ 2 · Day 3 · The Lineage</div>
+      <h3 class="section-card-title">Related <em>Work</em></h3>
+      <p class="section-card-subtitle">
+        把 15 年的两条技术路线讲清楚,然后定位你们和 InterFormer / OneTrans / HyFormer 的关系。
+      </p>
+      <div class="stat-row">
+        <div class="stat-item">
+          <span class="stat-label">Pages</span>
+          <span class="stat-value">~1.0</span>
+        </div>
+        <div class="stat-item">
+          <span class="stat-label">Words</span>
+          <span class="stat-value">~700</span>
+        </div>
+        <div class="stat-item">
+          <span class="stat-label">Difficulty</span>
+          <span class="stat-value">★★★★☆</span>
+        </div>
+        <div class="stat-item">
+          <span class="stat-label">Source</span>
+          <span class="stat-value">3 篇 PDF</span>
+        </div>
+      </div>
+    </div>
+
+    <div class="section-card-body">
+
+      <div class="card-section">
+        <div class="card-section-heading">
+          <span class="heading-num">2.A</span> Subsection Structure
+        </div>
+        <ul class="subsec-list">
+          <li class="subsec-item">
+            <div class="subsec-title">2.1 · Feature Interaction Models <span class="subsec-words">~200 words</span></div>
+            <div class="subsec-content">
+              静态属性派 — FM → DeepFM → DCN/DCNv2 → AutoInt → FinalMLP → Wukong。
+              重点写 3-5 个,讲清楚演进逻辑(从浅交叉到深交叉)。
+            </div>
+          </li>
+          <li class="subsec-item">
+            <div class="subsec-title">2.2 · Sequential Recommendation Models <span class="subsec-words">~200 words</span></div>
+            <div class="subsec-content">
+              行为时间线派 — GRU4Rec → DIN/DIEN → SASRec/BERT4Rec → BST → TWIN → HSTU。
+              讲演进逻辑(从 RNN 到 attention,从短序列到长序列)。
+            </div>
+          </li>
+          <li class="subsec-item">
+            <div class="subsec-title">2.3 · Unified Architectures <span class="subsec-words">~250 words</span></div>
+            <div class="subsec-content">
+              ⭐ <strong>这是关键一节</strong>。对比 InterFormer / OneTrans / HyFormer 三个工作 — 它们都试图融合两类信息,但在融合粒度、token 设计、scalability 上各有取舍。
+              说清楚 PCVRHyFormer 来自哪一脉(HyFormer)。
+            </div>
+          </li>
+          <li class="subsec-item">
+            <div class="subsec-title">2.4 · Position of Our Work <span class="subsec-words">~50 words</span></div>
+            <div class="subsec-content">
+              一两句话:"We build on the HyFormer-based baseline and focus on <span style="background:rgba(154,68,35,0.15); padding:2px 6px; border-radius:3px;">[your contribution direction]</span>."
+              这一段等队友的改动方向定下来再补完。
+            </div>
+          </li>
+        </ul>
+      </div>
+
+      <div class="card-section">
+        <div class="card-section-heading">
+          <span class="heading-num">2.B</span> Content Checklist
+        </div>
+        <ul class="checklist">
+          <li class="check-item">
+            <button class="check-marker" onclick="toggleCheck(this)" aria-label="标记完成"></button>
+            <div class="check-content"><strong>Feature Interaction 路线</strong> — 至少引用 4 篇:DeepFM / DCN / AutoInt / Wukong <span class="check-source">网络资源 + Stage 2</span></div>
+          </li>
+          <li class="check-item">
+            <button class="check-marker" onclick="toggleCheck(this)" aria-label="标记完成"></button>
+            <div class="check-content"><strong>Sequential 路线</strong> — 至少引用 4 篇:DIN / SASRec / BERT4Rec / HSTU <span class="check-source">网络资源 + Stage 2</span></div>
+          </li>
+          <li class="check-item">
+            <button class="check-marker" onclick="toggleCheck(this)" aria-label="标记完成"></button>
+            <div class="check-content"><strong>InterFormer</strong> — 精读后总结:它怎么融合?用什么 token? <span class="check-source">InterFormer.pdf</span></div>
+          </li>
+          <li class="check-item">
+            <button class="check-marker" onclick="toggleCheck(this)" aria-label="标记完成"></button>
+            <div class="check-content"><strong>OneTrans</strong> — 精读后总结:它的统一思路? <span class="check-source">OneTrans.pdf</span></div>
+          </li>
+          <li class="check-item">
+            <button class="check-marker" onclick="toggleCheck(this)" aria-label="标记完成"></button>
+            <div class="check-content"><strong>HyFormer</strong> — 精读后总结:这是 PCVRHyFormer 的直接来源 <span class="check-source">HyFormer.pdf</span></div>
+          </li>
+          <li class="check-item">
+            <button class="check-marker" onclick="toggleCheck(this)" aria-label="标记完成"></button>
+            <div class="check-content"><strong>三者对比表</strong>(可选 Table)— fusion granularity / token design / scalability <span class="check-source">三篇精读后</span></div>
+          </li>
+          <li class="check-item">
+            <button class="check-marker" onclick="toggleCheck(this)" aria-label="标记完成"></button>
+            <div class="check-content"><strong>定位声明</strong> — 一句话说清楚你们在哪一脉、改什么 <span class="check-source">等队友确认</span></div>
+          </li>
+        </ul>
+      </div>
+
+      <div class="card-section">
+        <div class="card-section-heading">
+          <span class="heading-num">2.C</span> English Template
+        </div>
+
+        <div class="tabs">
+          <button class="tab-btn active" onclick="switchTab(this, 'tpl-2-1')">2.1 FI</button>
+          <button class="tab-btn" onclick="switchTab(this, 'tpl-2-2')">2.2 Seq</button>
+          <button class="tab-btn" onclick="switchTab(this, 'tpl-2-3')">2.3 Unified</button>
+        </div>
+
+        <div class="tab-panel active" id="tpl-2-1">
+          <div class="template-box">
+            <p><em>Feature interaction models</em> aim to capture cross-feature dependencies among <em>static</em> categorical and dense attributes. Early work such as Factorization Machines <span class="placeholder">[Rendle, 2010]</span> represents pairwise interactions through low-rank factorization. DeepFM <span class="placeholder">[Guo et al., 2017]</span> and DCN <span class="placeholder">[Wang et al., 2017]</span> extend this idea by combining explicit cross-products with deep MLPs.</p>
+            <p>More recent designs — AutoInt <span class="placeholder">[Song et al., 2019]</span>, FinalMLP <span class="placeholder">[Mao et al., 2023]</span>, Wukong <span class="placeholder">[Zhang et al., 2024]</span> — focus on <em>scalable</em> high-order interactions and improved expressivity. None of these architectures, however, model temporal user behavior; they treat each impression as an i.i.d. tabular row.</p>
+          </div>
+        </div>
+
+        <div class="tab-panel" id="tpl-2-2">
+          <div class="template-box">
+            <p><em>Sequential recommendation models</em> exploit the temporal structure of user behavior. GRU4Rec <span class="placeholder">[Hidasi et al., 2015]</span> initiated the line with recurrent encoders, while DIN <span class="placeholder">[Zhou et al., 2018]</span> and DIEN <span class="placeholder">[Zhou et al., 2019]</span> introduced target-aware attention to weight historical actions by relevance to the candidate item.</p>
+            <p>Transformer-based encoders — SASRec <span class="placeholder">[Kang & McAuley, 2018]</span>, BERT4Rec <span class="placeholder">[Sun et al., 2019]</span>, BST <span class="placeholder">[Chen et al., 2019]</span> — pushed the field toward longer contexts and richer attention patterns. Recent work such as TWIN <span class="placeholder">[Chang et al., 2023]</span> and HSTU <span class="placeholder">[Zhai et al., 2024]</span> explores extreme sequence lengths under industrial latency budgets. These models, conversely, rely primarily on sequential signals and integrate static features only superficially.</p>
+          </div>
+        </div>
+
+        <div class="tab-panel" id="tpl-2-3">
+          <div class="template-box">
+            <p>Bridging the two paradigms has emerged as an active research direction. <em>InterFormer</em> <span class="placeholder">[Author, 2024]</span> proposes <span class="placeholder">[一句话总结其方法]</span>; <em>OneTrans</em> <span class="placeholder">[Author, 2025]</span> argues for <span class="placeholder">[一句话总结其方法]</span>; <em>HyFormer</em> <span class="placeholder">[Liu et al., 2026]</span> introduces a hybrid block that interleaves sequence evolution with cross-domain query decoding, and forms the architectural basis of the official baseline of this competition.</p>
+            <p>Our work builds directly on the HyFormer-based baseline. <span class="placeholder">[Position your contribution here once teammate confirms direction — e.g., "We focus on improving cross-domain temporal alignment / NS tokenization / time-bucket design / ..."]</span></p>
+          </div>
+        </div>
+      </div>
+
+      <div class="card-section">
+        <div class="card-section-heading">
+          <span class="heading-num">2.D</span> Sources to Cite
+        </div>
+        <div class="src-list">
+          <div class="src-item">
+            <div class="src-icon">📚</div>
+            <div class="src-name">InterFormer.pdf</div>
+            <div class="src-desc">需要精读 — 重点 §3 method</div>
+          </div>
+          <div class="src-item">
+            <div class="src-icon">📚</div>
+            <div class="src-name">OneTrans.pdf</div>
+            <div class="src-desc">需要精读 — 重点 §3 method</div>
+          </div>
+          <div class="src-item">
+            <div class="src-icon">📚</div>
+            <div class="src-name">HyFormer.pdf</div>
+            <div class="src-desc">必读 — baseline 的直接来源</div>
+          </div>
+          <div class="src-item">
+            <div class="src-icon">🌐</div>
+            <div class="src-name">DeepFM / DCN / SASRec / DIN ...</div>
+            <div class="src-desc">网络搜索 arxiv abstract,引用即可,不必全读</div>
+          </div>
+        </div>
+      </div>
+
+      <div class="tip-box">
+        <strong>写作技巧:</strong> Related Work 不是综述。每个工作只用 <strong>一句话</strong>
+        概括它做了什么 + 它的局限。重点是 <strong>"how does our work differ"</strong>,
+        而不是把每篇论文复述一遍。Reviewer 看 RW 主要想知道:你读过了吗?你定位准吗?
+      </div>
+    </div>
+  </article>
+
+  <!-- ═══════════ SECTION 1 · Introduction ═══════════ -->
+  <article class="section-card card-rust" id="sec1">
+    <div class="section-card-header">
+      <div class="card-tag">§ 1 · Day 4 · Write This LAST</div>
+      <h3 class="section-card-title"><em>Introduction</em></h3>
+      <p class="section-card-subtitle">
+        最后写。等你写完主体 3 节,你才知道整篇文章的"调子"是什么、要"介绍"什么。
+      </p>
+      <div class="stat-row">
+        <div class="stat-item">
+          <span class="stat-label">Pages</span>
+          <span class="stat-value">~1.0</span>
+        </div>
+        <div class="stat-item">
+          <span class="stat-label">Words</span>
+          <span class="stat-value">~700</span>
+        </div>
+        <div class="stat-item">
+          <span class="stat-label">Difficulty</span>
+          <span class="stat-value">★★★★★</span>
+        </div>
+        <div class="stat-item">
+          <span class="stat-label">Source</span>
+          <span class="stat-value">Stage 1+2 笔记</span>
+        </div>
+      </div>
+    </div>
+
+    <div class="section-card-body">
+
+      <div class="card-section">
+        <div class="card-section-heading">
+          <span class="heading-num">1.A</span> 经典 4-段结构
+        </div>
+        <ul class="subsec-list">
+          <li class="subsec-item">
+            <div class="subsec-title">¶1 · 大背景钩子 <span class="subsec-words">~120 words</span></div>
+            <div class="subsec-content">
+              工业推荐系统的两条主线 — 特征交互 vs 序列建模。引出"它们融合不好"这个矛盾点。
+              一两句话即可把读者带到问题前。
+            </div>
+          </li>
+          <li class="subsec-item">
+            <div class="subsec-title">¶2 · 4 个工业痛点 <span class="subsec-words">~200 words</span></div>
+            <div class="subsec-content">
+              展开讲分裂带来的 4 个具体问题:浅融合 / 优化目标不一致 / 反 Scaling Law / 工程复杂。
+              这是 motivation 的核心 — 告诉读者"为什么这件事值得做"。
+            </div>
+          </li>
+          <li class="subsec-item">
+            <div class="subsec-title">¶3 · 任务 + 数据 + Baseline 一笔带过 <span class="subsec-words">~150 words</span></div>
+            <div class="subsec-content">
+              告诉读者:本文研究的具体场景是 TAAC 2026 数据(脱敏的腾讯广告日志),
+              我们以官方 PCVRHyFormer baseline 为起点。一段。
+            </div>
+          </li>
+          <li class="subsec-item">
+            <div class="subsec-title">¶4 · 贡献 bullet list <span class="subsec-words">~150 words</span></div>
+            <div class="subsec-content">
+              <strong>3-4 个 bullet points</strong> 明确列出你们的 contribution。
+              注意必须是"你们做的",不是"baseline 已有的"。
+            </div>
+          </li>
+          <li class="subsec-item">
+            <div class="subsec-title">¶5 · Roadmap(可选,1-2 句) <span class="subsec-words">~50 words</span></div>
+            <div class="subsec-content">
+              "The remainder of the paper is organized as follows: §2 reviews related work, §3 ..."
+              非常程式化,可有可无。
+            </div>
+          </li>
+        </ul>
+      </div>
+
+      <div class="card-section">
+        <div class="card-section-heading">
+          <span class="heading-num">1.B</span> Content Checklist
+        </div>
+        <ul class="checklist">
+          <li class="check-item">
+            <button class="check-marker" onclick="toggleCheck(this)" aria-label="标记完成"></button>
+            <div class="check-content"><strong>开场钩子</strong> — 一两句话点出推荐系统的 long-standing 分裂 <span class="check-source">Stage 2 · 行业故事</span></div>
+          </li>
+          <li class="check-item">
+            <button class="check-marker" onclick="toggleCheck(this)" aria-label="标记完成"></button>
+            <div class="check-content"><strong>痛点 1 · Shallow fusion</strong> — 浅拼接造成信息损失 <span class="check-source">Stage 2 · 痛点</span></div>
+          </li>
+          <li class="check-item">
+            <button class="check-marker" onclick="toggleCheck(this)" aria-label="标记完成"></button>
+            <div class="check-content"><strong>痛点 2 · Inconsistent objectives</strong> — 对比学习 vs BCE 不对齐 <span class="check-source">Stage 2 · 痛点</span></div>
+          </li>
+          <li class="check-item">
+            <button class="check-marker" onclick="toggleCheck(this)" aria-label="标记完成"></button>
+            <div class="check-content"><strong>痛点 3 · Limited scalability</strong> — 推荐系统反 Scaling Law <span class="check-source">Stage 2 · Scaling Law 卡片</span></div>
+          </li>
+          <li class="check-item">
+            <button class="check-marker" onclick="toggleCheck(this)" aria-label="标记完成"></button>
+            <div class="check-content"><strong>痛点 4 · Engineering complexity</strong> — 双栈运维成本 <span class="check-source">Stage 2 · 痛点</span></div>
+          </li>
+          <li class="check-item">
+            <button class="check-marker" onclick="toggleCheck(this)" aria-label="标记完成"></button>
+            <div class="check-content"><strong>引向 baseline</strong> — 把 motivation 落到 PCVRHyFormer 这个具体起点 <span class="check-source">Stage 1</span></div>
+          </li>
+          <li class="check-item">
+            <button class="check-marker" onclick="toggleCheck(this)" aria-label="标记完成"></button>
+            <div class="check-content"><strong>3-4 个贡献 bullet</strong> — 你们的 contribution(等队友确定后填) <span class="check-source">等队友</span></div>
+          </li>
+          <li class="check-item">
+            <button class="check-marker" onclick="toggleCheck(this)" aria-label="标记完成"></button>
+            <div class="check-content"><strong>(可选) Roadmap 句</strong> — 程式化,不必占太多篇幅 <span class="check-source">—</span></div>
+          </li>
+        </ul>
+      </div>
+
+      <div class="card-section">
+        <div class="card-section-heading">
+          <span class="heading-num">1.C</span> English Template — Full Intro Skeleton
+        </div>
+        <div class="template-box">
+          <p><strong style="color:#D4A847; font-family:var(--mono); font-size:11px; letter-spacing:1.5px; text-transform:uppercase;">¶1 · Hook</strong></p>
+          <p>Modern industrial recommender systems have evolved along two largely independent trajectories. <em>Feature interaction models</em> — from FM to DeepFM, DCN, and Wukong — capture rich cross-feature dependencies over static user and item attributes. <em>Sequential recommendation models</em> — from GRU4Rec to SASRec and HSTU — exploit the temporal structure of user behavior. Despite a decade of parallel progress, <em>unifying these two paradigms within a single architecture remains an open problem</em>.</p>
+
+          <p><strong style="color:#D4A847; font-family:var(--mono); font-size:11px; letter-spacing:1.5px; text-transform:uppercase;">¶2 · Pain Points</strong></p>
+          <p>This separation imposes four concrete costs on production systems. <em>(i) Shallow cross-paradigm interaction</em>: most existing pipelines combine the two branches only at the final classifier, discarding rich cross-modal signals. <em>(ii) Inconsistent optimization objectives</em>: sequential branches often rely on contrastive losses while interaction branches optimize binary cross-entropy, complicating joint training. <em>(iii) Limited scalability</em>: unlike large language models, recommender architectures plateau quickly when scaled up — the field lacks a clear scaling law. <em>(iv) Engineering complexity</em>: maintaining two heterogeneous code paths inflates deployment, monitoring, and iteration costs.</p>
+
+          <p><strong style="color:#D4A847; font-family:var(--mono); font-size:11px; letter-spacing:1.5px; text-transform:uppercase;">¶3 · Setting</strong></p>
+          <p>The TAAC 2026 Academic Track provides a controlled testbed for tackling this gap: <span class="placeholder">~1M</span> impressions sampled from real-world Tencent advertising logs, structured into 120 columns spanning static user/item features and four heterogeneous behavioral domains. The competition releases an official baseline, <em>PCVRHyFormer</em> — a HyFormer-based hybrid Transformer — alongside a strict latency budget that rules out naive scaling.</p>
+
+          <p><strong style="color:#D4A847; font-family:var(--mono); font-size:11px; letter-spacing:1.5px; text-transform:uppercase;">¶4 · Contributions</strong></p>
+          <p>We build on PCVRHyFormer and contribute the following:</p>
+          <p>• <span class="placeholder">[Contribution 1 — e.g., "We re-design the NS-token grouping based on ..., yielding +X.XX AUC."]</span></p>
+          <p>• <span class="placeholder">[Contribution 2 — e.g., "We propose a refined time-bucket scheme that ..."]</span></p>
+          <p>• <span class="placeholder">[Contribution 3 — e.g., "We conduct extensive ablation studies isolating the effect of ..."]</span></p>
+          <p>• <span class="placeholder">[Contribution 4 (optional) — e.g., "Our final model achieves AUC of X.XXXX subject to the official latency constraint, improving over the baseline by +X.XX."]</span></p>
+        </div>
+      </div>
+
+      <div class="warn-box">
+        <div class="warn-label">⚠ Common AI-paper pitfalls to avoid</div>
+        <strong>不要用</strong>这些套话开头:"In this paper, we propose..." / "With the rapid development of..." / "Recommender systems have attracted much attention in recent years."<br>
+        <strong>要用</strong>:具体的、有信息量的开场。让读者第一句话就知道你在讲什么矛盾。
+      </div>
+
+      <div class="tip-box">
+        <strong>为什么 Intro 最后写?</strong> 因为 Introduction 必须"引向"主体内容 —
+        你只有写完了 §3、§4.1、§2,才知道这篇文章主要讲什么、强调什么、贡献是什么。
+        提前写 Intro 等于给一本还没写完的书写序。
+      </div>
+    </div>
+  </article>
+
+  <!-- ═══════════════════ DEPENDENCY MAP ═══════════════════ -->
+  <section class="dep-section">
+    <div class="section-marker">§ 04 · Cross-References</div>
+    <h2 class="major">Sections 之间的 <em>信息流动</em></h2>
+    <p class="lede">
+      写每个 section 时,要意识到它和其他 section 的关系 — 概念怎么承接、术语怎么统一、引用怎么互指。
+      这张图告诉你各 section 之间到底"传递"什么信息。
+    </p>
+
+    <div class="mindmap-frame">
+      <svg viewBox="0 0 1100 460" xmlns="http://www.w3.org/2000/svg">
+        <defs>
+          <marker id="arrow-blue" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="6" markerHeight="6" orient="auto">
+            <path d="M 0 0 L 10 5 L 0 10 z" fill="#3D4D5C"/>
+          </marker>
+        </defs>
+
+        <pattern id="grid2" width="40" height="40" patternUnits="userSpaceOnUse">
+          <path d="M 40 0 L 0 0 0 40" fill="none" stroke="rgba(31,26,20,0.04)" stroke-width="0.5"/>
+        </pattern>
+        <rect width="1100" height="460" fill="url(#grid2)"/>
+
+        <text x="40" y="35" font-family="JetBrains Mono" font-size="11" letter-spacing="2" fill="#7A6F5F">
+          INFORMATION FLOW · BETWEEN SECTIONS
+        </text>
+        <line x1="40" y1="50" x2="320" y2="50" stroke="#1F1A14" stroke-width="2"/>
+
+        <!-- Sec 1 (Intro) -->
+        <g>
+          <rect x="60" y="100" width="180" height="70" rx="10" fill="#EFD5C5" stroke="#9A4423" stroke-width="1.5"/>
+          <text x="150" y="135" font-family="Fraunces" font-size="17" font-weight="600" text-anchor="middle" fill="#1F1A14">§ 1 Introduction</text>
+          <text x="150" y="155" font-family="Noto Sans SC" font-size="11" text-anchor="middle" fill="#4A4036">动机 + 贡献</text>
+        </g>
+
+        <!-- Sec 2 (Related) -->
+        <g>
+          <rect x="290" y="100" width="180" height="70" rx="10" fill="#D1E2DC" stroke="#1F5E55" stroke-width="1.5"/>
+          <text x="380" y="135" font-family="Fraunces" font-size="17" font-weight="600" text-anchor="middle" fill="#1F1A14">§ 2 Related Work</text>
+          <text x="380" y="155" font-family="Noto Sans SC" font-size="11" text-anchor="middle" fill="#4A4036">两条进化树 + 三篇</text>
+        </g>
+
+        <!-- Sec 3 (Problem) -->
+        <g>
+          <rect x="520" y="100" width="180" height="70" rx="10" fill="#ECE0C2" stroke="#8B6914" stroke-width="1.5"/>
+          <text x="610" y="135" font-family="Fraunces" font-size="17" font-weight="600" text-anchor="middle" fill="#1F1A14">§ 3 Problem+Data</text>
+          <text x="610" y="155" font-family="Noto Sans SC" font-size="11" text-anchor="middle" fill="#4A4036">CTR 形式化 · 120 列</text>
+        </g>
+
+        <!-- Sec 4.1 (Baseline) -->
+        <g>
+          <rect x="750" y="100" width="180" height="70" rx="10" fill="#E8D6E0" stroke="#6B3F5C" stroke-width="1.5"/>
+          <text x="840" y="135" font-family="Fraunces" font-size="17" font-weight="600" text-anchor="middle" fill="#1F1A14">§ 4.1 Baseline</text>
+          <text x="840" y="155" font-family="Noto Sans SC" font-size="11" text-anchor="middle" fill="#4A4036">PCVRHyFormer</text>
+        </g>
+
+        <!-- Annotated edges -->
+        <!-- 1 ← 2 (Intro motivation builds on RW gaps) -->
+        <path d="M 290 130 L 240 130" fill="none" stroke="#3D4D5C" stroke-width="1.5" marker-end="url(#arrow-blue)"/>
+        <text x="265" y="120" font-family="Noto Sans SC" font-size="10" text-anchor="middle" fill="#3D4D5C">引用进化树</text>
+
+        <!-- 1 ← 3 (Intro mentions task + dataset briefly) -->
+        <path d="M 520 145 Q 350 220 240 150" fill="none" stroke="#3D4D5C" stroke-width="1.5" stroke-dasharray="4,3" marker-end="url(#arrow-blue)"/>
+        <text x="380" y="225" font-family="Noto Sans SC" font-size="10" text-anchor="middle" fill="#3D4D5C">"100万样本 / 120列" 一笔带过</text>
+
+        <!-- 4.1 ← 3 (Baseline section refers back to data structure) -->
+        <path d="M 750 130 L 700 130" fill="none" stroke="#3D4D5C" stroke-width="1.5" marker-end="url(#arrow-blue)"/>
+        <text x="725" y="120" font-family="Noto Sans SC" font-size="10" text-anchor="middle" fill="#3D4D5C">"如§3所述"</text>
+
+        <!-- 4.1 ← 2 (Baseline cites HyFormer) -->
+        <path d="M 750 165 Q 600 280 380 175" fill="none" stroke="#3D4D5C" stroke-width="1.5" stroke-dasharray="4,3" marker-end="url(#arrow-blue)"/>
+        <text x="565" y="290" font-family="Noto Sans SC" font-size="10" text-anchor="middle" fill="#3D4D5C">引用 HyFormer 论文</text>
+
+        <!-- 1 → all (Intro previews) -->
+        <path d="M 150 100 Q 150 50 380 80" fill="none" stroke="#7A6F5F" stroke-width="1" stroke-dasharray="2,3" opacity="0.5"/>
+        <path d="M 150 100 Q 380 30 610 90" fill="none" stroke="#7A6F5F" stroke-width="1" stroke-dasharray="2,3" opacity="0.5"/>
+        <path d="M 150 100 Q 500 20 840 90" fill="none" stroke="#7A6F5F" stroke-width="1" stroke-dasharray="2,3" opacity="0.5"/>
+        <text x="500" y="55" font-family="Noto Sans SC" font-size="10" text-anchor="middle" fill="#7A6F5F" opacity="0.7">Intro 提纲式预告全文</text>
+
+        <!-- Common terminology -->
+        <rect x="150" y="320" width="800" height="100" rx="14" fill="#FCF8EC" stroke="#1F1A14" stroke-width="1" stroke-dasharray="4,3"/>
+        <text x="170" y="345" font-family="JetBrains Mono" font-size="11" letter-spacing="1.5" fill="#1F1A14">⚠ 全文必须术语统一</text>
+        <text x="170" y="375" font-family="Noto Sans SC" font-size="13" fill="#4A4036">• "click-through rate (CTR)" — 缩写在首次出现时定义,后续都用 CTR</text>
+        <text x="170" y="395" font-family="Noto Sans SC" font-size="13" fill="#4A4036">• "behavioral domain" / "interaction modality" — 选一个,全文一致(不要混用)</text>
+        <text x="170" y="415" font-family="Noto Sans SC" font-size="13" fill="#4A4036">• "PCVRHyFormer" / "the official baseline" — 首次定义后,后续可简称"the baseline"</text>
+      </svg>
+    </div>
+  </section>
+
+  <!-- ═══════════════════ WRITING TIPS ═══════════════════ -->
+  <div class="section-marker">§ 05 · Writing Craft</div>
+  <h2 class="major">写作 <em>tips</em> · 让 reviewer 一眼看出你是认真的</h2>
+  <p class="lede">
+    NeurIPS 风格论文不是堆术语比赛。下面这 8 条来自一线审稿人的偏好 —
+    遵守它们,你的文章读起来就像"自己人写的",不遵守就会显得"AI 生成感"。
+  </p>
+
+  <div class="tips-grid">
+    <div class="tip-card">
+      <h4><span class="num">01</span> 一句话 = 一个观点</h4>
+      <p>NeurIPS 写作偏好<strong>短句</strong>。不要写长达 3 行的中文式复合句。每句话只承载一个核心观点,有从属信息就开新句。</p>
+      <p style="color: var(--ink-faint); font-size: 13px;"><em>反例</em>:"Although baselines suffer from problems, our method, which is based on a novel design, addresses them by improving X, leading to better Y."</p>
+    </div>
+
+    <div class="tip-card">
+      <h4><span class="num">02</span> 主动语态 + I/We</h4>
+      <p>NeurIPS 现在<strong>鼓励</strong>用 "We propose..." 而不是被动的 "It is proposed that...". 后者显得生硬、AI 味重。</p>
+    </div>
+
+    <div class="tip-card">
+      <h4><span class="num">03</span> 数字要精确</h4>
+      <p>不要写 "我们的模型显著好于 baseline"。要写 <code>"+0.0042 AUC over the baseline (0.7823 → 0.7865, p &lt; 0.05)"</code>。具体数字 = 可信度。</p>
+    </div>
+
+    <div class="tip-card">
+      <h4><span class="num">04</span> 图表自洽</h4>
+      <p>每张图 / 表的 caption 必须能<strong>独立读懂</strong>。不要写 "Figure 2: Our method." 要写 "Figure 2: Architecture of PCVRHyFormer. Three token types interact via N stacked blocks; final Q tokens are pooled for classification."</p>
+    </div>
+
+    <div class="tip-card">
+      <h4><span class="num">05</span> 诚实标注 baseline</h4>
+      <p>每次提到 baseline,都要让读者清楚<strong>这不是你做的</strong>。开头一句 "We build on the official baseline (PCVRHyFormer) ..." 后,所有"我们改了"的部分必须有清晰的 "Our X" / "we modify Y" 标记。</p>
+    </div>
+
+    <div class="tip-card">
+      <h4><span class="num">06</span> 用 LaTeX 排公式</h4>
+      <p>所有数学符号(<code>x</code>, <code>ŷ</code>, <code>L</code>) 用 <code>$...$</code> 写,变量用 <code>\mathit{}</code>。不要在 Word 里直接打 "y_hat" 这种 ASCII。</p>
+    </div>
+
+    <div class="tip-card">
+      <h4><span class="num">07</span> 引用要密但不堆砌</h4>
+      <p>9 页 NeurIPS 通常引用 15-25 篇。Related Work 是引用密度最高的(每个声明都要有 cite),Method 章节引用最少(那是你自己的工作)。</p>
+    </div>
+
+    <div class="tip-card">
+      <h4><span class="num">08</span> 一定要写延迟分析</h4>
+      <p>这是 TAAC 2026 的特殊要求。Section 5 必须有一段说明你的方法 <code>"satisfies the official latency budget"</code>,即使你不写具体毫秒数。</p>
+    </div>
+  </div>
+
+  <!-- ═══════════════════ FOOTER ═══════════════════ -->
+  <footer class="footer">
+    <div class="next-steps">
+      <h4>📝 现在该做什么</h4>
+      <ul>
+        <li>✅ 把这份 roadmap 打开放一边,作为你写作时的参考</li>
+        <li>📄 新建一个 Word 文档,按 NeurIPS 格式设置:Times New Roman 10pt,1.5"左 margin</li>
+        <li>🚀 从 <strong>Section 3 (Problem + Dataset)</strong> 开始 — 它最具体,最容易开头</li>
+        <li>📚 如果今天就要动 Section 2,先去精读 InterFormer / OneTrans / HyFormer 三篇 PDF 的 Method 章节</li>
+        <li>🔄 等队友把 GitHub 代码 push 上来后,再写 Section 4.2 + 5</li>
+        <li>⚠️ 每写完一节,回到这份 roadmap 检查内容清单,看是否漏了关键点</li>
+      </ul>
+    </div>
+    <p>TAAC 2026 · Stage 4 Writing Roadmap · 由 Claude 整理</p>
+    <p style="margin-top: 8px; opacity: 0.7;">点击各章节的复选框可以标记完成情况(刷新后会重置 — 仅用于本次会话的视觉跟踪)</p>
+  </footer>
+
+</div>
+
+<!-- Floating progress pill -->
+<div class="progress-pill">
+  <span id="progress-text">0 / 33</span>
+  <div class="progress-bar"><div class="progress-fill" id="progress-fill"></div></div>
+</div>
+
+<script>
+  // Tab switching
+  function switchTab(btn, panelId) {
+    const tabsContainer = btn.parentElement;
+    const allBtns = tabsContainer.querySelectorAll('.tab-btn');
+    allBtns.forEach(b => b.classList.remove('active'));
+    btn.classList.add('active');
+
+    let sibling = tabsContainer.nextElementSibling;
+    while (sibling && sibling.classList.contains('tab-panel')) {
+      sibling.classList.remove('active');
+      sibling = sibling.nextElementSibling;
+    }
+    document.getElementById(panelId).classList.add('active');
+  }
+
+  // Checkbox toggle
+  function toggleCheck(btn) {
+    btn.classList.toggle('done');
+    updateProgress();
+  }
+
+  function updateProgress() {
+    const all = document.querySelectorAll('.check-marker');
+    const done = document.querySelectorAll('.check-marker.done');
+    const pct = all.length ? (done.length / all.length) * 100 : 0;
+    document.getElementById('progress-text').textContent = `${done.length} / ${all.length}`;
+    document.getElementById('progress-fill').style.width = `${pct}%`;
+  }
+
+  // Init
+  updateProgress();
+</script>
+
+</body>
+</html>
