@@ -1,0 +1,1623 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>TAAC 2026 项目 · Stage 1–3 结构性总结</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Fraunces:opsz,wght@9..144,400;9..144,500;9..144,600;9..144,700&family=Noto+Sans+SC:wght@300;400;500;600&family=JetBrains+Mono:wght@400;500&display=swap" rel="stylesheet">
+<style>
+  :root {
+    --bg: #F2EBDD;
+    --bg-paper: #F8F2E2;
+    --bg-soft: #EAE0CC;
+    --bg-card: #FCF8EC;
+    --bg-deep: #1F1A14;
+
+    --ink: #1F1A14;
+    --ink-soft: #4A4036;
+    --ink-faint: #7A6F5F;
+
+    --rust: #9A4423;
+    --teal: #1F5E55;
+    --gold: #8B6914;
+    --plum: #6B3F5C;
+    --moss: #4A6B2A;
+    --slate: #3D4D5C;
+    --indigo: #4A4178;
+
+    --bg-rust: #EFD5C5;
+    --bg-teal: #D1E2DC;
+    --bg-gold: #ECE0C2;
+    --bg-plum: #E8D6E0;
+    --bg-moss: #DCE6CB;
+    --bg-slate: #D6E0E6;
+    --bg-indigo: #DCD8E8;
+
+    --border: rgba(31, 26, 20, 0.13);
+    --border-strong: rgba(31, 26, 20, 0.28);
+    --shadow-soft: 0 2px 8px rgba(31, 26, 20, 0.06);
+    --shadow-card: 0 4px 20px rgba(31, 26, 20, 0.08);
+
+    --serif: "Fraunces", "Noto Serif SC", "Songti SC", serif;
+    --sans: "Noto Sans SC", -apple-system, BlinkMacSystemFont, "PingFang SC", sans-serif;
+    --mono: "JetBrains Mono", ui-monospace, "SF Mono", Menlo, monospace;
+  }
+
+  @media (prefers-color-scheme: dark) {
+    :root {
+      --bg: #16130E;
+      --bg-paper: #1E1A14;
+      --bg-soft: #28231B;
+      --bg-card: #221E16;
+      --bg-deep: #0D0B08;
+
+      --ink: #E8DFCE;
+      --ink-soft: #B8AC95;
+      --ink-faint: #847868;
+
+      --rust: #E89070;
+      --teal: #6FB5A4;
+      --gold: #D4A845;
+      --plum: #C390AC;
+      --moss: #98B870;
+      --slate: #8FA5B5;
+      --indigo: #9F94CB;
+
+      --bg-rust: #4A2818;
+      --bg-teal: #1F3A35;
+      --bg-gold: #3F3018;
+      --bg-plum: #3D2832;
+      --bg-moss: #2E3A1F;
+      --bg-slate: #243038;
+      --bg-indigo: #2A2440;
+
+      --border: rgba(232, 223, 206, 0.12);
+      --border-strong: rgba(232, 223, 206, 0.22);
+      --shadow-soft: 0 2px 8px rgba(0, 0, 0, 0.3);
+      --shadow-card: 0 4px 20px rgba(0, 0, 0, 0.35);
+    }
+  }
+
+  * { box-sizing: border-box; }
+  html { scroll-behavior: smooth; }
+
+  body {
+    margin: 0;
+    background: var(--bg);
+    background-image:
+      radial-gradient(circle at 15% 8%, rgba(154, 68, 35, 0.05) 0%, transparent 45%),
+      radial-gradient(circle at 85% 92%, rgba(31, 94, 85, 0.05) 0%, transparent 45%),
+      radial-gradient(circle at 50% 50%, rgba(139, 105, 20, 0.03) 0%, transparent 60%);
+    color: var(--ink);
+    font-family: var(--sans);
+    font-size: 16px;
+    line-height: 1.7;
+    -webkit-font-smoothing: antialiased;
+  }
+
+  .page {
+    max-width: 920px;
+    margin: 0 auto;
+    padding: 80px 32px 100px;
+  }
+
+  /* ═══════════════════════════════════════ */
+  /*  HERO                                    */
+  /* ═══════════════════════════════════════ */
+  .hero {
+    position: relative;
+    margin-bottom: 100px;
+  }
+
+  .hero-meta {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    font-family: var(--mono);
+    font-size: 11px;
+    text-transform: uppercase;
+    letter-spacing: 0.18em;
+    color: var(--ink-faint);
+    padding-bottom: 24px;
+    border-bottom: 1px solid var(--border-strong);
+    margin-bottom: 40px;
+  }
+
+  .hero-meta .scope {
+    color: var(--rust);
+    font-weight: 500;
+  }
+
+  h1.hero-title {
+    font-family: var(--serif);
+    font-weight: 600;
+    font-size: clamp(40px, 7vw, 72px);
+    line-height: 1.05;
+    letter-spacing: -0.02em;
+    margin: 0 0 24px;
+    color: var(--ink);
+  }
+  h1.hero-title em {
+    font-style: italic;
+    font-weight: 400;
+    color: var(--rust);
+  }
+
+  .hero-lede {
+    font-family: var(--serif);
+    font-size: 22px;
+    line-height: 1.5;
+    color: var(--ink-soft);
+    max-width: 640px;
+    margin: 0 0 40px;
+    font-weight: 400;
+  }
+
+  .hero-pitch {
+    background: var(--bg-card);
+    border: 1px solid var(--border);
+    border-left: 3px solid var(--rust);
+    border-radius: 0 8px 8px 0;
+    padding: 28px 32px;
+    margin: 40px 0;
+    box-shadow: var(--shadow-soft);
+  }
+  .hero-pitch-label {
+    font-family: var(--mono);
+    font-size: 10px;
+    text-transform: uppercase;
+    letter-spacing: 0.2em;
+    color: var(--rust);
+    margin-bottom: 12px;
+    font-weight: 500;
+  }
+  .hero-pitch p {
+    margin: 0;
+    font-family: var(--serif);
+    font-size: 17px;
+    line-height: 1.7;
+    color: var(--ink);
+  }
+  .hero-pitch strong { color: var(--rust); font-weight: 600; }
+
+  /* ═══════════════════════════════════════ */
+  /*  GREAT MAP (the central visualization)  */
+  /* ═══════════════════════════════════════ */
+  .map-section {
+    margin: 80px 0;
+  }
+
+  .section-eyebrow {
+    font-family: var(--mono);
+    font-size: 11px;
+    text-transform: uppercase;
+    letter-spacing: 0.25em;
+    color: var(--rust);
+    margin: 0 0 12px;
+    font-weight: 500;
+  }
+
+  h2.section-title {
+    font-family: var(--serif);
+    font-size: clamp(28px, 4vw, 40px);
+    font-weight: 600;
+    line-height: 1.2;
+    margin: 0 0 16px;
+    letter-spacing: -0.01em;
+  }
+  h2.section-title em {
+    font-style: italic;
+    color: var(--ink-soft);
+    font-weight: 400;
+  }
+
+  .section-intro {
+    font-size: 17px;
+    color: var(--ink-soft);
+    line-height: 1.7;
+    margin: 0 0 36px;
+    max-width: 680px;
+  }
+
+  /* ─── The big map ─── */
+  .map-container {
+    background: var(--bg-card);
+    border: 1px solid var(--border);
+    border-radius: 12px;
+    padding: 40px 32px;
+    margin: 24px 0;
+    box-shadow: var(--shadow-card);
+    position: relative;
+    overflow: hidden;
+  }
+
+  .map-stages {
+    display: grid;
+    grid-template-columns: 1fr 1fr 1fr;
+    gap: 16px;
+    position: relative;
+    margin-bottom: 24px;
+  }
+  .map-stages::before {
+    content: "";
+    position: absolute;
+    top: 38px;
+    left: 8%;
+    right: 8%;
+    height: 1px;
+    border-top: 1px dashed var(--ink-faint);
+    z-index: 0;
+  }
+
+  .stage-card {
+    position: relative;
+    z-index: 1;
+    background: var(--bg);
+    border: 1px solid var(--border);
+    border-radius: 8px;
+    padding: 20px 18px 18px;
+    transition: transform 0.2s, box-shadow 0.2s;
+  }
+  .stage-card:hover {
+    transform: translateY(-2px);
+    box-shadow: var(--shadow-card);
+  }
+
+  .stage-num {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    width: 32px;
+    height: 32px;
+    border-radius: 50%;
+    font-family: var(--serif);
+    font-size: 16px;
+    font-weight: 600;
+    margin-bottom: 16px;
+    background: var(--bg-card);
+    border: 1.5px solid currentColor;
+  }
+  .stage-card-1 .stage-num { color: var(--rust); }
+  .stage-card-2 .stage-num { color: var(--teal); }
+  .stage-card-3 .stage-num { color: var(--indigo); }
+
+  .stage-card h3 {
+    font-family: var(--serif);
+    font-size: 18px;
+    font-weight: 600;
+    margin: 0 0 4px;
+    line-height: 1.3;
+  }
+  .stage-card .en-name {
+    font-family: var(--serif);
+    font-style: italic;
+    color: var(--ink-faint);
+    font-size: 13px;
+    margin: 0 0 14px;
+  }
+  .stage-card .question {
+    font-size: 13.5px;
+    color: var(--ink-soft);
+    margin: 0 0 14px;
+    line-height: 1.55;
+    padding-bottom: 14px;
+    border-bottom: 1px dashed var(--border);
+  }
+  .stage-card .core-bits {
+    list-style: none;
+    padding: 0;
+    margin: 0;
+  }
+  .stage-card .core-bits li {
+    font-size: 12.5px;
+    color: var(--ink-soft);
+    padding: 3px 0 3px 14px;
+    position: relative;
+    line-height: 1.5;
+  }
+  .stage-card .core-bits li::before {
+    content: "→";
+    position: absolute;
+    left: 0;
+    font-family: var(--mono);
+    color: var(--ink-faint);
+  }
+
+  .map-flow-arrow {
+    text-align: center;
+    color: var(--ink-faint);
+    font-size: 14px;
+    margin: 16px 0;
+    font-family: var(--mono);
+  }
+
+  .map-output {
+    background: var(--bg-rust);
+    border-radius: 8px;
+    padding: 18px 24px;
+    text-align: center;
+  }
+  .map-output-label {
+    font-family: var(--mono);
+    font-size: 10px;
+    text-transform: uppercase;
+    letter-spacing: 0.2em;
+    color: var(--rust);
+    margin-bottom: 6px;
+  }
+  .map-output-text {
+    font-family: var(--serif);
+    font-size: 17px;
+    color: var(--rust);
+    font-weight: 500;
+  }
+
+  /* ─── Mind-map SVG ─── */
+  .mindmap-svg {
+    width: 100%;
+    height: auto;
+    margin: 32px 0 0;
+    background: var(--bg-paper);
+    border-radius: 8px;
+    border: 1px solid var(--border);
+    padding: 16px;
+  }
+
+  /* ═══════════════════════════════════════ */
+  /*  STAGE-DETAIL SECTIONS                   */
+  /* ═══════════════════════════════════════ */
+  .deep-stage {
+    margin: 100px 0 0;
+    scroll-margin-top: 24px;
+  }
+
+  .deep-stage-header {
+    display: flex;
+    align-items: baseline;
+    gap: 24px;
+    padding-bottom: 24px;
+    margin-bottom: 32px;
+    border-bottom: 1px solid var(--border-strong);
+  }
+  .deep-stage-num {
+    font-family: var(--serif);
+    font-size: 96px;
+    font-weight: 600;
+    line-height: 1;
+    color: var(--rust);
+    opacity: 0.85;
+  }
+  .deep-stage-2 .deep-stage-num { color: var(--teal); }
+  .deep-stage-3 .deep-stage-num { color: var(--indigo); }
+
+  .deep-stage-title {
+    flex: 1;
+  }
+  .deep-stage-title .eyebrow {
+    font-family: var(--mono);
+    font-size: 11px;
+    text-transform: uppercase;
+    letter-spacing: 0.2em;
+    color: var(--ink-faint);
+    margin-bottom: 8px;
+  }
+  .deep-stage-title h2 {
+    font-family: var(--serif);
+    font-size: 36px;
+    font-weight: 600;
+    line-height: 1.2;
+    margin: 0;
+    letter-spacing: -0.01em;
+  }
+  .deep-stage-title .answer-to {
+    font-family: var(--serif);
+    font-style: italic;
+    color: var(--ink-soft);
+    font-size: 16px;
+    margin: 8px 0 0;
+  }
+
+  /* Concept grid */
+  .concept-grid {
+    display: grid;
+    grid-template-columns: repeat(2, 1fr);
+    gap: 20px;
+    margin: 32px 0;
+  }
+  @media (max-width: 720px) { .concept-grid { grid-template-columns: 1fr; } }
+
+  .concept-card {
+    background: var(--bg-card);
+    border: 1px solid var(--border);
+    border-radius: 8px;
+    padding: 22px 24px;
+    transition: border-color 0.2s, box-shadow 0.2s;
+  }
+  .concept-card:hover {
+    border-color: var(--border-strong);
+    box-shadow: var(--shadow-soft);
+  }
+
+  .concept-tag {
+    display: inline-block;
+    font-family: var(--mono);
+    font-size: 10px;
+    text-transform: uppercase;
+    letter-spacing: 0.15em;
+    padding: 3px 10px;
+    border-radius: 3px;
+    margin-bottom: 12px;
+    font-weight: 500;
+  }
+  .tag-key { background: var(--bg-rust); color: var(--rust); }
+  .tag-context { background: var(--bg-teal); color: var(--teal); }
+  .tag-definition { background: var(--bg-gold); color: var(--gold); }
+  .tag-implication { background: var(--bg-indigo); color: var(--indigo); }
+  .tag-fact { background: var(--bg-slate); color: var(--slate); }
+
+  .concept-card h4 {
+    font-family: var(--serif);
+    font-size: 19px;
+    font-weight: 600;
+    margin: 0 0 10px;
+    line-height: 1.3;
+  }
+  .concept-card p {
+    margin: 8px 0;
+    font-size: 14.5px;
+    line-height: 1.65;
+    color: var(--ink-soft);
+  }
+  .concept-card p:last-child { margin-bottom: 0; }
+  .concept-card strong { color: var(--ink); font-weight: 600; }
+  .concept-card code {
+    font-family: var(--mono);
+    font-size: 12.5px;
+    background: var(--bg-soft);
+    padding: 1px 5px;
+    border-radius: 3px;
+    color: var(--rust);
+  }
+
+  /* ═══════════════════════════════════════ */
+  /*  CROSS-LINKS  (the connections)         */
+  /* ═══════════════════════════════════════ */
+  .crosslinks-section {
+    background: var(--bg-paper);
+    border-radius: 12px;
+    padding: 48px 40px;
+    margin: 80px 0;
+    border: 1px solid var(--border);
+  }
+
+  .crosslinks-grid {
+    display: grid;
+    grid-template-columns: 1fr;
+    gap: 16px;
+    margin-top: 28px;
+  }
+
+  .crosslink {
+    background: var(--bg-card);
+    border-radius: 8px;
+    padding: 18px 22px;
+    display: grid;
+    grid-template-columns: 80px 1fr 80px 1fr;
+    gap: 16px;
+    align-items: center;
+    border: 1px solid var(--border);
+  }
+  @media (max-width: 720px) {
+    .crosslink { grid-template-columns: 1fr; gap: 8px; }
+  }
+
+  .cl-stage {
+    font-family: var(--mono);
+    font-size: 10px;
+    text-transform: uppercase;
+    letter-spacing: 0.15em;
+    color: var(--rust);
+    font-weight: 500;
+  }
+  .cl-arrow {
+    color: var(--ink-faint);
+    text-align: center;
+    font-family: var(--mono);
+  }
+  .cl-content {
+    font-size: 14px;
+    line-height: 1.5;
+    color: var(--ink-soft);
+  }
+  .cl-content strong { color: var(--ink); }
+
+  /* ═══════════════════════════════════════ */
+  /*  4-DOMAIN DEEP-DIVE                      */
+  /* ═══════════════════════════════════════ */
+  .domain-deep {
+    margin: 80px 0;
+  }
+
+  .domain-layers {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 16px;
+    margin: 32px 0;
+  }
+  @media (max-width: 720px) { .domain-layers { grid-template-columns: 1fr; } }
+
+  .layer-card {
+    background: var(--bg-card);
+    border: 1px solid var(--border);
+    border-left: 4px solid var(--rust);
+    border-radius: 4px;
+    padding: 20px 22px;
+    position: relative;
+  }
+  .layer-card.layer-1 { border-left-color: var(--gold); }
+  .layer-card.layer-2 { border-left-color: var(--rust); }
+  .layer-card.layer-3 { border-left-color: var(--plum); }
+  .layer-card.layer-4 { border-left-color: var(--slate); }
+
+  .layer-num {
+    font-family: var(--mono);
+    font-size: 10px;
+    text-transform: uppercase;
+    letter-spacing: 0.2em;
+    color: var(--ink-faint);
+    margin-bottom: 8px;
+  }
+  .layer-card h4 {
+    font-family: var(--serif);
+    font-size: 18px;
+    font-weight: 600;
+    margin: 0 0 10px;
+  }
+  .layer-card p {
+    margin: 6px 0 0;
+    font-size: 13.5px;
+    color: var(--ink-soft);
+    line-height: 1.55;
+  }
+
+  /* Known/Unknown/Todo */
+  .triad {
+    display: grid;
+    grid-template-columns: 1fr 1fr 1fr;
+    gap: 16px;
+    margin: 28px 0;
+  }
+  @media (max-width: 720px) { .triad { grid-template-columns: 1fr; } }
+
+  .triad-card {
+    border-radius: 8px;
+    padding: 20px 22px;
+  }
+  .triad-known { background: var(--bg-moss); color: var(--moss); }
+  .triad-unknown { background: var(--bg-rust); color: var(--rust); }
+  .triad-todo { background: var(--bg-gold); color: var(--gold); }
+
+  .triad-card h5 {
+    font-family: var(--mono);
+    font-size: 11px;
+    text-transform: uppercase;
+    letter-spacing: 0.2em;
+    margin: 0 0 14px;
+    font-weight: 500;
+  }
+  .triad-card ul {
+    list-style: none;
+    padding: 0;
+    margin: 0;
+    color: var(--ink);
+  }
+  .triad-card li {
+    font-size: 13px;
+    padding: 4px 0 4px 16px;
+    position: relative;
+    line-height: 1.5;
+  }
+  .triad-card li::before {
+    content: "·";
+    position: absolute;
+    left: 4px;
+    font-weight: 700;
+  }
+
+  /* ═══════════════════════════════════════ */
+  /*  CORRECTIONS (the journey)               */
+  /* ═══════════════════════════════════════ */
+  .corrections-section {
+    margin: 80px 0;
+  }
+
+  .correction {
+    background: var(--bg-card);
+    border: 1px solid var(--border);
+    border-radius: 8px;
+    margin: 16px 0;
+    overflow: hidden;
+    transition: box-shadow 0.2s;
+  }
+  .correction:hover { box-shadow: var(--shadow-soft); }
+
+  .correction summary {
+    cursor: pointer;
+    padding: 18px 24px;
+    list-style: none;
+    display: flex;
+    align-items: flex-start;
+    gap: 16px;
+    user-select: none;
+    transition: background 0.15s;
+  }
+  .correction summary::-webkit-details-marker { display: none; }
+  .correction summary:hover { background: var(--bg-soft); }
+
+  .correction-icon {
+    font-family: var(--serif);
+    font-size: 24px;
+    color: var(--rust);
+    flex-shrink: 0;
+    line-height: 1;
+    padding-top: 2px;
+  }
+  .correction-headline {
+    flex: 1;
+  }
+  .correction-headline .label {
+    font-family: var(--mono);
+    font-size: 10px;
+    text-transform: uppercase;
+    letter-spacing: 0.2em;
+    color: var(--rust);
+    margin-bottom: 4px;
+  }
+  .correction-headline .text {
+    font-family: var(--serif);
+    font-size: 16px;
+    font-weight: 500;
+    color: var(--ink);
+    line-height: 1.4;
+  }
+  .correction-toggle {
+    font-family: var(--mono);
+    font-size: 11px;
+    color: var(--ink-faint);
+    text-transform: uppercase;
+    letter-spacing: 0.1em;
+    align-self: center;
+  }
+  .correction[open] .correction-toggle::after { content: " ↑"; }
+  .correction:not([open]) .correction-toggle::after { content: " ↓"; }
+
+  .correction-body {
+    padding: 0 24px 24px 64px;
+    border-top: 1px solid var(--border);
+    background: var(--bg-paper);
+  }
+  .correction-body > div:first-child { padding-top: 16px; }
+
+  .before-after {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 14px;
+    margin: 12px 0;
+  }
+  @media (max-width: 600px) { .before-after { grid-template-columns: 1fr; } }
+
+  .ba-block {
+    border-radius: 6px;
+    padding: 14px 16px;
+  }
+  .ba-before {
+    background: var(--bg-rust);
+    border-left: 3px solid var(--rust);
+  }
+  .ba-after {
+    background: var(--bg-moss);
+    border-left: 3px solid var(--moss);
+  }
+  .ba-block .ba-label {
+    font-family: var(--mono);
+    font-size: 9px;
+    text-transform: uppercase;
+    letter-spacing: 0.2em;
+    margin-bottom: 6px;
+    font-weight: 500;
+  }
+  .ba-before .ba-label { color: var(--rust); }
+  .ba-after .ba-label { color: var(--moss); }
+  .ba-block p {
+    margin: 0;
+    font-size: 13.5px;
+    color: var(--ink);
+    line-height: 1.55;
+  }
+
+  .correction-body p {
+    margin: 12px 0 0;
+    font-size: 14.5px;
+    color: var(--ink-soft);
+    line-height: 1.65;
+  }
+
+  /* ═══════════════════════════════════════ */
+  /*  FOR TEAM (onboarding)                   */
+  /* ═══════════════════════════════════════ */
+  .team-onboard {
+    background: var(--bg-deep);
+    color: #E8DFCE;
+    border-radius: 12px;
+    padding: 48px 40px;
+    margin: 80px 0;
+    box-shadow: var(--shadow-card);
+  }
+  .team-onboard h2 {
+    font-family: var(--serif);
+    font-size: 32px;
+    font-weight: 600;
+    margin: 0 0 8px;
+    color: #F8F2E2;
+  }
+  .team-onboard .subtitle {
+    font-family: var(--serif);
+    font-style: italic;
+    font-size: 16px;
+    color: #B8AC95;
+    margin: 0 0 32px;
+  }
+
+  .onboard-steps {
+    display: grid;
+    grid-template-columns: 1fr;
+    gap: 14px;
+  }
+  .onboard-step {
+    background: rgba(248, 242, 226, 0.05);
+    border: 1px solid rgba(248, 242, 226, 0.12);
+    border-radius: 6px;
+    padding: 16px 20px;
+    display: grid;
+    grid-template-columns: 36px 1fr;
+    gap: 16px;
+    align-items: baseline;
+  }
+  .onboard-step-num {
+    font-family: var(--serif);
+    font-size: 24px;
+    font-weight: 600;
+    color: #D4A845;
+    line-height: 1;
+  }
+  .onboard-step h4 {
+    margin: 0 0 6px;
+    font-family: var(--serif);
+    font-size: 16px;
+    font-weight: 500;
+    color: #F8F2E2;
+  }
+  .onboard-step p {
+    margin: 0;
+    font-size: 13.5px;
+    color: #B8AC95;
+    line-height: 1.55;
+  }
+
+  /* ═══════════════════════════════════════ */
+  /*  QUICK REF                               */
+  /* ═══════════════════════════════════════ */
+  .quickref {
+    background: var(--bg-paper);
+    border: 1px dashed var(--border-strong);
+    border-radius: 12px;
+    padding: 36px 40px;
+    margin: 60px 0 0;
+  }
+
+  .quickref h2 {
+    font-family: var(--serif);
+    font-size: 24px;
+    font-weight: 600;
+    margin: 0 0 8px;
+    color: var(--rust);
+  }
+  .quickref-subtitle {
+    font-style: italic;
+    color: var(--ink-soft);
+    margin: 0 0 28px;
+    font-family: var(--serif);
+  }
+
+  .qr-table {
+    width: 100%;
+    border-collapse: collapse;
+    font-size: 13.5px;
+  }
+  .qr-table th {
+    text-align: left;
+    font-family: var(--mono);
+    font-size: 10px;
+    text-transform: uppercase;
+    letter-spacing: 0.15em;
+    padding: 10px 14px;
+    color: var(--ink-faint);
+    border-bottom: 1px solid var(--border-strong);
+    font-weight: 500;
+  }
+  .qr-table td {
+    padding: 12px 14px;
+    border-bottom: 1px solid var(--border);
+    vertical-align: top;
+  }
+  .qr-table tr:last-child td { border-bottom: none; }
+  .qr-table td:first-child {
+    font-family: var(--serif);
+    font-weight: 500;
+    color: var(--ink);
+    width: 32%;
+  }
+  .qr-table td code {
+    font-family: var(--mono);
+    font-size: 12px;
+    color: var(--rust);
+  }
+
+  /* ═══════════════════════════════════════ */
+  /*  FOOTER                                  */
+  /* ═══════════════════════════════════════ */
+  .footer-block {
+    margin-top: 100px;
+    padding-top: 40px;
+    border-top: 1px solid var(--border-strong);
+    text-align: center;
+    color: var(--ink-faint);
+    font-family: var(--serif);
+    font-style: italic;
+    font-size: 14px;
+  }
+  .footer-block .ornament {
+    font-size: 16px;
+    color: var(--rust);
+    margin: 0 12px;
+  }
+
+  /* ═══════════════════════════════════════ */
+  /*  Generic prose                           */
+  /* ═══════════════════════════════════════ */
+  p { margin: 14px 0; }
+  strong { color: var(--ink); font-weight: 600; }
+  code {
+    font-family: var(--mono);
+    font-size: 13px;
+    background: var(--bg-soft);
+    padding: 2px 6px;
+    border-radius: 3px;
+    color: var(--rust);
+  }
+
+  ul.refined {
+    list-style: none;
+    padding: 0;
+    margin: 16px 0;
+  }
+  ul.refined li {
+    padding: 4px 0 4px 24px;
+    position: relative;
+    color: var(--ink-soft);
+  }
+  ul.refined li::before {
+    content: "—";
+    position: absolute;
+    left: 0;
+    color: var(--rust);
+  }
+
+  @media (max-width: 720px) {
+    .page { padding: 50px 22px 80px; }
+    .map-stages { grid-template-columns: 1fr; gap: 12px; }
+    .map-stages::before { display: none; }
+    .deep-stage-header { flex-direction: column; gap: 8px; }
+    .deep-stage-num { font-size: 64px; }
+    .deep-stage-title h2 { font-size: 26px; }
+    .crosslinks-section { padding: 32px 24px; }
+    .team-onboard { padding: 32px 24px; }
+    .quickref { padding: 28px 24px; }
+  }
+</style>
+</head>
+<body>
+
+<div class="page">
+
+  <!-- ═══════════════════════════════ HERO ═══════════════════════════════ -->
+  <header class="hero">
+    <div class="hero-meta">
+      <span>TAAC × KDD CUP 2026 · 学习笔记</span>
+      <span class="scope">Stage 1–3 · 综合总结</span>
+    </div>
+
+    <h1 class="hero-title">三个阶段,<em>一份完整心智模型</em></h1>
+
+    <p class="hero-lede">
+      这份文档既是个人复习的结构化沉淀,也是给团队成员的 5 分钟 onboarding 导览。读完它,你应该能在 1 分钟内向任何人讲清楚:这个 project 是什么、要解决什么问题、数据长什么样。
+    </p>
+
+    <div class="hero-pitch">
+      <div class="hero-pitch-label">⚡ 30 秒电梯演讲</div>
+      <p>
+        我们参加的是<strong>腾讯 × KDD Cup 2026 广告算法大赛</strong>。比赛要解决的核心问题:推荐系统里"特征交互模型"和"序列模型"两条路线<strong>各自繁荣 15 年但融合不好</strong>。我们的任务是基于腾讯提供的官方 baseline(PCVRHyFormer),在<strong>脱敏后的真实广告日志</strong>上做改进,目标是用一个统一模型同时擅长两类信息,然后写成 9 页 NeurIPS 风格 report 作为课程交付(5 月 9 日截止)。
+      </p>
+    </div>
+  </header>
+
+
+  <!-- ═══════════════════════════════ THE BIG MAP ═══════════════════════════════ -->
+  <section class="map-section">
+    <div class="section-eyebrow">大局观 · The Big Picture</div>
+    <h2 class="section-title">三阶段如何串成<em> 一个完整故事</em></h2>
+    <p class="section-intro">
+      Stage 1 搭建项目身份("我是谁")· Stage 2 定义具体问题("我要解决什么")· Stage 3 摸清工具形态("我手上有什么")。三个阶段层层递进,合起来回答了 report 的 Introduction + Problem Formulation + Dataset 三个章节。
+    </p>
+
+    <div class="map-container">
+      <div class="map-stages">
+        <div class="stage-card stage-card-1">
+          <div class="stage-num">1</div>
+          <h3>项目身份</h3>
+          <p class="en-name">The Project</p>
+          <p class="question">我们是谁?在做什么?交付什么?</p>
+          <ul class="core-bits">
+            <li>Baseline 是<strong>起点 + 对照组</strong></li>
+            <li>我们是<strong>改良者</strong>,不是发明家</li>
+            <li>Motivation + Evidence 缺一不可</li>
+            <li>9 页 report,不是排行榜</li>
+          </ul>
+        </div>
+
+        <div class="stage-card stage-card-2">
+          <div class="stage-num">2</div>
+          <h3>问题定义</h3>
+          <p class="en-name">The Problem</p>
+          <p class="question">具体在解决什么?成功长什么样?</p>
+          <ul class="core-bits">
+            <li>4 个工业痛点(为什么有比赛)</li>
+            <li>CTR 预测 = 二分类 + 4 个建模难点</li>
+            <li>AUC 是排序能力的金标准</li>
+            <li>延迟约束是<strong>硬约束</strong>(超就废)</li>
+          </ul>
+        </div>
+
+        <div class="stage-card stage-card-3">
+          <div class="stage-num">3</div>
+          <h3>数据形态</h3>
+          <p class="en-name">The Data</p>
+          <p class="question">输入材料长什么样?</p>
+          <ul class="core-bits">
+            <li>120 列扁平 · 6 大类(Item Dense=空)</li>
+            <li>(key, value) 对齐结构</li>
+            <li>4 个域 + 65 个时间桶</li>
+            <li>Demo vs 正式两种格式</li>
+          </ul>
+        </div>
+      </div>
+
+      <div class="map-flow-arrow">▼ 三阶段共同指向 ▼</div>
+
+      <div class="map-output">
+        <div class="map-output-label">最终目标</div>
+        <div class="map-output-text">在 baseline 上做改进,写一篇说服力强的 9 页 report</div>
+      </div>
+
+      <!-- ─── Mind-map SVG ─── -->
+      <svg class="mindmap-svg" viewBox="0 0 880 420" xmlns="http://www.w3.org/2000/svg">
+        <defs>
+          <marker id="ar" viewBox="0 0 10 10" refX="8" refY="5" markerWidth="6" markerHeight="6" orient="auto">
+            <path d="M2 1L8 5L2 9" fill="none" stroke="currentColor" stroke-width="1.4" stroke-linecap="round" stroke-linejoin="round"/>
+          </marker>
+        </defs>
+
+        <!-- Center -->
+        <g>
+          <circle cx="440" cy="210" r="60" fill="var(--bg-rust)" stroke="var(--rust)" stroke-width="1.5"/>
+          <text x="440" y="205" text-anchor="middle" font-family="Fraunces, serif" font-size="14" font-weight="600" fill="var(--rust)">深度融合</text>
+          <text x="440" y="223" text-anchor="middle" font-family="Fraunces, serif" font-size="11" fill="var(--rust)" font-style="italic">Deep Fusion</text>
+        </g>
+
+        <!-- North: Two branches -->
+        <g>
+          <rect x="180" y="20" width="220" height="56" rx="6" fill="var(--bg-indigo)" stroke="var(--indigo)" stroke-width="0.8"/>
+          <text x="290" y="42" text-anchor="middle" font-family="Fraunces, serif" font-size="13" font-weight="600" fill="var(--indigo)">特征交互模型</text>
+          <text x="290" y="60" text-anchor="middle" font-family="Noto Sans SC, sans-serif" font-size="11" fill="var(--indigo)">擅长静态属性 · DeepFM 系</text>
+
+          <rect x="480" y="20" width="220" height="56" rx="6" fill="var(--bg-teal)" stroke="var(--teal)" stroke-width="0.8"/>
+          <text x="590" y="42" text-anchor="middle" font-family="Fraunces, serif" font-size="13" font-weight="600" fill="var(--teal)">序列模型</text>
+          <text x="590" y="60" text-anchor="middle" font-family="Noto Sans SC, sans-serif" font-size="11" fill="var(--teal)">擅长行为时间线 · SASRec 系</text>
+
+          <line x1="290" y1="78" x2="410" y2="180" stroke="var(--ink-faint)" stroke-width="0.8" stroke-dasharray="3 3" marker-end="url(#ar)"/>
+          <line x1="590" y1="78" x2="470" y2="180" stroke="var(--ink-faint)" stroke-width="0.8" stroke-dasharray="3 3" marker-end="url(#ar)"/>
+
+          <text x="440" y="120" text-anchor="middle" font-family="JetBrains Mono, monospace" font-size="10" fill="var(--ink-faint)" font-style="italic">15 年独立繁荣,但融合不好</text>
+        </g>
+
+        <!-- East: Data feeds in -->
+        <g>
+          <rect x="720" y="180" width="140" height="60" rx="6" fill="var(--bg-gold)" stroke="var(--gold)" stroke-width="0.8"/>
+          <text x="790" y="202" text-anchor="middle" font-family="Fraunces, serif" font-size="13" font-weight="600" fill="var(--gold)">120 列数据</text>
+          <text x="790" y="218" text-anchor="middle" font-family="Noto Sans SC, sans-serif" font-size="10" fill="var(--gold)">同时含两类信息</text>
+          <text x="790" y="232" text-anchor="middle" font-family="Noto Sans SC, sans-serif" font-size="10" fill="var(--gold)">完全脱敏</text>
+
+          <line x1="715" y1="210" x2="505" y2="210" stroke="var(--ink-faint)" stroke-width="0.8" marker-end="url(#ar)"/>
+          <text x="610" y="200" text-anchor="middle" font-family="JetBrains Mono, monospace" font-size="9" fill="var(--ink-faint)" font-style="italic">作为输入</text>
+        </g>
+
+        <!-- West: Constraints -->
+        <g>
+          <rect x="20" y="180" width="140" height="60" rx="6" fill="var(--bg-rust)" stroke="var(--rust)" stroke-width="0.8"/>
+          <text x="90" y="202" text-anchor="middle" font-family="Fraunces, serif" font-size="13" font-weight="600" fill="var(--rust)">硬约束</text>
+          <text x="90" y="218" text-anchor="middle" font-family="Noto Sans SC, sans-serif" font-size="10" fill="var(--rust)">推理延迟 &lt; 20ms</text>
+          <text x="90" y="232" text-anchor="middle" font-family="Noto Sans SC, sans-serif" font-size="10" fill="var(--rust)">超就废</text>
+
+          <line x1="165" y1="210" x2="375" y2="210" stroke="var(--ink-faint)" stroke-width="0.8" marker-end="url(#ar)"/>
+          <text x="270" y="200" text-anchor="middle" font-family="JetBrains Mono, monospace" font-size="9" fill="var(--ink-faint)" font-style="italic">限制设计空间</text>
+        </g>
+
+        <!-- South: Output + evaluation -->
+        <g>
+          <rect x="180" y="340" width="220" height="56" rx="6" fill="var(--bg-card)" stroke="var(--ink-soft)" stroke-width="0.8"/>
+          <text x="290" y="362" text-anchor="middle" font-family="Fraunces, serif" font-size="13" font-weight="600" fill="var(--ink)">CTR 预测概率</text>
+          <text x="290" y="380" text-anchor="middle" font-family="Noto Sans SC, sans-serif" font-size="11" fill="var(--ink-soft)">[0, 1] · 二分类输出</text>
+
+          <rect x="480" y="340" width="220" height="56" rx="6" fill="var(--bg-card)" stroke="var(--ink-soft)" stroke-width="0.8"/>
+          <text x="590" y="362" text-anchor="middle" font-family="Fraunces, serif" font-size="13" font-weight="600" fill="var(--ink)">AUC 评估</text>
+          <text x="590" y="380" text-anchor="middle" font-family="Noto Sans SC, sans-serif" font-size="11" fill="var(--ink-soft)">排序能力的金标准</text>
+
+          <line x1="410" y1="240" x2="290" y2="338" stroke="var(--ink-faint)" stroke-width="0.8" stroke-dasharray="3 3" marker-end="url(#ar)"/>
+          <line x1="470" y1="240" x2="590" y2="338" stroke="var(--ink-faint)" stroke-width="0.8" stroke-dasharray="3 3" marker-end="url(#ar)"/>
+        </g>
+
+        <!-- Stage labels -->
+        <g opacity="0.55">
+          <text x="440" y="160" text-anchor="middle" font-family="JetBrains Mono, monospace" font-size="9" fill="var(--rust)" font-weight="500" letter-spacing="2">▲ STAGE 2 · 痛点</text>
+          <text x="858" y="270" text-anchor="end" font-family="JetBrains Mono, monospace" font-size="9" fill="var(--rust)" font-weight="500" letter-spacing="2">STAGE 3 · 数据 ▶</text>
+          <text x="22" y="270" text-anchor="start" font-family="JetBrains Mono, monospace" font-size="9" fill="var(--rust)" font-weight="500" letter-spacing="2">◀ STAGE 2 · 评估</text>
+          <text x="440" y="412" text-anchor="middle" font-family="JetBrains Mono, monospace" font-size="9" fill="var(--rust)" font-weight="500" letter-spacing="2">▼ STAGE 1 · 任务输出</text>
+        </g>
+      </svg>
+    </div>
+  </section>
+
+
+  <!-- ═══════════════════════════════ STAGE 1 DETAIL ═══════════════════════════════ -->
+  <section class="deep-stage" id="stage-1">
+    <div class="deep-stage-header">
+      <div class="deep-stage-num">1</div>
+      <div class="deep-stage-title">
+        <div class="eyebrow">Stage One</div>
+        <h2>项目身份 · The Project</h2>
+        <p class="answer-to">回答的核心问题:我是谁?在做什么?交付什么?</p>
+      </div>
+    </div>
+
+    <div class="concept-grid">
+      <div class="concept-card">
+        <span class="concept-tag tag-key">核心概念</span>
+        <h4>Baseline 的双重角色</h4>
+        <p><strong>起点(脚手架)</strong>:腾讯写好的现成方案,代码、模型、训练流程全部打包好,我们不需要从白纸开始。</p>
+        <p><strong>对照组(参照系)</strong>:所有改动都要拿原始版本来对比 ——「baseline AUC 0.78,改完 0.81」,这 +0.03 才是<strong>我们的贡献</strong>。</p>
+      </div>
+
+      <div class="concept-card">
+        <span class="concept-tag tag-key">核心概念</span>
+        <h4>"改良者"角色定位</h4>
+        <p>我们不是模型发明家,是<strong>找问题再补救</strong>的诊断师。每一个改动都需要:</p>
+        <p><strong>Motivation</strong>(为什么改)+ <strong>Evidence</strong>(改了有效吗,用 ablation 证明)。</p>
+        <p>没有 motivation 的改动 = trial-and-error,审稿人不买账。</p>
+      </div>
+
+      <div class="concept-card">
+        <span class="concept-tag tag-context">背景认知</span>
+        <h4>主要矛盾在哪</h4>
+        <p>过去 15 年,推荐系统沿两条独立路线发展:</p>
+        <p><strong>· 特征交互模型</strong>(DeepFM 系)— 擅长静态属性</p>
+        <p><strong>· 序列模型</strong>(SASRec 系)— 擅长行为时间线</p>
+        <p>不是没人做过,而是<strong>"融合"这件事本身真的难</strong>。</p>
+      </div>
+
+      <div class="concept-card">
+        <span class="concept-tag tag-implication">实操含义</span>
+        <h4>报告(交付物)</h4>
+        <p><strong>形式</strong>:9 页 NeurIPS 风格 report</p>
+        <p><strong>截止</strong>:5 月 9 日 ⚠️</p>
+        <p><strong>核心要求</strong>:必须诚实标注哪些是 baseline、哪些是我们的</p>
+        <p><strong>关键认知</strong>:课程分数 ≠ 比赛排名。AUC 不高也能拿高分,关键是 report 写得清晰。</p>
+      </div>
+    </div>
+  </section>
+
+
+  <!-- ═══════════════════════════════ STAGE 2 DETAIL ═══════════════════════════════ -->
+  <section class="deep-stage deep-stage-2" id="stage-2">
+    <div class="deep-stage-header">
+      <div class="deep-stage-num">2</div>
+      <div class="deep-stage-title">
+        <div class="eyebrow">Stage Two</div>
+        <h2>问题定义 · The Problem</h2>
+        <p class="answer-to">回答的核心问题:具体在解决什么?怎么算成功?</p>
+      </div>
+    </div>
+
+    <div class="concept-grid">
+      <div class="concept-card">
+        <span class="concept-tag tag-context">背景</span>
+        <h4>4 个工业痛点(为什么有比赛)</h4>
+        <p><strong>1 · 跨范式交互浅</strong> — 两类模型只是简单拼接,没真正交流</p>
+        <p><strong>2 · 优化目标不一致</strong> — 对比学习 vs BCE,各自方向不同</p>
+        <p><strong>3 · 扩展性受限</strong> — 反 Scaling Law(下面专讲)</p>
+        <p><strong>4 · 硬件复杂度高</strong> — 两套部署,运维很贵</p>
+      </div>
+
+      <div class="concept-card">
+        <span class="concept-tag tag-definition">定义</span>
+        <h4>CTR 预测 = 二分类</h4>
+        <p>给定<strong>用户 + 候选广告 + 4 个域的行为序列</strong>,输出 <code>[0, 1]</code> 之间的概率,代表"会不会点击"。</p>
+        <p>不直接输出 0/1 是为了支持<strong>排序</strong> — 系统按概率排序,把最可能点的人排前面。</p>
+      </div>
+
+      <div class="concept-card">
+        <span class="concept-tag tag-fact">建模难点</span>
+        <h4>4 个建模难点</h4>
+        <p><strong>1 · 稀疏高维</strong> — 用户 ID 上亿,one-hot 不可行,用 embedding 也会爆显存</p>
+        <p><strong>2 · 长 + 异构序列</strong> — 几百到几千条,4 个域性质完全不同</p>
+        <p><strong>3 · 静态-序列融合</strong> — 浅拼接信息损失大</p>
+        <p><strong>4 · 推理延迟</strong> — &lt; 20 ms,不能无脑堆参数</p>
+      </div>
+
+      <div class="concept-card">
+        <span class="concept-tag tag-key">⭐ 重点</span>
+        <h4>Scaling Law 的暗示</h4>
+        <p><strong>LLM 有,推荐系统没有</strong>:GPT 系列从 1.5 亿涨到万亿能力质变;DeepFM 维度从 16 到 8192 反而下降。</p>
+        <p>原因:语言任务有无穷复杂度,推荐任务的匹配模式相对简单,模型很快学完了。</p>
+        <p><strong>比赛暗示</strong>:腾讯希望参赛者找到"让推荐系统也能 scale"的新架构 — 这是个开放性挑战 + 加分项。</p>
+      </div>
+
+      <div class="concept-card">
+        <span class="concept-tag tag-definition">评估</span>
+        <h4>AUC 是金标准 · 不是准确率</h4>
+        <p><strong>AUC 衡量的是"排序能力"</strong>:模型把会点的人排在不会点的人前面的概率。</p>
+        <p><strong>为什么不用准确率</strong>:CTR 数据极度不平衡(点击率 1%~5%),"全部预测不点击"的作弊模型也能拿 95%+ 准确率,但 AUC 立刻揭穿(=0.5,等于随机猜)。</p>
+        <p><strong>提升幅度</strong>:+0.001 已能写论文,+0.01 是显著改进。</p>
+      </div>
+
+      <div class="concept-card">
+        <span class="concept-tag tag-implication">硬约束</span>
+        <h4>延迟约束 = 入场券</h4>
+        <p><strong>软约束</strong>不达标只扣分;<strong>硬约束</strong>不达标直接淘汰。延迟是<strong>硬约束</strong> — AUC 全场最高也没用。</p>
+        <p><strong>这是改进 baseline 的"指南针"</strong>:不显著增加推理时间的改动是性价比最高的方向(改特征分组、时间桶、训练策略)。</p>
+      </div>
+    </div>
+  </section>
+
+
+  <!-- ═══════════════════════════════ STAGE 3 DETAIL ═══════════════════════════════ -->
+  <section class="deep-stage deep-stage-3" id="stage-3">
+    <div class="deep-stage-header">
+      <div class="deep-stage-num">3</div>
+      <div class="deep-stage-title">
+        <div class="eyebrow">Stage Three</div>
+        <h2>数据形态 · The Data</h2>
+        <p class="answer-to">回答的核心问题:输入材料具体长什么样?</p>
+      </div>
+    </div>
+
+    <div class="concept-grid">
+      <div class="concept-card">
+        <span class="concept-tag tag-fact">事实层</span>
+        <h4>规模与来源</h4>
+        <p><strong>来源</strong>:腾讯广告真实日志(real-world logs,不是合成数据)</p>
+        <p><strong>规模</strong>:学术赛道 100 万样本(单卡 GPU 一天能跑完)</p>
+        <p><strong>状态</strong>:完全脱敏 — 所有 ID 都是匿名整数,所有数值都是抽象 float</p>
+        <p><strong>结构</strong>:120 列扁平(flat)布局,不嵌套</p>
+      </div>
+
+      <div class="concept-card">
+        <span class="concept-tag tag-fact">结构层</span>
+        <h4>120 列分 6 大类</h4>
+        <p><strong>· ID & Label</strong> 5 列(元数据 + 答案)</p>
+        <p><strong>· User Int</strong> 46 列(35 标量 + 11 多值)</p>
+        <p><strong>· User Dense</strong> 10 列(2 预训练 + 8 对齐)⭐</p>
+        <p><strong>· Item Int</strong> 14 列(13 标量 + 1 多值)</p>
+        <p><strong>· Item Dense</strong> 0 列(空 — contribution 空间)</p>
+        <p><strong>· Domain Sequence</strong> 45 列(4 个域,主战场)</p>
+      </div>
+
+      <div class="concept-card">
+        <span class="concept-tag tag-key">⭐ 重点</span>
+        <h4>(key, value) 对齐结构</h4>
+        <p>User Dense 中 8 列与 User Int 同 fid 的列<strong>逐元素对齐</strong>:</p>
+        <p><code>user_int_feats_62: [1, 2, 3]</code> 是类目 ID</p>
+        <p><code>user_dense_feats_62: [10.5, 20, 15.5]</code> 是对应统计量</p>
+        <p>腾讯官方说明:dense 值代表 <strong>dwell time / score / probability</strong>。这种"用 dense 给 sparse 加权"的思路,值得在 report 里点出。</p>
+      </div>
+
+      <div class="concept-card">
+        <span class="concept-tag tag-fact">分布</span>
+        <h4>4 个行为域</h4>
+        <p><strong>Domain A</strong>:domain_a_seq_{38–46},9 列</p>
+        <p><strong>Domain B</strong>:domain_b_seq_{67–79, 88},14 列</p>
+        <p><strong>Domain C</strong>:domain_c_seq_{27–37, 47},12 列</p>
+        <p><strong>Domain D</strong>:domain_d_seq_{17–26},10 列</p>
+        <p>具体业务含义腾讯没明说,这是<strong>有意的</strong> — 让方法对未知语义的多域数据都适用。</p>
+      </div>
+
+      <div class="concept-card">
+        <span class="concept-tag tag-implication">机制</span>
+        <h4>时间桶机制(time bucketization)</h4>
+        <p>Unix 时间戳直接喂模型不行(数值范围乱)。腾讯 baseline 把"两次行为之间的时间差"分成 <strong>65 个桶</strong>,边界从 5 秒到 1 年。</p>
+        <p>每个桶可以学一个 embedding,语义化"刚刚"和"很久以前"。</p>
+        <p><strong>这是可调参数</strong> — 改 <code>BUCKET_BOUNDARIES</code> 是低成本高潜力的改进方向。</p>
+      </div>
+
+      <div class="concept-card">
+        <span class="concept-tag tag-implication">陷阱警示</span>
+        <h4>两种数据格式 · 别混淆</h4>
+        <p><strong>Demo 格式</strong>(7 列嵌套 struct)— Hugging Face <code>TAAC2026/data_sample_1000</code>,本地调试用</p>
+        <p><strong>正式格式</strong>(120 列扁平)— 真实训练用</p>
+        <p>同一份数据的两种打包方式。<strong>陷阱</strong>:在 Demo 上写完的代码,切到正式数据时可能因格式不同而读不进去。</p>
+      </div>
+    </div>
+  </section>
+
+
+  <!-- ═══════════════════════════════ CROSS-LINKS ═══════════════════════════════ -->
+  <section class="crosslinks-section">
+    <div class="section-eyebrow">概念之间的桥</div>
+    <h2 class="section-title">跨阶段连接<em> · 同一个概念在不同阶段的回响</em></h2>
+    <p class="section-intro" style="margin-bottom: 0;">
+      研究最有价值的洞察往往出现在"咦,这两个东西我之前以为是分开的,原来是一回事"的时候。下面这些跨阶段连接,把分散在三个 Stage 的概念串成一条线。
+    </p>
+
+    <div class="crosslinks-grid">
+      <div class="crosslink">
+        <div class="cl-stage">Stage 1</div>
+        <div class="cl-content">"Baseline 的浅融合"是<strong>主要矛盾</strong></div>
+        <div class="cl-arrow">━━▶</div>
+        <div class="cl-content"><strong>Stage 2</strong> 痛点 #1 + 难点 #3 都是它的具体技术化</div>
+      </div>
+
+      <div class="crosslink">
+        <div class="cl-stage">Stage 2</div>
+        <div class="cl-content">痛点 #3"扩展性受限"= <strong>反 Scaling Law</strong></div>
+        <div class="cl-arrow">━━▶</div>
+        <div class="cl-content"><strong>Stage 1</strong> 中"我们是改良者"的具体体现 — Scaling 实验是潜在 contribution</div>
+      </div>
+
+      <div class="crosslink">
+        <div class="cl-stage">Stage 2</div>
+        <div class="cl-content">建模难点 #2"长 + 异构序列"</div>
+        <div class="cl-arrow">━━▶</div>
+        <div class="cl-content"><strong>Stage 3</strong> 4 个 Domain 的具体形态(c/d 域 512 长 + 列名不连续)</div>
+      </div>
+
+      <div class="crosslink">
+        <div class="cl-stage">Stage 3</div>
+        <div class="cl-content">"Item Dense = 0 列"的留白</div>
+        <div class="cl-arrow">━━▶</div>
+        <div class="cl-content"><strong>Stage 1</strong> 中 Motivation 的来源 — 可以人工造商品 dense 特征作为改进</div>
+      </div>
+
+      <div class="crosslink">
+        <div class="cl-stage">Stage 3</div>
+        <div class="cl-content">"时间桶 65 个"是可调参数</div>
+        <div class="cl-arrow">━━▶</div>
+        <div class="cl-content"><strong>Stage 2</strong> 难点 #2 的解决路径 — 改桶边界对长序列效果有影响</div>
+      </div>
+
+      <div class="crosslink">
+        <div class="cl-stage">Stage 2</div>
+        <div class="cl-content">延迟约束 &lt; 20 ms</div>
+        <div class="cl-arrow">━━▶</div>
+        <div class="cl-content"><strong>Stage 1</strong> 改进方向的"指南针"— 限制了 Stage 3 中哪些参数可以放大</div>
+      </div>
+    </div>
+  </section>
+
+
+  <!-- ═══════════════════════════════ 4-DOMAIN DEEP DIVE ═══════════════════════════════ -->
+  <section class="domain-deep">
+    <div class="section-eyebrow">深度专题 · 团队最关注的难点</div>
+    <h2 class="section-title">4 个 Domain 为什么<em>"非常难处理"</em></h2>
+    <p class="section-intro">
+      这一节来自和技术组同学的对话沉淀。"难"不是单一问题,而是<strong>四层难度叠加</strong>。前两层 baseline 已在处理,后两层是我们的 contribution 空间。
+    </p>
+
+    <div class="domain-layers">
+      <div class="layer-card layer-1">
+        <div class="layer-num">第 1 层</div>
+        <h4>异构性 · Heterogeneity</h4>
+        <p>4 个域来自不同业务场景,行为频率、含义、字段都不同。不能粗暴混在一起,也不能用同一个 Transformer 抹平差异。</p>
+      </div>
+
+      <div class="layer-card layer-2">
+        <div class="layer-num">第 2 层</div>
+        <h4>长序列 · Long Sequence</h4>
+        <p>C/D 域最大 512,A/B 域 256。Self-attention 复杂度 O(L²),序列翻倍计算 4 倍。和延迟约束直接打架。</p>
+      </div>
+
+      <div class="layer-card layer-3">
+        <div class="layer-num">第 3 层</div>
+        <h4>域间关联未知 · ID Sharing?</h4>
+        <p>Domain A 里的 item_id=1001 和 Domain B 里的 item_id=1001 是不是同一个商品?腾讯没说。<strong>需要自己探查</strong>(看 baseline 用几个 embedding 表 / 看 ID 范围重叠率)。</p>
+      </div>
+
+      <div class="layer-card layer-4">
+        <div class="layer-num">第 4 层</div>
+        <h4>时间对齐 · Cross-Domain Time</h4>
+        <p>每个域内时间顺序保留,但<strong>4 个域之间的时间交错关系</strong>("B 搜 → A 曝光 → B 再搜")baseline 默认丢失。这是潜在的创新方向。</p>
+      </div>
+    </div>
+
+    <h3 style="font-family: var(--serif); font-size: 22px; font-weight: 600; margin: 48px 0 16px;">三个边界 · 已知 / 未知 / 待做</h3>
+
+    <div class="triad">
+      <div class="triad-card triad-known">
+        <h5>✅ 已知</h5>
+        <ul>
+          <li>4 个域,共 45 列</li>
+          <li>每域列名编号(38-46 等)</li>
+          <li>所有列都是 list&lt;int64&gt;</li>
+          <li>域内多列逐元素对齐</li>
+          <li>每位置 i 指代同一次行为</li>
+        </ul>
+      </div>
+
+      <div class="triad-card triad-unknown">
+        <h5>❓ 未知</h5>
+        <ul>
+          <li>每域具体业务含义</li>
+          <li>哪一列是 item_id / category</li>
+          <li>不同域的 ID 是否共享</li>
+          <li>每用户的序列长度分布</li>
+          <li>跨域时间交错关系</li>
+        </ul>
+      </div>
+
+      <div class="triad-card triad-todo">
+        <h5>🛠️ 需做</h5>
+        <ul>
+          <li>EDA:ID 重叠率分析</li>
+          <li>看 baseline 几个 embedding 表</li>
+          <li>序列长度分布探查</li>
+          <li>设计跨域融合机制</li>
+          <li>时间桶可能的优化</li>
+        </ul>
+      </div>
+    </div>
+  </section>
+
+
+  <!-- ═══════════════════════════════ CORRECTIONS / LEARNING JOURNEY ═══════════════════════════════ -->
+  <section class="corrections-section">
+    <div class="section-eyebrow">学习轨迹 · 我修正过的理解</div>
+    <h2 class="section-title">几次重要的<em>认知校正</em></h2>
+    <p class="section-intro">
+      这些是我在和 Claude 对话中走过的弯路 + 校正后的正确理解。保留下来给团队成员看,可以避开同样的坑。
+    </p>
+
+    <details class="correction">
+      <summary>
+        <span class="correction-icon">⟲</span>
+        <div class="correction-headline">
+          <div class="label">Correction · 校正 1</div>
+          <div class="text">"图 1 是 Feature Interaction 的数据,图 2 是 Sequential 的数据"— 这是个潜在误解</div>
+        </div>
+        <span class="correction-toggle">展开</span>
+      </summary>
+      <div class="correction-body">
+        <div class="before-after">
+          <div class="ba-block ba-before">
+            <div class="ba-label">校正前</div>
+            <p>认为静态数据(46+10+14)是给 Feature Interaction Models 用的,序列数据(45)是给 Sequential Models 用的 — 两类数据各自给不同模型。</p>
+          </div>
+          <div class="ba-block ba-after">
+            <div class="ba-label">校正后</div>
+            <p>120 列是<strong>同一份完整数据</strong>,里面同时包含两类信息。<strong>融合发生在模型内部</strong>(PCVRHyFormer 内部),不是数据层面。否则就是浅融合(❌),正是要超越的对象。</p>
+          </div>
+        </div>
+        <p>这一点不校正,后面看 PCVRHyFormer 的 forward 流程时会困惑:"为什么静态和序列从一开始就在交叉?"</p>
+      </div>
+    </details>
+
+    <details class="correction">
+      <summary>
+        <span class="correction-icon">⟲</span>
+        <div class="correction-headline">
+          <div class="label">Correction · 校正 2</div>
+          <div class="text">"100 万样本 = 100 万个用户"— 这是个量级理解错误</div>
+        </div>
+        <span class="correction-toggle">展开</span>
+      </summary>
+      <div class="correction-body">
+        <div class="before-after">
+          <div class="ba-block ba-before">
+            <div class="ba-label">校正前</div>
+            <p>把 100 万样本理解成"100 万个不同的人"。</p>
+          </div>
+          <div class="ba-block ba-after">
+            <div class="ba-label">校正后</div>
+            <p>100 万样本 = <strong>100 万次"曝光记录"</strong>。同一个人可以出现多次,因为他被展示过多次广告。背后真实人数<strong>少于</strong> 100 万,可能只有几十万。</p>
+          </div>
+        </div>
+        <p>关键认知:每条样本都有精确时间戳,所以同一用户在不同样本中,他的"过去行为序列截止点"也不同 — 这给了模型时序学习的可能。</p>
+      </div>
+    </details>
+
+    <details class="correction">
+      <summary>
+        <span class="correction-icon">⟲</span>
+        <div class="correction-headline">
+          <div class="label">Correction · 校正 3</div>
+          <div class="text">"评估方式" = "数据集划分"— 这是两件事</div>
+        </div>
+        <span class="correction-toggle">展开</span>
+      </summary>
+      <div class="correction-body">
+        <div class="before-after">
+          <div class="ba-block ba-before">
+            <div class="ba-label">校正前</div>
+            <p>把"评估方式"理解成"训练集 / 验证集 / 测试集划分"。</p>
+          </div>
+          <div class="ba-block ba-after">
+            <div class="ba-label">校正后</div>
+            <p>这是<strong>两件独立的事</strong>:数据划分是"<strong>在哪里打分</strong>"(所有 ML 项目通用);评估方式是"<strong>怎么打分</strong>"(用 AUC 还是准确率)。Stage 2 第三节讲的是后者。</p>
+          </div>
+        </div>
+      </div>
+    </details>
+
+    <details class="correction">
+      <summary>
+        <span class="correction-icon">⟲</span>
+        <div class="correction-headline">
+          <div class="label">Correction · 校正 4</div>
+          <div class="text">"字段名是猜的"— 公开和未知的边界搞混了</div>
+        </div>
+        <span class="correction-toggle">展开</span>
+      </summary>
+      <div class="correction-body">
+        <div class="before-after">
+          <div class="ba-block ba-before">
+            <div class="ba-label">校正前</div>
+            <p>因为数据脱敏,以为连 <code>user_id</code>、<code>timestamp</code> 这种字段名都是猜出来的。</p>
+          </div>
+          <div class="ba-block ba-after">
+            <div class="ba-label">校正后</div>
+            <p>分清两层:<strong>字段名 / schema 是公开的</strong>(写在 algo_qq_com.pdf 里);<strong>字段背后的真实业务含义是脱敏的</strong>(<code>user_id=87234691</code> 对应谁不知道)。骨架公开,血肉隐藏。</p>
+          </div>
+        </div>
+        <p>实操影响:讨论时分清"<strong>这是关于结构 / 类型 / 名称吗?</strong>"(确定的)还是"<strong>这是关于业务含义吗?</strong>"(推测的)。</p>
+      </div>
+    </details>
+
+    <details class="correction">
+      <summary>
+        <span class="correction-icon">⟲</span>
+        <div class="correction-headline">
+          <div class="label">Correction · 校正 5</div>
+          <div class="text">"锦上添花"— 这个比喻有偏差</div>
+        </div>
+        <span class="correction-toggle">展开</span>
+      </summary>
+      <div class="correction-body">
+        <div class="before-after">
+          <div class="ba-block ba-before">
+            <div class="ba-label">校正前</div>
+            <p>"我们做的是在 baseline 上锦上添花的工作"— 隐含"原作品已经完美,我加点漂亮"的感觉。</p>
+          </div>
+          <div class="ba-block ba-after">
+            <div class="ba-label">校正后</div>
+            <p>更准的比喻:<strong>"诊断病灶"</strong>。Baseline 有具体缺陷(浅融合、scaling 差、长序列差),我们的改动是<strong>有针对性的修复</strong>,不是装饰。Report 的 motivation 必须是"我们发现 baseline 有 X 缺陷"。</p>
+          </div>
+        </div>
+      </div>
+    </details>
+  </section>
+
+
+  <!-- ═══════════════════════════════ TEAM ONBOARDING ═══════════════════════════════ -->
+  <section class="team-onboard">
+    <h2>给团队成员的 5 分钟 onboarding</h2>
+    <p class="subtitle">如果你是第一次接触这个 project,按下面顺序看就够了</p>
+
+    <div class="onboard-steps">
+      <div class="onboard-step">
+        <div class="onboard-step-num">1</div>
+        <div>
+          <h4>先读"30 秒电梯演讲"(本页顶部)</h4>
+          <p>30 秒搞清楚我们参加的是什么、要解决什么、交付什么。这是和外人讲清楚项目的"标准模板"。</p>
+        </div>
+      </div>
+
+      <div class="onboard-step">
+        <div class="onboard-step-num">2</div>
+        <div>
+          <h4>看大局观图 + 三个 Stage 概览</h4>
+          <p>用 1 分钟看完三个 Stage 卡片 + 中间的 mind-map。建立"故事弧线":两类模型融合不好 → CTR 任务定义 → 数据形态。</p>
+        </div>
+      </div>
+
+      <div class="onboard-step">
+        <div class="onboard-step-num">3</div>
+        <div>
+          <h4>挑你最关心的 Stage 深读</h4>
+          <p>负责模型?重点看 Stage 1 + Stage 2 难点。负责数据?重点看 Stage 3 + 4-Domain 专题。负责报告?整篇都要扫一遍。</p>
+        </div>
+      </div>
+
+      <div class="onboard-step">
+        <div class="onboard-step-num">4</div>
+        <div>
+          <h4>看"5 次认知校正"避坑</h4>
+          <p>这是同伴踩过的具体错误 + 校正版理解。不读这部分会重复同样的弯路。</p>
+        </div>
+      </div>
+
+      <div class="onboard-step">
+        <div class="onboard-step-num">5</div>
+        <div>
+          <h4>读 4-Domain 专题</h4>
+          <p>这是整个 project 最难的技术点。哪怕你不直接处理这部分,也要懂它的难度结构,才能在团队讨论中跟上节奏。</p>
+        </div>
+      </div>
+
+      <div class="onboard-step">
+        <div class="onboard-step-num">6</div>
+        <div>
+          <h4>记住"延迟约束 = 指南针"</h4>
+          <p>无论你做哪部分改进,都要在脑子里挂着这条线:不增加推理时间的改动 = 性价比最高。这是贯穿整个 project 的设计准则。</p>
+        </div>
+      </div>
+    </div>
+  </section>
+
+
+  <!-- ═══════════════════════════════ QUICK REFERENCE ═══════════════════════════════ -->
+  <section class="quickref">
+    <h2>速查表 · Quick Reference</h2>
+    <p class="quickref-subtitle">关键术语 + 数字 + 文件 — 一眼能找到</p>
+
+    <table class="qr-table">
+      <thead>
+        <tr><th>项目</th><th>值 / 含义</th></tr>
+      </thead>
+      <tbody>
+        <tr><td>比赛全名</td><td>Tencent × KDD Cup 2026 · TAAC Academic Track</td></tr>
+        <tr><td>Baseline 名字</td><td>PCVRHyFormer(腾讯官方提供)</td></tr>
+        <tr><td>数据规模</td><td>100 万样本 · 学术赛道(工业 200 万)</td></tr>
+        <tr><td>列结构</td><td>120 列扁平,分 6 大类</td></tr>
+        <tr><td>4 个域列数</td><td>A=9 · B=14 · C=12 · D=10 · 共 45</td></tr>
+        <tr><td>序列最大长度</td><td>A/B 域 256 · C/D 域 512</td></tr>
+        <tr><td>时间桶数量</td><td>65(边界 5 秒~1 年)</td></tr>
+        <tr><td>评估指标</td><td>AUC of ROC(越高越好)</td></tr>
+        <tr><td>延迟约束</td><td>硬约束(动态公布,&lt; ~20 ms)</td></tr>
+        <tr><td>Report 截止</td><td>5 月 9 日</td></tr>
+        <tr><td>Report 形式</td><td>9 页 NeurIPS 风格</td></tr>
+        <tr><td>关键代码文件</td><td><code>dataset.py</code> · <code>model.py</code> · <code>trainer.py</code> · <code>ns_groups.json</code></td></tr>
+        <tr><td>关键文档</td><td><code>algo_qq_com.pdf</code>(腾讯官方白皮书,字段定义在第 5-6 页)</td></tr>
+        <tr><td>低成本改进点</td><td>BUCKET_BOUNDARIES · ns_groups.json · 商品 dense 特征人工构造</td></tr>
+      </tbody>
+    </table>
+  </section>
+
+
+  <!-- ═══════════════════════════════ FOOTER ═══════════════════════════════ -->
+  <div class="footer-block">
+    Stage 1–3 综合性总结 <span class="ornament">✦</span> 由对话整理而成 <span class="ornament">✦</span> 待续
+  </div>
+
+</div>
+
+</body>
+</html>
