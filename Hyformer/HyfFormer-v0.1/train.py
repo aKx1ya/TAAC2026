@@ -1,4 +1,4 @@
-"""PCVRInterFormer training entry point (self-contained baseline).
+"""PCVRHyFormer training entry point (self-contained baseline).
 
 Usage:
     python train.py [--num_epochs 10] [--batch_size 256] ...
@@ -20,7 +20,7 @@ import torch
 
 from utils import set_seed, EarlyStopping, create_logger
 from dataset import FeatureSchema, get_pcvr_data, NUM_TIME_BUCKETS
-from model import PCVRInterFormer
+from model import PCVRHyFormer
 from trainer import PCVRHyFormerRankingTrainer
 
 
@@ -39,24 +39,24 @@ def build_feature_specs(
 
 
 def parse_args() -> argparse.Namespace:
-    parser = argparse.ArgumentParser(description="PCVRInterFormer Training")
+    parser = argparse.ArgumentParser(description="PCVRHyFormer Training")
 
     # Paths (environment variables take precedence).
-    parser.add_argument('--data_dir', type=str, default=None,
+    parser.add_argument('--data_dir', type=str, default='./data',
                         help='Training data directory (env: TRAIN_DATA_PATH)')
     parser.add_argument('--schema_path', type=str, default=None,
                         help='Schema JSON path (defaults to <data_dir>/schema.json)')
-    parser.add_argument('--ckpt_dir', type=str, default=None,
+    parser.add_argument('--ckpt_dir', type=str, default='./checkpoints',
                         help='Checkpoint output directory (env: TRAIN_CKPT_PATH)')
-    parser.add_argument('--log_dir', type=str, default=None,
+    parser.add_argument('--log_dir', type=str, default='./logs' ,
                         help='Log directory (env: TRAIN_LOG_PATH)')
 
     # Training hyperparameters.
-    parser.add_argument('--batch_size', type=int, default=1024,
+    parser.add_argument('--batch_size', type=int, default=256,
                         help='Batch size for both training and validation')
     parser.add_argument('--lr', type=float, default=1e-4,
                         help='Learning rate for dense parameters (AdamW)')
-    parser.add_argument('--num_epochs', type=int, default=3,
+    parser.add_argument('--num_epochs', type=int, default=999,
                         help='Maximum number of training epochs '
                              '(typically terminated earlier by early stopping)')
     parser.add_argument('--patience', type=int, default=5,
@@ -71,7 +71,7 @@ def parse_args() -> argparse.Namespace:
     # Data pipeline.
     parser.add_argument('--num_workers', type=int, default=16,
                         help='Number of DataLoader workers')
-    parser.add_argument('--buffer_batches', type=int, default=100,
+    parser.add_argument('--buffer_batches', type=int, default=20,
                         help='Shuffle buffer size, in units of batches. '
                              'Lower values reduce memory usage.')
     parser.add_argument('--train_ratio', type=float, default=1.0,
@@ -96,7 +96,7 @@ def parse_args() -> argparse.Namespace:
                         help='Number of stacked MultiSeqHyFormerBlock layers')
     parser.add_argument('--num_heads', type=int, default=4,
                         help='Number of attention heads (must satisfy d_model %% num_heads == 0)')
-    parser.add_argument('--seq_encoder_type', type=str, default='swiglu',                                   # 修改序列编码器类型
+    parser.add_argument('--seq_encoder_type', type=str, default='transformer',
                         choices=['swiglu', 'transformer', 'longer'],
                         help='Sequence encoder variant: '
                              'swiglu = SwiGLU without attention, '
@@ -105,7 +105,7 @@ def parse_args() -> argparse.Namespace:
                              '(only this variant consumes --seq_top_k / --seq_causal)')
     parser.add_argument('--hidden_mult', type=int, default=4,
                         help='FFN inner-dim multiplier relative to d_model')
-    parser.add_argument('--dropout_rate', type=float, default=0.1,
+    parser.add_argument('--dropout_rate', type=float, default=0.01,
                         help='Dropout rate for the backbone '
                              '(seq id-embedding dropout is twice this value)')
     parser.add_argument('--seq_top_k', type=int, default=50,
@@ -135,7 +135,7 @@ def parse_args() -> argparse.Namespace:
                         help='RoPE base frequency (default 10000)')
 
     # Loss function.
-    parser.add_argument('--loss_type', type=str, default='focal', choices=['bce', 'focal'],                    # loss function type 改为 focal
+    parser.add_argument('--loss_type', type=str, default='bce', choices=['bce', 'focal'],
                         help='Loss type: bce = BCEWithLogits, focal = Focal Loss')
     parser.add_argument('--focal_alpha', type=float, default=0.1,
                         help='Focal Loss positive-class weight alpha '
@@ -155,7 +155,7 @@ def parse_args() -> argparse.Namespace:
                              '--reinit_cardinality_threshold and rebuild the Adagrad '
                              'optimizer state (cold-restart trick for high-cardinality '
                              'features to reduce overfitting)')
-    parser.add_argument('--reinit_cardinality_threshold', type=int, default=10000,
+    parser.add_argument('--reinit_cardinality_threshold', type=int, default=0,
                         help='Cardinality threshold used by the re-init strategy: '
                              'Embeddings whose vocab_size exceeds this value are reset '
                              'at each epoch end (0 = never reset any Embedding)')
@@ -200,7 +200,7 @@ def parse_args() -> argparse.Namespace:
     args.data_dir = os.environ.get('TRAIN_DATA_PATH', args.data_dir)
     args.ckpt_dir = os.environ.get('TRAIN_CKPT_PATH', args.ckpt_dir)
     args.log_dir = os.environ.get('TRAIN_LOG_PATH', args.log_dir)
-    args.tf_events_dir = os.environ.get('TRAIN_TF_EVENTS_PATH')
+    args.tf_events_dir = os.environ.get('TRAIN_TF_EVENTS_PATH', './logs/tensorboard')
 
     return args
 
@@ -284,7 +284,7 @@ def main() -> None:
         "d_model": args.d_model,
         "emb_dim": args.emb_dim,
         "num_queries": args.num_queries,
-        "num_blocks": args.num_hyformer_blocks,
+        "num_hyformer_blocks": args.num_hyformer_blocks,
         "num_heads": args.num_heads,
         "seq_encoder_type": args.seq_encoder_type,
         "hidden_mult": args.hidden_mult,
@@ -303,13 +303,13 @@ def main() -> None:
         "item_ns_tokens": args.item_ns_tokens,
     }
 
-    model = PCVRInterFormer(**model_args).to(args.device)
+    model = PCVRHyFormer(**model_args).to(args.device)
 
     # Log model sizing info.
     num_sequences = len(pcvr_dataset.seq_domains)
     num_ns = model.num_ns
     T = args.num_queries * num_sequences + num_ns
-    logging.info(f"PCVRInterFormer model created: num_ns={num_ns}, T={T}, d_model={args.d_model}, rank_mixer_mode={args.rank_mixer_mode}")
+    logging.info(f"PCVRHyFormer model created: num_ns={num_ns}, T={T}, d_model={args.d_model}, rank_mixer_mode={args.rank_mixer_mode}")
     logging.info(f"User NS groups: {user_ns_groups}")
     logging.info(f"Item NS groups: {item_ns_groups}")
     total_params = sum(p.numel() for p in model.parameters())

@@ -1,7 +1,0 @@
-Training
-start time: 2026-05-04 17:42:24
-check point: 2026-05-05 15:39:27  in global_step61608 .layer=2.head=4.hidden=64.best_model
-
-Evaluation
-auc: 0.806701
-Inference time: 226.89s
