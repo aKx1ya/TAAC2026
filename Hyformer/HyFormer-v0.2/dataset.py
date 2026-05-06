@@ -218,6 +218,7 @@ class PCVRParquetDataset(IterableDataset):
         self._buf_user_int = np.zeros((B, self.user_int_schema.total_dim), dtype=np.int64)
         self._buf_item_int = np.zeros((B, self.item_int_schema.total_dim), dtype=np.int64)
         self._buf_user_dense = np.zeros((B, self.user_dense_schema.total_dim), dtype=np.float32)
+        self._buf_item_dense = np.zeros((B, self.item_dense_schema.total_dim), dtype=np.float32)
         self._buf_seq = {}
         self._buf_seq_tb = {}
         self._buf_seq_lens = {}
@@ -248,6 +249,13 @@ class PCVRParquetDataset(IterableDataset):
         for fid, dim in self._user_dense_cols:
             ci = self._col_idx.get(f'user_dense_feats_{fid}')
             self._user_dense_plan.append((ci, dim, offset))
+            offset += dim
+
+        self._item_dense_plan = []
+        offset = 0
+        for fid, dim in self._item_dense_cols:
+            ci = self._col_idx.get(f'item_dense_feats_{fid}')
+            self._item_dense_plan.append((ci, dim, offset))
             offset += dim
 
         # Sequence column plan: {domain: ([(col_idx, feat_slot, vocab_size), ...], ts_col_idx)}
@@ -296,8 +304,11 @@ class PCVRParquetDataset(IterableDataset):
         for fid, dim in self._user_dense_cols:
             self.user_dense_schema.add(fid, dim)
 
-        # ---- item_dense (empty) ----
+        # ---- item_dense: [[fid, dim], ...] ----
+        self._item_dense_cols: List[List[int]] = raw.get('item_dense', [])
         self.item_dense_schema: FeatureSchema = FeatureSchema()
+        for fid, dim in self._item_dense_cols:
+            self.item_dense_schema.add(fid, dim)
 
         # ---- sequence domains ----
         self._seq_cfg: Dict[str, Dict[str, Any]] = raw['seq']
@@ -570,11 +581,19 @@ class PCVRParquetDataset(IterableDataset):
             padded = self._pad_varlen_float_column(col, dim, B)
             user_dense[:, offset:offset + dim] = padded
 
+        # ---- item_dense ----
+        item_dense = self._buf_item_dense[:B]
+        item_dense[:] = 0
+        for ci, dim, offset in self._item_dense_plan:
+            col = batch.column(ci)
+            padded = self._pad_varlen_float_column(col, dim, B)
+            item_dense[:, offset:offset + dim] = padded
+
         result = {
             'user_int_feats': torch.from_numpy(user_int.copy()),
             'user_dense_feats': torch.from_numpy(user_dense.copy()),
             'item_int_feats': torch.from_numpy(item_int.copy()),
-            'item_dense_feats': torch.zeros(B, 0, dtype=torch.float32),
+            'item_dense_feats': torch.from_numpy(item_dense.copy()),
             'label': torch.from_numpy(labels),
             'timestamp': torch.from_numpy(timestamps),
             'user_id': user_ids,
@@ -669,6 +688,70 @@ class PCVRParquetDataset(IterableDataset):
         return result
 
 
+def _get_rg_timestamp_range(
+    pf: pq.ParquetFile, rg_idx: int, ts_col_idx: int
+) -> Tuple[int, int]:
+    """Read the min/max timestamp of a row group from Parquet column statistics.
+
+    Falls back to (0, 0) if no statistics are available (e.g. the timestamp
+    column was written without statistics), which causes the row group to be
+    placed at the very beginning of the time-ordered list.
+    """
+    try:
+        col_meta = pf.metadata.row_group(rg_idx).column(ts_col_idx)
+        if col_meta.statistics and col_meta.statistics.has_min_max:
+            return int(col_meta.statistics.min), int(col_meta.statistics.max)
+    except Exception:
+        pass
+    return 0, 0
+
+
+def _sort_rg_by_timestamp(
+    rg_info: List[Tuple[str, int, int]],
+    pq_files: List[str],
+) -> List[Tuple[str, int, int]]:
+    """Sort row groups by their minimum timestamp (ascending).
+
+    Reads the timestamp column index from the first parquet file, then
+    scans statistics for every row group across all files. Row groups
+    with unavailable statistics are placed first (ts_min=0).
+
+    This is a metadata-only operation — no row data is read, so the
+    overhead is negligible even for 1M+-row datasets.
+    """
+    if not pq_files:
+        return rg_info
+
+    # Identify the timestamp column index from the first file.
+    pf0 = pq.ParquetFile(pq_files[0])
+    ts_col_idx = None
+    for i, name in enumerate(pf0.schema_arrow.names):
+        if name == 'timestamp':
+            ts_col_idx = i
+            break
+
+    if ts_col_idx is None:
+        logging.warning("No 'timestamp' column found; falling back to file-order split.")
+        return rg_info
+
+    # Build (ts_min, ts_max, file_path, rg_idx, num_rows) for sorting.
+    augmented = []
+    for f, rg_idx, nrows in rg_info:
+        pf = pq.ParquetFile(f)
+        ts_min, ts_max = _get_rg_timestamp_range(pf, rg_idx, ts_col_idx)
+        augmented.append((ts_min, ts_max, f, rg_idx, nrows))
+
+    augmented.sort(key=lambda x: x[0])  # sort by ts_min ascending
+
+    logging.info(
+        f"Timestamp-based RG sort: range=[{augmented[0][0]}, {augmented[-1][0]}], "
+        f"earliest file={os.path.basename(augmented[0][2])}, "
+        f"latest file={os.path.basename(augmented[-1][2])}"
+    )
+
+    return [(f, rg_idx, nrows) for _, _, f, rg_idx, nrows in augmented]
+
+
 def get_pcvr_data(
     data_dir: str,
     schema_path: str,
@@ -681,12 +764,21 @@ def get_pcvr_data(
     seed: int = 42,
     clip_vocab: bool = True,
     seq_max_lens: Optional[Dict[str, int]] = None,
+    sort_by_timestamp: bool = True,
+    valid_time_ratio: Optional[float] = None,
     **kwargs: Any,
 ) -> Tuple[DataLoader, DataLoader, PCVRParquetDataset]:
     """Create train / valid DataLoaders from raw multi-column Parquet files.
 
-    The validation split is taken as the last ``valid_ratio`` fraction of Row
-    Groups (in the file order returned by ``glob``).
+    When ``sort_by_timestamp=True`` (the default), row groups are sorted by
+    their minimum timestamp **before** splitting, so the validation set
+    always contains the most recent data — matching the real-world scenario
+    where a model trained on historical data predicts future conversions.
+
+    The ``valid_time_ratio`` parameter controls the fraction of *time* (not
+    row groups) used for validation: the last ``valid_time_ratio`` of the
+    sorted row groups becomes the validation set. When ``None``, it falls
+    back to ``valid_ratio`` (fraction of row-group count).
 
     Returns:
         A tuple ``(train_loader, valid_loader, train_dataset)``. The third
@@ -699,14 +791,27 @@ def get_pcvr_data(
     import glob as _glob
     pq_files = sorted(_glob.glob(os.path.join(data_dir, '*.parquet')))
 
+    # ---- Build row-group list ----
     rg_info = []
     for f in pq_files:
         pf = pq.ParquetFile(f)
         for i in range(pf.metadata.num_row_groups):
             rg_info.append((f, i, pf.metadata.row_group(i).num_rows))
+
+    # ---- Timestamp-based sorting (metadata-only, negligible overhead) ----
+    if sort_by_timestamp:
+        rg_info = _sort_rg_by_timestamp(rg_info, pq_files)
+
     total_rgs = len(rg_info)
 
-    n_valid_rgs = max(1, int(total_rgs * valid_ratio))
+    # ---- Time-based split: use valid_time_ratio if provided ----
+    if valid_time_ratio is not None and sort_by_timestamp:
+        # Split by time fraction: the last valid_time_ratio fraction of
+        # row groups (by count, already sorted by time) goes to validation.
+        n_valid_rgs = max(1, int(total_rgs * valid_time_ratio))
+    else:
+        n_valid_rgs = max(1, int(total_rgs * valid_ratio))
+
     n_train_rgs = total_rgs - n_valid_rgs
 
     # train_ratio: use only the first N% of the training Row Groups.
@@ -717,7 +822,8 @@ def get_pcvr_data(
     train_rows = sum(r[2] for r in rg_info[:n_train_rgs])
     valid_rows = sum(r[2] for r in rg_info[n_train_rgs:])
 
-    logging.info(f"Row Group split: {n_train_rgs} train ({train_rows} rows), "
+    split_mode = "time-based" if (sort_by_timestamp and valid_time_ratio is not None) else "RG-count-based"
+    logging.info(f"Row Group split ({split_mode}): {n_train_rgs} train ({train_rows} rows), "
                  f"{n_valid_rgs} valid ({valid_rows} rows)")
 
     train_dataset = PCVRParquetDataset(

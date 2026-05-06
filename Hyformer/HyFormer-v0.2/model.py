@@ -412,6 +412,81 @@ class RankMixerBlock(nn.Module):
         return Q_boost
 
 
+class ItemFeatureInteraction(nn.Module):
+    """Lightweight item-side feature interaction via bilinear gating.
+
+    Enhances item NS tokens by learning pairwise feature importance weights
+    and applying a gated residual transformation. This helps the model
+    capture item-attribute interactions (e.g. category × brand) before the
+    item tokens are fused with user / sequence representations.
+
+    Designed for sparse PCVR scenarios where item features are high-cardinality
+    and noisy — the gating mechanism suppresses irrelevant feature interactions.
+    """
+
+    def __init__(
+        self,
+        d_model: int,
+        num_item_tokens: int,
+        hidden_mult: int = 2,
+        dropout: float = 0.1,
+    ) -> None:
+        super().__init__()
+        self.num_item_tokens = num_item_tokens
+
+        # Pairwise token-interaction weights: (num_tokens, num_tokens)
+        self.interaction_weights = nn.Parameter(
+            torch.zeros(num_item_tokens, num_item_tokens)
+        )
+        nn.init.xavier_normal_(self.interaction_weights.unsqueeze(0))
+
+        # Gate: decides how much interaction to mix in per token
+        self.gate = nn.Sequential(
+            nn.Linear(d_model, d_model * hidden_mult),
+            nn.SiLU(),
+            nn.Linear(d_model * hidden_mult, d_model),
+            nn.Sigmoid(),
+        )
+
+        # Interaction projection
+        self.interact_proj = nn.Sequential(
+            nn.Linear(d_model, d_model * hidden_mult),
+            nn.SiLU(),
+            nn.Dropout(dropout),
+            nn.Linear(d_model * hidden_mult, d_model),
+        )
+
+        self.norm = nn.LayerNorm(d_model)
+        self.dropout = nn.Dropout(dropout)
+
+    def forward(self, item_tokens: torch.Tensor) -> torch.Tensor:
+        """Applies gated bilinear feature interaction to item NS tokens.
+
+        Args:
+            item_tokens: (B, N_item, D) — item NS tokens.
+
+        Returns:
+            Enhanced item tokens of the same shape (B, N_item, D).
+        """
+        B, N, D = item_tokens.shape
+
+        # 1. Pairwise interaction: weighted sum over other tokens
+        #    W: (N, N), item_tokens: (B, N, D)
+        #    interacted[b, i] = Σⱼ W[i,j] * item_tokens[b, j]
+        weights = F.softmax(self.interaction_weights, dim=-1)  # (N, N)
+        interacted = torch.einsum('ij,bjd->bid', weights, item_tokens)  # (B, N, D)
+        interacted = self.interact_proj(interacted)  # (B, N, D)
+
+        # 2. Gate: learn how much interaction to mix in
+        gate = self.gate(item_tokens)  # (B, N, D)
+
+        # 3. Gated residual
+        enhanced = item_tokens + self.dropout(gate * interacted)
+        enhanced = self.norm(enhanced)
+
+        return enhanced
+
+
 class MultiSeqQueryGenerator(nn.Module):
     """Multi-sequence query generation module.
 
@@ -1418,6 +1493,16 @@ class PCVRHyFormer(nn.Module):
             nn.LayerNorm(d_model),
         )
 
+        # Item feature interaction (optional, enabled by default when item tokens ≥ 2)
+        self.item_feat_interact: Optional[ItemFeatureInteraction] = None
+        if num_item_ns >= 2:
+            self.item_feat_interact = ItemFeatureInteraction(
+                d_model=d_model,
+                num_item_tokens=num_item_ns,
+                hidden_mult=2,
+                dropout=dropout_rate,
+            )
+
         # Dropout
         self.emb_dropout = nn.Dropout(dropout_rate)
 
@@ -1637,6 +1722,10 @@ class PCVRHyFormer(nn.Module):
         user_ns = self.user_ns_tokenizer(inputs.user_int_feats)   # (B, num_user_groups, D)
         item_ns = self.item_ns_tokenizer(inputs.item_int_feats)   # (B, num_item_groups, D)
 
+        # 1.5 Item feature interaction (gated bilinear pairwise crossing)
+        if self.item_feat_interact is not None:
+            item_ns = self.item_feat_interact(item_ns)
+
         ns_parts = [user_ns]
         if self.has_user_dense:
             user_dense_tok = F.silu(self.user_dense_proj(inputs.user_dense_feats)).unsqueeze(1)  # (B, 1, D)
@@ -1679,6 +1768,10 @@ class PCVRHyFormer(nn.Module):
         # Reuses forward logic but without dropout
         user_ns = self.user_ns_tokenizer(inputs.user_int_feats)
         item_ns = self.item_ns_tokenizer(inputs.item_int_feats)
+
+        # Item feature interaction
+        if self.item_feat_interact is not None:
+            item_ns = self.item_feat_interact(item_ns)
 
         ns_parts = [user_ns]
         if self.has_user_dense:
