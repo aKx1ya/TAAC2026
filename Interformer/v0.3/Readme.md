@@ -77,7 +77,7 @@ del num_queries, seq_encoder_type, seq_top_k, seq_causal, rank_mixer_mode, use_r
 | num_workers | 8 | 4（配合大 Batch 避免 OOM） |
 | buffer_batches | 默认 20 | 显式指定 20 |
 
-**影响分析**：Batch Size 扩大 4 倍意味着每个 Epoch 的参数更新次数减少为原来的 1/4。在 `num_epochs=3` 的限制下，总更新步数大幅减少。若学习率未等比例调整（如线性缩放法则 $lr \propto \sqrt{\text{batch\_size}}$），模型可能处于欠拟合状态。
+**影响分析**：Batch Size 扩大 4 倍意味着每个 Epoch 的参数更新次数减少为原来的 1/4。在 `num_epochs=3` 的限制下，总更新步数大幅减少。若学习率未等比例调整（如线性缩放法则 $lr \propto \sqrt{\text{batchsize}}$），模型可能处于欠拟合状态。
 
 ### 3.4 启用高基数特征冷重启
 
