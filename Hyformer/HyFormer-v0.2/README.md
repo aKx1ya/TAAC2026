@@ -1,5 +1,52 @@
 # HyFormer v0.2 — TAAC 2026 优化版
 
+---
+
+## 训练与评估报告
+
+### 训练概览
+
+| 项目 | 详情 |
+|------|------|
+| **模型版本** | HyFormer v0.2 |
+| **训练开始时间** | 2026-05-07 14:24:36 |
+| **训练结束时间** | 2026-05-07 22:51:52 |
+| **总训练时长** | 约 8 小时 27 分钟 |
+| **最优 Checkpoint** | `global_step9165.layer=2.head=4.hidden=128.best_model` |
+| **模型配置** | layers=2, heads=4, hidden=128 |
+
+### 模型架构
+
+- **模型名称**：PCVRHyFormer（Post-Click Conversion Rate Hybrid Transformer）
+- **位置编码**：Rotary Position Embedding (RoPE)
+- **激活函数**：SwiGLU
+- **注意力机制**：RoPE 增强多头自注意力（Multi-Head Self-Attention with RoPE）
+- **任务类型**：点击后转化率预估（Binary Classification）
+- **损失函数**：BCEWithLogitsLoss / Focal Loss
+
+### 训练过程可视化
+
+训练过程中记录了以下指标变化曲线：
+
+| 图表 | 文件 | 说明 |
+|------|------|------|
+| AUC 曲线 | `AUC.png` | 训练过程中 AUC 指标的变化趋势 |
+| LogLoss 曲线 | `LogLoss.png` | 训练过程中对数损失的变化趋势 |
+| Loss 曲线 | `Loss.png` | 训练过程中损失函数值的变化趋势 |
+
+### 最终评估结果
+
+| 指标 | 数值 |
+|------|------|
+| **AUC** | **0.795213** |
+| **推理时间 (Inference Time)** | **155.55 s** |
+
+### 总结
+
+- 模型在约 8.5 小时的训练后，最优 checkpoint 出现在 global_step 9165 处。
+- 最终评估 AUC 达到 **0.7952**，表明模型在点击后转化率预估任务上具有良好的区分能力。
+- 推理时间为 155.55 秒，可在实际业务场景中进行批量预测。
+
 > 基于 HyFormer (Hybrid Transformer) 架构的 Post-Click Conversion Rate (PCVR) 预测模型
 >
 > 针对 **KDD Cup 2026 TAAC** 竞赛 ~100 万级稀疏数据的专项优化

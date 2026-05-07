@@ -58,6 +58,8 @@ class PCVRHyFormerRankingTrainer:
         ns_groups_path: Optional[str] = None,
         eval_every_n_steps: int = 0,
         train_config: Optional[Dict[str, Any]] = None,
+        warmup_steps: int = 1000,
+        gradient_accumulation_steps: int = 1,
     ) -> None:
         self.model: nn.Module = model
         self.train_loader: DataLoader = train_loader
@@ -109,6 +111,9 @@ class PCVRHyFormerRankingTrainer:
         self.ckpt_params: Dict[str, Any] = ckpt_params or {}
         self.eval_every_n_steps: int = eval_every_n_steps
         self.train_config: Optional[Dict[str, Any]] = train_config
+        self.warmup_steps: int = warmup_steps
+        self.gradient_accumulation_steps: int = gradient_accumulation_steps
+        self._base_dense_lr: float = lr  # saved for linear warmup
 
         logging.info(f"PCVRInterFormerRankingTrainer loss_type={loss_type}, "
                      f"focal_alpha={focal_alpha}, focal_gamma={focal_gamma}, "
@@ -296,6 +301,8 @@ class PCVRHyFormerRankingTrainer:
         print("Start training (PCVRInterFormer)")
         self.model.train()
         total_step = 0
+        accum_loss = 0.0
+        optim_step_scheduled = False
 
         for epoch in range(1, self.num_epochs + 1):
             train_pbar = tqdm(enumerate(self.train_loader), total=len(self.train_loader),
@@ -303,9 +310,40 @@ class PCVRHyFormerRankingTrainer:
             loss_sum = 0.0
 
             for step, batch in train_pbar:
+                # ---- Linear LR warmup for dense params ----
+                if total_step < self.warmup_steps:
+                    progress = total_step / max(1, self.warmup_steps)
+                    warmup_lr = self._base_dense_lr * progress
+                    for pg in self.dense_optimizer.param_groups:
+                        pg['lr'] = warmup_lr
+
                 loss = self._train_step(batch)
                 total_step += 1
                 loss_sum += loss
+                accum_loss += loss
+
+                # ---- Gradient accumulation: only step optim every N batches ----
+                if total_step % self.gradient_accumulation_steps == 0:
+                    if self.scaler is not None:
+                        self.scaler.unscale_(self.dense_optimizer)
+                        if self.sparse_optimizer is not None:
+                            self.scaler.unscale_(self.sparse_optimizer)
+                    torch.nn.utils.clip_grad_norm_(self.model.parameters(), max_norm=1.0, foreach=False)
+                    if self.scaler is not None:
+                        self.scaler.step(self.dense_optimizer)
+                        if self.sparse_optimizer is not None:
+                            self.scaler.step(self.sparse_optimizer)
+                        self.scaler.update()
+                    else:
+                        self.dense_optimizer.step()
+                        if self.sparse_optimizer is not None:
+                            self.sparse_optimizer.step()
+                    self.dense_optimizer.zero_grad()
+                    if self.sparse_optimizer is not None:
+                        self.sparse_optimizer.zero_grad()
+                    optim_step_scheduled = False
+                else:
+                    optim_step_scheduled = True
 
                 if self.writer:
                     self.writer.add_scalar('Loss/train', loss, total_step)
@@ -314,18 +352,42 @@ class PCVRHyFormerRankingTrainer:
 
                 # Step-level validation (only when eval_every_n_steps > 0).
                 if self.eval_every_n_steps > 0 and total_step % self.eval_every_n_steps == 0:
+                    # Flush pending accumulation before eval
+                    if optim_step_scheduled:
+                        if self.scaler is not None:
+                            self.scaler.unscale_(self.dense_optimizer)
+                            if self.sparse_optimizer is not None:
+                                self.scaler.unscale_(self.sparse_optimizer)
+                        torch.nn.utils.clip_grad_norm_(self.model.parameters(), max_norm=1.0, foreach=False)
+                        if self.scaler is not None:
+                            self.scaler.step(self.dense_optimizer)
+                            if self.sparse_optimizer is not None:
+                                self.scaler.step(self.sparse_optimizer)
+                            self.scaler.update()
+                        else:
+                            self.dense_optimizer.step()
+                            if self.sparse_optimizer is not None:
+                                self.sparse_optimizer.step()
+                        self.dense_optimizer.zero_grad()
+                        if self.sparse_optimizer is not None:
+                            self.sparse_optimizer.zero_grad()
+                        optim_step_scheduled = False
+
                     logging.info(f"Evaluating at step {total_step}")
-                    val_auc, val_logloss = self.evaluate(epoch=epoch)
+                    metrics = self.evaluate(epoch=epoch)
                     self.model.train()
                     torch.cuda.empty_cache()
 
-                    logging.info(f"Step {total_step} Validation | AUC: {val_auc}, LogLoss: {val_logloss}")
+                    logging.info(f"Step {total_step} Validation | AUC: {metrics['auc']:.4f}, "
+                                 f"LogLoss: {metrics['logloss']:.4f}, "
+                                 f"GAUC: {metrics.get('gauc', 0):.4f}, "
+                                 f"P@1%: {metrics.get('precision_at_1pct', 0):.4f}")
 
                     if self.writer:
-                        self.writer.add_scalar('AUC/valid', val_auc, total_step)
-                        self.writer.add_scalar('LogLoss/valid', val_logloss, total_step)
+                        for k, v in metrics.items():
+                            self.writer.add_scalar(f'{k}/valid', v, total_step)
 
-                    self._handle_validation_result(total_step, val_auc, val_logloss)
+                    self._handle_validation_result(total_step, metrics['auc'], metrics['logloss'])
 
                     if self.early_stopping.early_stop:
                         logging.info(f"Early stopping at step {total_step}")
@@ -333,17 +395,20 @@ class PCVRHyFormerRankingTrainer:
 
             logging.info(f"Epoch {epoch}, Average Loss: {loss_sum / len(self.train_loader)}")
 
-            val_auc, val_logloss = self.evaluate(epoch=epoch)
+            metrics = self.evaluate(epoch=epoch)
             self.model.train()
             torch.cuda.empty_cache()
 
-            logging.info(f"Epoch {epoch} Validation | AUC: {val_auc}, LogLoss: {val_logloss}")
+            logging.info(f"Epoch {epoch} Validation | AUC: {metrics['auc']:.4f}, "
+                         f"LogLoss: {metrics['logloss']:.4f}, "
+                         f"GAUC: {metrics.get('gauc', 0):.4f}, "
+                         f"P@1%: {metrics.get('precision_at_1pct', 0):.4f}")
 
             if self.writer:
-                self.writer.add_scalar('AUC/valid', val_auc, total_step)
-                self.writer.add_scalar('LogLoss/valid', val_logloss, total_step)
+                for k, v in metrics.items():
+                    self.writer.add_scalar(f'{k}/valid', v, total_step)
 
-            self._handle_validation_result(total_step, val_auc, val_logloss)
+            self._handle_validation_result(total_step, metrics['auc'], metrics['logloss'])
 
             if self.early_stopping.early_stop:
                 logging.info(f"Early stopping at epoch {epoch}")
@@ -402,19 +467,19 @@ class PCVRHyFormerRankingTrainer:
         )
 
     def _train_step(self, batch: Dict[str, Any]) -> float:
-        """Run a single training step and return the scalar loss value."""
+        """Run a single training step (forward + backward only).
+
+        Optimizer step is deferred to the caller (``train()`` loop) so that
+        gradient accumulation across multiple batches works correctly.
+        """
         device_batch = self._batch_to_device(batch)
         label = device_batch['label'].float()
 
         # Try to use AMP if on cuda
         use_amp = label.device.type == 'cuda'
-        
-        self.dense_optimizer.zero_grad()
-        if self.sparse_optimizer is not None:
-            self.sparse_optimizer.zero_grad()
 
         model_input = self._make_model_input(device_batch)
-        
+
         # Use autocast for memory efficiency
         with torch.amp.autocast('cuda', enabled=use_amp):
             logits = self.model(model_input)  # (B, 1)
@@ -424,36 +489,24 @@ class PCVRHyFormerRankingTrainer:
                 loss = sigmoid_focal_loss(logits, label, alpha=self.focal_alpha, gamma=self.focal_gamma)
             else:
                 loss = F.binary_cross_entropy_with_logits(logits, label)
-                
+
+        # Backward only — optimizer.step() is handled in train() with
+        # gradient accumulation & warmup logic.
         if self.scaler is not None:
             self.scaler.scale(loss).backward()
-            
-            self.scaler.unscale_(self.dense_optimizer)
-            if self.sparse_optimizer is not None:
-                self.scaler.unscale_(self.sparse_optimizer)
-                
-            torch.nn.utils.clip_grad_norm_(self.model.parameters(), max_norm=1.0, foreach=False)
-            
-            self.scaler.step(self.dense_optimizer)
-            if self.sparse_optimizer is not None:
-                self.scaler.step(self.sparse_optimizer)
-                
-            self.scaler.update()
         else:
             loss.backward()
-            torch.nn.utils.clip_grad_norm_(self.model.parameters(), max_norm=1.0, foreach=False)
-    
-            self.dense_optimizer.step()
-            if self.sparse_optimizer is not None:
-                self.sparse_optimizer.step()
 
         return loss.item()
 
-    def evaluate(self, epoch: Optional[int] = None) -> Tuple[float, float]:
-        """Run validation over ``self.valid_loader`` and return ``(AUC, logloss)``.
+    def evaluate(self, epoch: Optional[int] = None) -> Dict[str, float]:
+        """Run validation over ``self.valid_loader`` and return a dict of metrics.
+
+        Returned keys:
+            auc, logloss, gauc, precision_at_1pct, pos_rate
 
         NaN predictions (which can arise from exploding gradients) are filtered
-        out before computing both metrics.
+        out before computing all metrics.
         """
         print("Start Evaluation (PCVRInterFormer) - validation")
         self.model.eval()
@@ -487,20 +540,40 @@ class PCVRHyFormerRankingTrainer:
             probs = probs[valid_mask]
             labels_np = labels_np[valid_mask]
 
-        if len(probs) == 0 or len(np.unique(labels_np)) < 2:
-            auc = 0.0
-        else:
-            auc = float(roc_auc_score(labels_np, probs))
+        metrics: Dict[str, float] = {'auc': 0.0, 'logloss': float('inf'),
+                                      'gauc': 0.0, 'precision_at_1pct': 0.0,
+                                      'pos_rate': 0.0}
 
-        # Binary logloss (same NaN filtering).
+        if len(probs) == 0:
+            return metrics
+
+        pos_rate = float(labels_np.mean())
+        metrics['pos_rate'] = pos_rate
+
+        if len(np.unique(labels_np)) >= 2:
+            metrics['auc'] = float(roc_auc_score(labels_np, probs))
+        else:
+            logging.warning(f"[Evaluate] Only one class in labels after NaN filtering; AUC set to 0")
+
+        # ---- Group AUC (GAUC): AUC per user, macro-averaged ----
+        # (Not computed here — requires user_id grouping which isn't collected
+        #  in the current eval loop. Placeholder kept for future extension.)
+
+        # ---- Precision@1%: what fraction of top-1% predictions are positive ----
+        k = max(1, len(probs) // 100)
+        top_idx = np.argpartition(probs, -k)[-k:]
+        metrics['precision_at_1pct'] = float(labels_np[top_idx].mean())
+
+        # ---- Binary logloss (same NaN filtering) ----
         valid_logits = all_logits[~torch.isnan(all_logits)]
         valid_labels = all_labels[~torch.isnan(all_logits)]
-        if len(valid_logits) > 0:
-            logloss = F.binary_cross_entropy_with_logits(valid_logits, valid_labels.float()).item()
-        else:
-            logloss = float('inf')
+        if len(valid_logits) > 0 and len(torch.unique(valid_labels)) >= 2:
+            metrics['logloss'] = F.binary_cross_entropy_with_logits(
+                valid_logits, valid_labels.float()).item()
+        elif len(valid_logits) == 0:
+            metrics['logloss'] = float('inf')
 
-        return auc, logloss
+        return metrics
 
     def _evaluate_step(
         self, batch: Dict[str, Any]
