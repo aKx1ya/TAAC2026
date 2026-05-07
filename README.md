@@ -25,3 +25,8 @@ sudo chmod -R 777 <相对路径>
 - 1. 上传了InterFormer初版和V0.1与V0.3版本相关文件与训练结果，详情见Readme
 - 2. 上传了最新InterFormerV0.4版本，预计中午训练结束
 - 3. 下一步重点放在特征工程与调参方面
+
+## 5.8 -Update in GitGub
+- 1. 上传了Hyformer 0.2的训练与评估结果
+- 2. 上传了Interformer v0.5的模型，正在训练，预计明天中午训练结束
+- 3. 官方的baseline真牛逼，还是要敬畏
