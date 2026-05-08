@@ -1,0 +1,25 @@
+{
+  "_purpose": "NS-token grouping for TAAC 2026 PCVR prediction (HyFormer v0.2).",
+  "_format": "Top-level keys: 'user_ns_groups' and 'item_ns_groups'. Each maps a group name to a list of feature ids (fids). Keys starting with '_' are ignored.",
+  "_usage": "Used only by --ns_tokenizer_type group. The active RankMixer config (--ns_tokenizer_type rankmixer) ignores this file and auto-splits all feature embeddings into tunable token counts.",
+  "_note_T": "With d_model=128, num_ns=12 (7 user + 1 user_dense + 4 item), num_queries=1: T = 1*4 + 12 = 16, d_model%T == 0.",
+
+  "_comment_item_groups": "Item groups optimized for ad/conversion features: I1=ad identity, I2=ad content/creative, I3=advertiser context, I4=placement context.",
+
+  "user_ns_groups": {
+    "U1_user_profile": [1, 15],
+    "U2_user_stats": [48, 49, 89, 90, 91],
+    "U3_user_tags": [80],
+    "U4_behavior": [51, 52, 53, 54, 86],
+    "U5_context": [82, 92, 93],
+    "U6_cross_domain": [50, 60, 94, 95, 96, 97, 98, 99, 100, 101, 102, 103, 104, 105, 106, 107, 108, 109],
+    "U7_interaction": [3, 4, 55, 56, 57, 58, 59, 62, 63, 64, 65, 66]
+  },
+
+  "item_ns_groups": {
+    "I1_ad_identity": [11, 13],
+    "I2_content_features": [5, 6, 7, 8, 12],
+    "I3_advertiser_context": [16, 81, 83, 84, 85],
+    "I4_placement": [9, 10]
+  }
+}

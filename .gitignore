@@ -1,0 +1,63 @@
+# =========================
+# 操作系统自动生成的文件
+# =========================
+# Mac 专属（也就是之前提到的那些经常跨平台捣乱的文件）
+.DS_Store
+.AppleDouble
+.LSOverride
+Icon
+
+# Windows 专属（缩略图缓存等）
+Thumbs.db
+Thumbs.db:encryptable
+ehthumbs.db
+ehthumbs_vista.db
+*.cab
+*.lnk
+
+# =========================
+# 个人 IDE / 编辑器配置
+# =========================
+# VS Code
+.vscode/
+*.code-workspace
+
+# JetBrains 系列 (PyCharm, IntelliJ IDEA, WebStorm 等)
+.idea/
+*.iml
+*.iws
+
+# =========================
+# 编程开发常见缓存与依赖 (Python / C++ / Node)
+# =========================
+# Python 编译文件和缓存
+__pycache__/
+*.py[cod]
+*$py.class
+.pytest_cache/
+
+# 虚拟环境与环境变量 (绝对不能上传)
+venv/
+.venv/
+env/
+.env
+
+# Jupyter Notebook 自动保存记录
+.ipynb_checkpoints/
+
+# Node.js 依赖包 (如果你在折腾 Hexo 博客或前端)
+node_modules/
+
+# C/C++ 编译产物
+*.o
+*.obj
+*.exe
+*.dll
+*.so
+*.dylib
+
+# =========================
+# 杂项 / 日志
+# =========================
+# 本地运行日志
+*.log

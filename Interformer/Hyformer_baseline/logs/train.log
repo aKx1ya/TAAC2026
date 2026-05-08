@@ -1,0 +1,19 @@
+05/04/26 16:23:48 - 0:00:00 - Args: {'data_dir': './data', 'schema_path': None, 'ckpt_dir': './checkpoints', 'log_dir': './logs', 'batch_size': 256, 'lr': 0.0001, 'num_epochs': 999, 'patience': 5, 'seed': 42, 'device': 'cpu', 'num_workers': 16, 'buffer_batches': 20, 'train_ratio': 1.0, 'valid_ratio': 0.1, 'eval_every_n_steps': 0, 'seq_max_lens': 'seq_a:256,seq_b:256,seq_c:512,seq_d:512', 'd_model': 64, 'emb_dim': 64, 'num_queries': 1, 'num_hyformer_blocks': 2, 'num_heads': 4, 'seq_encoder_type': 'transformer', 'hidden_mult': 4, 'dropout_rate': 0.01, 'seq_top_k': 50, 'seq_causal': False, 'action_num': 1, 'use_time_buckets': True, 'rank_mixer_mode': 'ffn_only', 'use_rope': False, 'rope_base': 10000.0, 'loss_type': 'bce', 'focal_alpha': 0.1, 'focal_gamma': 2.0, 'sparse_lr': 0.05, 'sparse_weight_decay': 0.0, 'reinit_sparse_after_epoch': 1, 'reinit_cardinality_threshold': 0, 'emb_skip_threshold': 0, 'seq_id_threshold': 10000, 'ns_groups_json': 'd:\\研一必修\\KDD2026-TAAC\\baseline\\ns_groups.json', 'ns_tokenizer_type': 'rankmixer', 'user_ns_tokens': 0, 'item_ns_tokens': 0, 'tf_events_dir': './logs/tensorboard'}
+05/04/26 16:23:49 - 0:00:00 - Seq max_lens override: {'seq_a': 256, 'seq_b': 256, 'seq_c': 512, 'seq_d': 512}
+05/04/26 16:23:49 - 0:00:00 - Using Parquet data format (IterableDataset)
+05/04/26 16:23:49 - 0:00:00 - Row Group split: 1 train (1000 rows), 1 valid (1000 rows)
+05/04/26 16:23:49 - 0:00:00 - PCVRParquetDataset: 1000 rows from 2 file(s), batch_size=256, buffer_batches=20, shuffle=True
+05/04/26 16:23:49 - 0:00:00 - PCVRParquetDataset: 1000 rows from 2 file(s), batch_size=256, buffer_batches=0, shuffle=False
+05/04/26 16:23:49 - 0:00:00 - Parquet train: 1000 rows, valid: 1000 rows, batch_size=256, buffer_batches=20
+05/04/26 16:23:49 - 0:00:00 - Loading NS groups from d:\研一必修\KDD2026-TAAC\baseline\ns_groups.json
+05/04/26 16:23:49 - 0:00:00 - User NS groups (7): ['U1', 'U2', 'U3', 'U4', 'U5', 'U6', 'U7']
+05/04/26 16:23:49 - 0:00:00 - Item NS groups (4): ['I1', 'I2', 'I3', 'I4']
+05/04/26 16:23:49 - 0:00:00 - RankMixerNSTokenizer: 46 fids, total_emb_dim=2944, chunk_dim=421, num_ns_tokens=7, pad=3
+05/04/26 16:23:49 - 0:00:00 - RankMixerNSTokenizer: 14 fids, total_emb_dim=896, chunk_dim=224, num_ns_tokens=4, pad=0
+05/04/26 16:23:49 - 0:00:00 - PCVRHyFormer model created: num_ns=12, T=12, d_model=64, rank_mixer_mode=ffn_only
+05/04/26 16:23:49 - 0:00:00 - User NS groups: [[0, 3], [4, 5, 25, 26, 27], [22], [7, 8, 9, 10, 24], [23, 28, 29], [6, 16, 30, 31, 32, 33, 34, 35, 36, 37, 38, 39, 40, 41, 42, 43, 44, 45], [1, 2, 11, 12, 13, 14, 15, 17, 18, 19, 20, 21]]
+05/04/26 16:23:49 - 0:00:00 - Item NS groups: [[6, 8], [0, 1, 2, 3, 7], [9, 10, 11, 12, 13], [4, 5]]
+05/04/26 16:23:49 - 0:00:00 - Total parameters: 6,185,089
+05/04/26 16:23:49 - 0:00:00 - Sparse params: 61 tensors, 5,815,616 parameters (Adagrad lr=0.05)
+05/04/26 16:23:49 - 0:00:00 - Dense params: 76 tensors, 369,473 parameters (AdamW lr=0.0001)
+05/04/26 16:23:51 - 0:00:02 - PCVRHyFormerRankingTrainer loss_type=bce, focal_alpha=0.1, focal_gamma=2.0, reinit_sparse_after_epoch=1
