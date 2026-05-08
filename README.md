@@ -37,3 +37,8 @@ sudo chmod -R 777 <相对路径>
 - 1. 上传了v0.5的训练结果并做简单分析，infer超时了唉
 - 2. 上传了全量数据的schema.json并做简单分析，为下一步优化提供方向
 - 3. 接下来同步优化interformer和Hyformer，看哪个表现好
+
+## 5.8 -Update in GitHub
+- 1. 消融实验 排队中
+- 2. 对数item频次 增加dense特征 正在trainning
+- 3. 贝叶斯平滑CTR 正在trainning
