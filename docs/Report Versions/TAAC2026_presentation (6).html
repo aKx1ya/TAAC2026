@@ -1,0 +1,1839 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Toward Unified Feature Interaction and Sequence Modeling — TAAC 2026</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Fraunces:opsz,wght,SOFT@9..144,400;9..144,500;9..144,600;9..144,700;9..144,800;9..144,900&family=Manrope:wght@300;400;500;600;700;800&family=JetBrains+Mono:wght@400;500;600&display=swap" rel="stylesheet">
+<style>
+  /* ==================== DESIGN SYSTEM ==================== */
+  :root {
+    --bg: #0a0d12;
+    --bg-elev: #11161e;
+    --bg-card: #151b25;
+    --border: #1f2937;
+    --border-strong: #2d3748;
+    --text: #e8edf3;
+    --text-soft: #a0aec0;
+    --text-mute: #64748b;
+    --amber: #f59e0b;
+    --amber-soft: rgba(245, 158, 11, 0.12);
+    --blue: #60a5fa;
+    --blue-soft: rgba(96, 165, 250, 0.12);
+    --sage: #a3e635;
+    --sage-soft: rgba(163, 230, 53, 0.10);
+    --pink: #f472b6;
+    --code-bg: #0d1218;
+  }
+
+  * { box-sizing: border-box; margin: 0; padding: 0; }
+
+  html, body {
+    width: 100%;
+    height: 100%;
+    overflow: hidden;
+    background: var(--bg);
+    color: var(--text);
+    font-family: 'Manrope', sans-serif;
+    font-weight: 400;
+    -webkit-font-smoothing: antialiased;
+    -moz-osx-font-smoothing: grayscale;
+  }
+
+  body {
+    background-image:
+      radial-gradient(circle at 15% 10%, rgba(245, 158, 11, 0.05) 0%, transparent 40%),
+      radial-gradient(circle at 85% 90%, rgba(96, 165, 250, 0.04) 0%, transparent 40%);
+    background-attachment: fixed;
+  }
+
+  /* ==================== SLIDE FRAMEWORK ==================== */
+  .deck {
+    position: relative;
+    width: 100vw;
+    height: 100vh;
+    overflow: hidden;
+  }
+
+  .slide {
+    position: absolute;
+    top: 0; left: 0;
+    width: 100vw;
+    height: 100vh;
+    padding: 70px clamp(80px, 8vw, 160px);
+    display: flex;
+    flex-direction: column;
+    justify-content: center;
+    align-items: center;
+    opacity: 0;
+    transform: translateY(20px);
+    transition: opacity 500ms cubic-bezier(0.22, 1, 0.36, 1),
+                transform 500ms cubic-bezier(0.22, 1, 0.36, 1);
+    pointer-events: none;
+  }
+
+  .slide > *:not(.first-hint) {
+    width: 100%;
+    max-width: 1400px;
+  }
+
+  .slide.active {
+    opacity: 1;
+    transform: translateY(0);
+    pointer-events: auto;
+  }
+
+  .slide.prev {
+    transform: translateY(-20px);
+  }
+
+  /* Stagger child animations on active slide */
+  .slide.active .stagger > * {
+    animation: revealUp 600ms cubic-bezier(0.22, 1, 0.36, 1) both;
+  }
+  .slide.active .stagger > *:nth-child(1) { animation-delay: 100ms; }
+  .slide.active .stagger > *:nth-child(2) { animation-delay: 200ms; }
+  .slide.active .stagger > *:nth-child(3) { animation-delay: 300ms; }
+  .slide.active .stagger > *:nth-child(4) { animation-delay: 400ms; }
+  .slide.active .stagger > *:nth-child(5) { animation-delay: 500ms; }
+  .slide.active .stagger > *:nth-child(6) { animation-delay: 600ms; }
+
+  @keyframes revealUp {
+    from { opacity: 0; transform: translateY(16px); }
+    to { opacity: 1; transform: translateY(0); }
+  }
+
+  /* ==================== TYPOGRAPHY ==================== */
+  .eyebrow {
+    font-family: 'JetBrains Mono', monospace;
+    font-size: 13px;
+    letter-spacing: 0.2em;
+    text-transform: uppercase;
+    color: var(--amber);
+    margin-bottom: 24px;
+    font-weight: 500;
+  }
+
+  h1.display {
+    font-family: 'Fraunces', serif;
+    font-weight: 800;
+    font-size: clamp(48px, 6vw, 84px);
+    line-height: 1.05;
+    letter-spacing: -0.02em;
+    margin-bottom: 32px;
+    font-variation-settings: 'SOFT' 50;
+  }
+
+  h1.display em {
+    font-style: italic;
+    color: var(--amber);
+    font-weight: 400;
+    font-variation-settings: 'SOFT' 100;
+  }
+
+  h2.section-title {
+    font-family: 'Fraunces', serif;
+    font-weight: 600;
+    font-size: clamp(40px, 4.5vw, 64px);
+    line-height: 1.1;
+    letter-spacing: -0.01em;
+    margin-bottom: 28px;
+  }
+
+  h2.section-title em {
+    font-style: italic;
+    color: var(--amber);
+    font-weight: 400;
+  }
+
+  .lede {
+    font-family: 'Manrope', sans-serif;
+    font-size: clamp(18px, 1.6vw, 24px);
+    line-height: 1.5;
+    color: var(--text-soft);
+    max-width: 900px;
+  }
+
+  /* ==================== NAV ==================== */
+  .nav {
+    position: fixed;
+    bottom: 32px;
+    right: 48px;
+    display: flex;
+    align-items: center;
+    gap: 24px;
+    z-index: 100;
+    font-family: 'JetBrains Mono', monospace;
+    font-size: 12px;
+    color: var(--text-mute);
+  }
+
+  .counter {
+    color: var(--text-soft);
+  }
+
+  .counter strong {
+    color: var(--amber);
+    font-weight: 600;
+  }
+
+  .progress {
+    position: fixed;
+    top: 0; left: 0;
+    height: 2px;
+    background: var(--amber);
+    transition: width 500ms cubic-bezier(0.22, 1, 0.36, 1);
+    z-index: 100;
+    box-shadow: 0 0 12px rgba(245, 158, 11, 0.5);
+  }
+
+  .hint {
+    position: fixed;
+    bottom: 32px;
+    left: 48px;
+    font-family: 'JetBrains Mono', monospace;
+    font-size: 11px;
+    color: var(--text-mute);
+    letter-spacing: 0.1em;
+    z-index: 100;
+  }
+
+  .hint kbd {
+    background: var(--bg-card);
+    border: 1px solid var(--border);
+    border-radius: 4px;
+    padding: 2px 7px;
+    margin: 0 4px;
+    font-size: 10px;
+    color: var(--text-soft);
+  }
+
+  /* ==================== SLIDE 1 — TITLE ==================== */
+  .slide-title {
+    align-items: center;
+    text-align: center;
+    justify-content: flex-start;
+    padding-top: 80px;
+  }
+
+  .slide-title .preheader {
+    font-family: 'JetBrains Mono', monospace;
+    font-size: 13px;
+    letter-spacing: 0.25em;
+    text-transform: uppercase;
+    color: var(--amber);
+    margin-bottom: 40px;
+    padding: 0 18px;
+    border-left: 2px solid var(--amber);
+    border-right: 2px solid var(--amber);
+  }
+
+  .slide-title h1 {
+    font-family: 'Fraunces', serif;
+    font-weight: 700;
+    font-size: clamp(48px, 5.4vw, 78px);
+    line-height: 1.05;
+    letter-spacing: -0.025em;
+    margin-bottom: 20px;
+    max-width: 1200px;
+    font-variation-settings: 'SOFT' 30;
+  }
+
+  .slide-title h1 em {
+    font-style: italic;
+    color: var(--amber);
+    font-weight: 400;
+    font-variation-settings: 'SOFT' 100;
+  }
+
+  .slide-title .subtitle {
+    font-family: 'Fraunces', serif;
+    font-weight: 400;
+    font-size: clamp(18px, 1.7vw, 26px);
+    color: var(--text-soft);
+    margin-bottom: 40px;
+    max-width: 900px;
+    font-style: italic;
+  }
+
+  .title-tree {
+    width: 100%;
+    max-width: 1200px;
+    margin: 12px auto 0;
+  }
+
+  .title-tree svg {
+    width: 100%;
+    height: auto;
+    max-height: 360px;
+    display: block;
+  }
+
+  .title-tree .this-work-glow {
+    animation: thisWorkPulse 3s ease-in-out infinite;
+  }
+
+  @keyframes thisWorkPulse {
+    0%, 100% { 
+      filter: drop-shadow(0 0 0 rgba(245, 158, 11, 0)); 
+    }
+    50% { 
+      filter: drop-shadow(0 0 12px rgba(245, 158, 11, 0.5)); 
+    }
+  }
+
+  .tree-caption {
+    font-family: 'JetBrains Mono', monospace;
+    font-size: 10px;
+    letter-spacing: 0.2em;
+    color: var(--text-mute);
+    text-transform: uppercase;
+    margin-top: 14px;
+    text-align: center;
+  }
+
+  .slide-title .team {
+    margin-top: auto;
+    padding-top: 48px;
+    border-top: 1px solid var(--border);
+    display: flex;
+    justify-content: space-between;
+    align-items: flex-end;
+    width: 100%;
+    text-align: left;
+  }
+
+  .slide-title .team-names {
+    font-family: 'Manrope', sans-serif;
+    font-size: 16px;
+    color: var(--text);
+    font-weight: 500;
+    letter-spacing: 0.02em;
+    text-align: left;
+  }
+
+  .slide-title .team-meta {
+    text-align: right;
+    font-family: 'JetBrains Mono', monospace;
+    font-size: 11px;
+    color: var(--text-mute);
+    letter-spacing: 0.1em;
+    line-height: 1.8;
+  }
+
+  .slide-title .team-meta .school {
+    color: var(--text-soft);
+    text-transform: none;
+    letter-spacing: 0;
+  }
+
+  /* ==================== SLIDE 2 — PROBLEM ==================== */
+  .two-paradigms {
+    display: grid;
+    grid-template-columns: 1fr auto 1fr;
+    gap: 60px;
+    align-items: stretch;
+    margin-top: 48px;
+  }
+
+  .paradigm-card {
+    background: var(--bg-card);
+    border: 1px solid var(--border);
+    border-radius: 14px;
+    padding: 40px;
+    position: relative;
+    overflow: hidden;
+  }
+
+  .paradigm-card.feature::before,
+  .paradigm-card.sequential::before {
+    content: '';
+    position: absolute;
+    top: 0; left: 0;
+    width: 4px; height: 100%;
+  }
+
+  .paradigm-card.feature::before { background: var(--amber); }
+  .paradigm-card.sequential::before { background: var(--blue); }
+
+  .paradigm-card .label {
+    font-family: 'JetBrains Mono', monospace;
+    font-size: 11px;
+    letter-spacing: 0.2em;
+    text-transform: uppercase;
+    margin-bottom: 16px;
+    font-weight: 500;
+  }
+  .paradigm-card.feature .label { color: var(--amber); }
+  .paradigm-card.sequential .label { color: var(--blue); }
+
+  .paradigm-card h3 {
+    font-family: 'Fraunces', serif;
+    font-weight: 600;
+    font-size: 28px;
+    line-height: 1.2;
+    margin-bottom: 16px;
+  }
+
+  .paradigm-card p {
+    color: var(--text-soft);
+    font-size: 15px;
+    line-height: 1.6;
+    margin-bottom: 20px;
+  }
+
+  .paradigm-card .examples {
+    font-family: 'JetBrains Mono', monospace;
+    font-size: 12px;
+    color: var(--text-mute);
+    letter-spacing: 0.05em;
+  }
+
+  .paradigm-bridge {
+    align-self: center;
+    text-align: center;
+  }
+
+  .paradigm-bridge .question {
+    font-family: 'Fraunces', serif;
+    font-style: italic;
+    font-weight: 400;
+    font-size: 36px;
+    color: var(--text-soft);
+    line-height: 1.3;
+  }
+
+  .paradigm-bridge .question em {
+    color: var(--amber);
+    font-weight: 600;
+    font-style: normal;
+  }
+
+  .pain-points {
+    margin-top: 56px;
+    display: grid;
+    grid-template-columns: repeat(4, 1fr);
+    gap: 24px;
+    padding-top: 32px;
+    border-top: 1px solid var(--border);
+  }
+
+  .pain-point {
+    font-size: 13px;
+    color: var(--text-mute);
+    line-height: 1.5;
+  }
+
+  .pain-point .num {
+    font-family: 'JetBrains Mono', monospace;
+    color: var(--pink);
+    font-weight: 600;
+    font-size: 11px;
+    letter-spacing: 0.1em;
+    margin-right: 6px;
+  }
+
+  .pain-point strong {
+    color: var(--text-soft);
+    font-weight: 600;
+    font-style: italic;
+  }
+
+  /* ==================== SLIDE 3 — DATASET ==================== */
+  .stat-grid {
+    display: grid;
+    grid-template-columns: repeat(3, 1fr);
+    gap: 32px;
+    margin: 48px 0 56px;
+  }
+
+  .stat-card {
+    background: var(--bg-card);
+    border: 1px solid var(--border);
+    border-radius: 14px;
+    padding: 36px;
+    text-align: left;
+  }
+
+  .stat-card .stat-num {
+    font-family: 'Fraunces', serif;
+    font-weight: 800;
+    font-size: 64px;
+    line-height: 1;
+    color: var(--amber);
+    margin-bottom: 12px;
+    letter-spacing: -0.02em;
+  }
+
+  .stat-card .stat-num small {
+    font-size: 0.5em;
+    color: var(--text-mute);
+    font-weight: 400;
+  }
+
+  .stat-card .stat-label {
+    font-family: 'JetBrains Mono', monospace;
+    font-size: 12px;
+    letter-spacing: 0.15em;
+    text-transform: uppercase;
+    color: var(--text-mute);
+    margin-bottom: 8px;
+  }
+
+  .stat-card .stat-detail {
+    font-size: 14px;
+    color: var(--text-soft);
+    line-height: 1.5;
+  }
+
+  .key-insight {
+    background: var(--amber-soft);
+    border-left: 3px solid var(--amber);
+    border-radius: 6px;
+    padding: 24px 32px;
+    font-size: 16px;
+    line-height: 1.6;
+    color: var(--text);
+  }
+
+  .key-insight strong {
+    color: var(--amber);
+    font-weight: 600;
+  }
+
+  /* ==================== SLIDE 4-5 — ARCHITECTURE DIAGRAMS ==================== */
+  .arch-container {
+    display: grid;
+    grid-template-columns: 1.2fr 1fr;
+    gap: 60px;
+    align-items: center;
+    margin-top: 32px;
+  }
+
+  .arch-svg {
+    width: 100%;
+    height: auto;
+  }
+
+  .arch-explainer h3 {
+    font-family: 'Fraunces', serif;
+    font-weight: 600;
+    font-size: 22px;
+    margin-bottom: 16px;
+  }
+
+  .arch-explainer p {
+    font-size: 15px;
+    color: var(--text-soft);
+    line-height: 1.6;
+    margin-bottom: 20px;
+  }
+
+  .arch-bullets {
+    list-style: none;
+    padding: 0;
+  }
+
+  .arch-bullets li {
+    display: flex;
+    gap: 12px;
+    padding: 12px 0;
+    border-bottom: 1px dashed var(--border);
+    font-size: 14px;
+    color: var(--text-soft);
+  }
+
+  .arch-bullets li:last-child { border-bottom: none; }
+
+  .arch-bullets .icon {
+    flex-shrink: 0;
+    width: 24px;
+    height: 24px;
+    border-radius: 50%;
+    display: grid;
+    place-items: center;
+    font-family: 'JetBrains Mono', monospace;
+    font-size: 11px;
+    font-weight: 600;
+  }
+
+  .arch-bullets .icon.amber { background: var(--amber-soft); color: var(--amber); }
+  .arch-bullets .icon.blue { background: var(--blue-soft); color: var(--blue); }
+  .arch-bullets .icon.sage { background: var(--sage-soft); color: var(--sage); }
+  .arch-bullets .icon.pink { background: rgba(244, 114, 182, 0.12); color: var(--pink); }
+
+  .arch-bullets strong {
+    color: var(--text);
+    font-weight: 600;
+  }
+
+  .limitation-tag {
+    display: inline-flex;
+    align-items: center;
+    gap: 8px;
+    background: rgba(244, 114, 182, 0.10);
+    border: 1px solid rgba(244, 114, 182, 0.3);
+    color: var(--pink);
+    padding: 8px 16px;
+    border-radius: 100px;
+    font-size: 12px;
+    font-family: 'JetBrains Mono', monospace;
+    margin-top: 24px;
+    letter-spacing: 0.05em;
+  }
+
+  /* ==================== SLIDE 6 — KEY EQUATION ==================== */
+  .equation-container {
+    margin: 56px 0;
+    padding: 56px;
+    background: var(--bg-card);
+    border: 1px solid var(--border);
+    border-radius: 14px;
+    text-align: center;
+    position: relative;
+    overflow: hidden;
+  }
+
+  .equation-container::before {
+    content: '';
+    position: absolute;
+    top: 0; left: 0;
+    width: 100%; height: 4px;
+    background: linear-gradient(90deg, var(--amber) 0%, var(--blue) 100%);
+  }
+
+  .equation {
+    font-family: 'Fraunces', serif;
+    font-style: italic;
+    font-size: clamp(28px, 3.5vw, 48px);
+    line-height: 1.4;
+    margin: 0;
+    color: var(--text);
+  }
+
+  .equation .var {
+    color: var(--amber);
+  }
+
+  .equation .ctx {
+    color: var(--blue);
+  }
+
+  .equation-explanation {
+    display: grid;
+    grid-template-columns: repeat(3, 1fr);
+    gap: 32px;
+    margin-top: 32px;
+  }
+
+  .eq-piece {
+    background: var(--bg-card);
+    border: 1px solid var(--border);
+    border-radius: 10px;
+    padding: 24px;
+  }
+
+  .eq-piece h4 {
+    font-family: 'JetBrains Mono', monospace;
+    font-size: 14px;
+    margin-bottom: 8px;
+    font-weight: 600;
+  }
+
+  .eq-piece h4.amber { color: var(--amber); }
+  .eq-piece h4.blue { color: var(--blue); }
+  .eq-piece h4.sage { color: var(--sage); }
+
+  .eq-piece p {
+    font-size: 13px;
+    color: var(--text-soft);
+    line-height: 1.5;
+  }
+
+  /* ==================== SLIDE 7 — RESULTS ==================== */
+  .result-headline {
+    display: flex;
+    align-items: baseline;
+    gap: 24px;
+    margin-bottom: 48px;
+  }
+
+  .big-stat {
+    font-family: 'Fraunces', serif;
+    font-weight: 800;
+    font-size: clamp(72px, 9vw, 144px);
+    line-height: 0.9;
+    color: var(--sage);
+    letter-spacing: -0.03em;
+    font-variation-settings: 'SOFT' 30;
+  }
+
+  .big-stat-label {
+    font-family: 'JetBrains Mono', monospace;
+    font-size: 14px;
+    color: var(--text-mute);
+    letter-spacing: 0.1em;
+    line-height: 1.6;
+  }
+
+  .big-stat-label strong {
+    color: var(--text);
+    font-weight: 600;
+  }
+
+  .results-table {
+    width: 100%;
+    border-collapse: collapse;
+    margin-top: 24px;
+  }
+
+  .results-table th {
+    font-family: 'JetBrains Mono', monospace;
+    font-size: 11px;
+    color: var(--text-mute);
+    letter-spacing: 0.15em;
+    text-transform: uppercase;
+    text-align: left;
+    padding: 12px 20px;
+    border-bottom: 1px solid var(--border);
+    font-weight: 500;
+  }
+
+  .results-table td {
+    padding: 18px 20px;
+    border-bottom: 1px solid var(--border);
+    font-size: 16px;
+    color: var(--text-soft);
+  }
+
+  .results-table .model-name {
+    font-family: 'JetBrains Mono', monospace;
+    font-size: 14px;
+    color: var(--text);
+    font-weight: 500;
+  }
+
+  .results-table .auc {
+    font-family: 'JetBrains Mono', monospace;
+    font-weight: 600;
+    text-align: right;
+    color: var(--text);
+    font-size: 17px;
+  }
+
+  .results-table .auc.best {
+    color: var(--sage);
+    font-weight: 700;
+  }
+
+  .results-table .auc.peak {
+    color: var(--amber);
+  }
+
+  .results-table tr.highlight {
+    background: var(--sage-soft);
+  }
+
+  .results-table .delta {
+    text-align: right;
+    font-family: 'JetBrains Mono', monospace;
+    font-size: 14px;
+    color: var(--text-mute);
+  }
+
+  .results-table .delta.up { color: var(--sage); }
+  .results-table .delta.down { color: var(--pink); }
+
+  .results-footnote {
+    font-size: 12px;
+    color: var(--text-mute);
+    margin-top: 16px;
+    font-style: italic;
+  }
+
+  /* ==================== SLIDE 8 — LESSONS ==================== */
+  .lesson-grid {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 32px;
+    margin: 48px 0;
+  }
+
+  .lesson-card {
+    background: var(--bg-card);
+    border: 1px solid var(--border);
+    border-radius: 14px;
+    padding: 36px;
+    position: relative;
+  }
+
+  .lesson-card .lesson-num {
+    font-family: 'Fraunces', serif;
+    font-weight: 800;
+    font-style: italic;
+    font-size: 56px;
+    line-height: 1;
+    color: var(--amber);
+    opacity: 0.4;
+    margin-bottom: 12px;
+  }
+
+  .lesson-card h3 {
+    font-family: 'Fraunces', serif;
+    font-weight: 600;
+    font-size: 24px;
+    line-height: 1.2;
+    margin-bottom: 16px;
+  }
+
+  .lesson-card p {
+    color: var(--text-soft);
+    font-size: 15px;
+    line-height: 1.6;
+  }
+
+  .lesson-card strong {
+    color: var(--text);
+    font-weight: 600;
+  }
+
+  .lesson-card .accent-text {
+    color: var(--amber);
+    font-weight: 600;
+  }
+
+  .auc-curve-container {
+    background: var(--bg-card);
+    border: 1px solid var(--border);
+    border-radius: 14px;
+    padding: 28px 36px;
+  }
+
+  .auc-curve-container h4 {
+    font-family: 'Fraunces', serif;
+    font-weight: 600;
+    font-size: 18px;
+    margin-bottom: 20px;
+  }
+
+  .auc-curve-container svg {
+    width: 100%;
+    height: 180px;
+  }
+
+  /* ==================== SLIDE 9 — CLOSING ==================== */
+  .closing-content {
+    display: grid;
+    grid-template-columns: 1.2fr 1fr;
+    gap: 80px;
+    align-items: flex-start;
+  }
+
+  .future-list {
+    list-style: none;
+    padding: 0;
+    margin-top: 32px;
+  }
+
+  .future-list li {
+    display: flex;
+    gap: 20px;
+    padding: 20px 0;
+    border-bottom: 1px solid var(--border);
+  }
+
+  .future-list li:last-child { border-bottom: none; }
+
+  .future-list .num {
+    flex-shrink: 0;
+    font-family: 'Fraunces', serif;
+    font-style: italic;
+    font-weight: 700;
+    font-size: 28px;
+    color: var(--amber);
+    line-height: 1;
+    width: 36px;
+  }
+
+  .future-list .text {
+    font-size: 15px;
+    line-height: 1.6;
+    color: var(--text-soft);
+  }
+
+  .future-list strong {
+    color: var(--text);
+    font-weight: 600;
+  }
+
+  .closing-thanks {
+    text-align: center;
+    padding: 56px 32px;
+    background: var(--bg-card);
+    border: 1px solid var(--border);
+    border-radius: 14px;
+  }
+
+  .closing-thanks .thanks-text {
+    font-family: 'Fraunces', serif;
+    font-style: italic;
+    font-weight: 400;
+    font-size: 56px;
+    line-height: 1;
+    margin-bottom: 24px;
+    background: linear-gradient(135deg, var(--amber) 0%, var(--pink) 100%);
+    -webkit-background-clip: text;
+    -webkit-text-fill-color: transparent;
+    background-clip: text;
+  }
+
+  .closing-thanks .questions {
+    font-family: 'Manrope', sans-serif;
+    font-size: 14px;
+    color: var(--text-soft);
+    letter-spacing: 0.1em;
+    text-transform: uppercase;
+    margin-bottom: 32px;
+  }
+
+  .closing-thanks .team-final {
+    border-top: 1px solid var(--border);
+    padding-top: 24px;
+    font-family: 'JetBrains Mono', monospace;
+    font-size: 11px;
+    color: var(--text-mute);
+    letter-spacing: 0.1em;
+    line-height: 1.8;
+  }
+
+  /* ==================== UTILITIES ==================== */
+  .row { display: flex; gap: 16px; align-items: center; }
+  .text-amber { color: var(--amber); }
+  .text-blue { color: var(--blue); }
+  .text-sage { color: var(--sage); }
+  .text-soft { color: var(--text-soft); }
+  .text-mute { color: var(--text-mute); }
+  .mono { font-family: 'JetBrains Mono', monospace; }
+
+  /* ==================== NEW: PYRAMID SLIDE ==================== */
+  .pyramid-viz {
+    display: flex;
+    flex-direction: column;
+    gap: 14px;
+    margin: 40px 0 28px;
+    width: 100%;
+    max-width: 1000px;
+  }
+
+  .pyramid-row {
+    display: grid;
+    grid-template-columns: var(--w, 80px) auto 1fr;
+    gap: 28px;
+    align-items: center;
+    transition: transform 300ms;
+  }
+
+  .pyramid-bar {
+    height: 40px;
+    background: var(--c, var(--amber));
+    border-radius: 6px;
+    box-shadow: 0 8px 24px -8px var(--c, var(--amber));
+    position: relative;
+    overflow: hidden;
+  }
+
+  .pyramid-bar::after {
+    content: '';
+    position: absolute;
+    inset: 0;
+    background: linear-gradient(90deg, rgba(255,255,255,0.10) 0%, transparent 60%);
+  }
+
+  .pyramid-meta {
+    display: flex;
+    gap: 18px;
+    align-items: baseline;
+    white-space: nowrap;
+  }
+
+  .pyramid-meta .level {
+    font-family: 'JetBrains Mono', monospace;
+    font-size: 11px;
+    color: var(--text-mute);
+    letter-spacing: 0.2em;
+    font-weight: 500;
+  }
+
+  .pyramid-meta .count {
+    font-family: 'Fraunces', serif;
+    font-weight: 700;
+    font-size: 22px;
+    color: var(--text);
+    letter-spacing: -0.01em;
+  }
+
+  .pyramid-meta .vocab {
+    font-family: 'JetBrains Mono', monospace;
+    font-size: 11px;
+    color: var(--text-mute);
+  }
+
+  .pyramid-label {
+    font-size: 14px;
+    color: var(--text-soft);
+    font-style: italic;
+  }
+
+  .pyramid-footnote {
+    font-size: 14px;
+    color: var(--text-mute);
+    font-style: italic;
+    max-width: 800px;
+    border-top: 1px dashed var(--border);
+    padding-top: 20px;
+    line-height: 1.6;
+  }
+
+  .pyramid-footnote strong {
+    color: var(--text-soft);
+    font-style: normal;
+    font-weight: 600;
+  }
+
+  /* ==================== NEW: HERO STAT SLIDE ==================== */
+  .slide-hero {
+    align-items: center;
+    text-align: center;
+  }
+
+  .slide-hero::before {
+    content: '';
+    position: absolute;
+    inset: 0;
+    background: radial-gradient(ellipse at center, rgba(245,158,11,0.10) 0%, transparent 55%);
+    pointer-events: none;
+  }
+
+  .hero-content {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 36px;
+    margin: auto;
+    position: relative;
+    z-index: 1;
+  }
+
+  .hero-eyebrow {
+    font-family: 'JetBrains Mono', monospace;
+    font-size: 13px;
+    letter-spacing: 0.3em;
+    text-transform: uppercase;
+    color: var(--amber);
+  }
+
+  .hero-stat {
+    font-family: 'Fraunces', serif;
+    font-weight: 800;
+    font-size: clamp(160px, 20vw, 320px);
+    line-height: 0.85;
+    letter-spacing: -0.045em;
+    font-variation-settings: 'SOFT' 30;
+    background: linear-gradient(135deg, #f59e0b 0%, #a3e635 70%, #60a5fa 100%);
+    -webkit-background-clip: text;
+    -webkit-text-fill-color: transparent;
+    background-clip: text;
+    filter: drop-shadow(0 0 60px rgba(245, 158, 11, 0.15));
+  }
+
+  .hero-divider {
+    width: 80px;
+    height: 1px;
+    background: var(--border-strong);
+  }
+
+  .hero-meta {
+    display: flex;
+    gap: 56px;
+    font-family: 'JetBrains Mono', monospace;
+    font-size: 14px;
+    flex-wrap: wrap;
+    justify-content: center;
+  }
+
+  .hero-meta .hero-label {
+    color: var(--text-mute);
+    margin-right: 10px;
+  }
+
+  .hero-meta .hero-value {
+    color: var(--text);
+    font-weight: 600;
+  }
+
+  .hero-meta .hero-value.text-sage {
+    color: var(--sage);
+  }
+
+  /* ==================== NEW: POSTER SLIDE ==================== */
+  .slide-poster {
+    align-items: flex-start;
+  }
+
+  .slide-poster::before {
+    content: '';
+    position: absolute;
+    inset: 0;
+    background:
+      radial-gradient(circle at 80% 15%, rgba(244, 114, 182, 0.06) 0%, transparent 40%),
+      radial-gradient(circle at 15% 85%, rgba(96, 165, 250, 0.06) 0%, transparent 40%);
+    pointer-events: none;
+  }
+
+  .poster-content {
+    margin: auto 0;
+    position: relative;
+    z-index: 1;
+  }
+
+  .poster-eyebrow {
+    font-family: 'JetBrains Mono', monospace;
+    font-size: 13px;
+    letter-spacing: 0.3em;
+    text-transform: uppercase;
+    color: var(--text-mute);
+    margin-bottom: 56px;
+  }
+
+  .poster-line {
+    font-family: 'Fraunces', serif;
+    font-weight: 700;
+    font-size: clamp(72px, 10vw, 144px);
+    line-height: 0.95;
+    letter-spacing: -0.035em;
+  }
+
+  .poster-line.line-1 {
+    color: var(--text);
+    font-variation-settings: 'SOFT' 30;
+  }
+
+  .poster-line.line-2 {
+    color: var(--text-mute);
+    font-style: italic;
+    font-weight: 400;
+    font-variation-settings: 'SOFT' 100;
+    margin-top: 8px;
+  }
+
+  .poster-divider {
+    width: 140px;
+    height: 2px;
+    background: var(--amber);
+    margin: 56px 0 32px;
+  }
+
+  .poster-caption {
+    font-family: 'JetBrains Mono', monospace;
+    font-size: 14px;
+    color: var(--text-soft);
+    letter-spacing: 0.04em;
+    max-width: 700px;
+    line-height: 1.7;
+  }
+
+  .poster-caption .num {
+    color: var(--amber);
+    font-weight: 600;
+  }
+
+  /* ==================== KEYBOARD HINT (FIRST SLIDE ONLY) ==================== */
+  .first-hint {
+    position: absolute;
+    bottom: 60px;
+    left: 50%;
+    transform: translateX(-50%);
+    text-align: center;
+    font-family: 'JetBrains Mono', monospace;
+    font-size: 11px;
+    color: var(--text-mute);
+    letter-spacing: 0.15em;
+    text-transform: uppercase;
+    animation: pulseGently 2s ease-in-out infinite;
+  }
+
+  @keyframes pulseGently {
+    0%, 100% { opacity: 0.6; }
+    50% { opacity: 1; }
+  }
+
+  .first-hint kbd {
+    background: var(--bg-card);
+    border: 1px solid var(--border-strong);
+    border-radius: 4px;
+    padding: 3px 9px;
+    margin: 0 4px;
+    font-size: 10px;
+    color: var(--text);
+  }
+</style>
+</head>
+<body>
+
+<div class="progress" id="progress" style="width: 8.33%"></div>
+
+<div class="deck">
+
+  <!-- =================================== SLIDE 1: TITLE =================================== -->
+  <section class="slide slide-title active" data-slide="1">
+    <div class="preheader stagger" style="padding-left:0;border-left:none;">
+      <div>TAAC 2026 / Academic Track</div>
+    </div>
+    <h1 class="stagger">
+      <div>Toward <em>Unified</em></div>
+      <div>Feature Interaction and</div>
+      <div>Sequence Modeling</div>
+    </h1>
+    <p class="subtitle stagger">Improvements on the PCVRHyFormer Baseline for CTR Prediction</p>
+
+    <div class="title-tree stagger">
+      <svg viewBox="0 0 1100 280" xmlns="http://www.w3.org/2000/svg">
+        <defs>
+          <marker id="arrow-tree" markerWidth="8" markerHeight="8" refX="7" refY="4" orient="auto">
+            <polygon points="0 0, 8 4, 0 8" fill="#a0aec0"/>
+          </marker>
+          <linearGradient id="thisWorkGrad" x1="0%" y1="0%" x2="100%" y2="100%">
+            <stop offset="0%" stop-color="rgba(245,158,11,0.18)"/>
+            <stop offset="100%" stop-color="rgba(163,230,53,0.10)"/>
+          </linearGradient>
+        </defs>
+
+        <!-- Connecting lines -->
+        <path d="M 220 90 Q 220 125, 380 132 L 550 132" fill="none" stroke="#2d3748" stroke-width="1.5" stroke-dasharray="4 3"/>
+        <path d="M 880 90 Q 880 125, 720 132 L 550 132" fill="none" stroke="#2d3748" stroke-width="1.5" stroke-dasharray="4 3"/>
+        <line x1="550" y1="180" x2="550" y2="210" stroke="#a0aec0" stroke-width="1.5" marker-end="url(#arrow-tree)"/>
+
+        <!-- Top-left: Feature Interaction -->
+        <rect x="80" y="28" width="280" height="62" rx="10" fill="rgba(245,158,11,0.08)" stroke="#f59e0b" stroke-width="1.5"/>
+        <text x="220" y="54" text-anchor="middle" fill="#f59e0b" font-family="JetBrains Mono" font-size="10" font-weight="600" letter-spacing="2.5">FEATURE INTERACTION</text>
+        <text x="220" y="76" text-anchor="middle" fill="#a0aec0" font-family="Manrope" font-size="11">DeepFM · DCN · Wukong</text>
+
+        <!-- Top-right: Sequential Modeling -->
+        <rect x="740" y="28" width="280" height="62" rx="10" fill="rgba(96,165,250,0.08)" stroke="#60a5fa" stroke-width="1.5"/>
+        <text x="880" y="54" text-anchor="middle" fill="#60a5fa" font-family="JetBrains Mono" font-size="10" font-weight="600" letter-spacing="2.5">SEQUENTIAL MODELING</text>
+        <text x="880" y="76" text-anchor="middle" fill="#a0aec0" font-family="Manrope" font-size="11">DIN · SASRec · HSTU</text>
+
+        <!-- Middle: Unified architectures -->
+        <rect x="380" y="116" width="340" height="64" rx="10" fill="#11161e" stroke="#2d3748" stroke-width="1.5"/>
+        <text x="550" y="142" text-anchor="middle" fill="#e8edf3" font-family="Fraunces" font-size="15" font-weight="600" font-style="italic">Unified Architectures</text>
+        <text x="550" y="164" text-anchor="middle" fill="#64748b" font-family="JetBrains Mono" font-size="10" letter-spacing="1.5">HYFORMER · INTERFORMER · ONETRANS</text>
+
+        <!-- Bottom: This work, highlighted -->
+        <rect class="this-work-glow" x="310" y="215" width="480" height="64" rx="10" fill="url(#thisWorkGrad)" stroke="#f59e0b" stroke-width="2"/>
+        <text x="550" y="240" text-anchor="middle" fill="#f59e0b" font-family="JetBrains Mono" font-size="10" font-weight="700" letter-spacing="3">★ THIS WORK ★</text>
+        <text x="550" y="265" text-anchor="middle" font-family="Fraunces" font-size="17" font-weight="700">
+          <tspan fill="#e8edf3">PCVRInterFormer</tspan>
+          <tspan fill="#64748b" font-weight="400">  →  </tspan>
+          <tspan fill="#a3e635" font-weight="800">0.8067 AUC</tspan>
+        </text>
+      </svg>
+      <div class="tree-caption">Where this work sits in the recent literature</div>
+    </div>
+
+    <div class="team stagger">
+      <div class="team-names">
+        Zijian Xu &nbsp; · &nbsp; Zesong Qiu &nbsp; · &nbsp; Qianqian Yang<br>
+        Sauhon Wong &nbsp; · &nbsp; Bingchen Zhang &nbsp; · &nbsp; Xingzhou Xu
+      </div>
+      <div class="team-meta">
+        <div class="school">The Hong Kong Polytechnic University</div>
+        <div>Course Project · May 2026</div>
+      </div>
+    </div>
+    <div class="first-hint">Press <kbd>→</kbd> or <kbd>Space</kbd> to advance · <kbd>F</kbd> for fullscreen</div>
+  </section>
+
+  <!-- =================================== SLIDE 2: PROBLEM =================================== -->
+  <section class="slide" data-slide="2">
+    <div class="eyebrow stagger">01 / The Problem</div>
+    <h2 class="section-title stagger">Two paradigms.<br>One <em>recommendation</em> task.</h2>
+    <div class="two-paradigms stagger">
+      <div class="paradigm-card feature">
+        <div class="label">Feature Interaction</div>
+        <h3>Static features → cross products</h3>
+        <p>Captures rich cross-feature dependencies over user/item attributes through factorization, attention, or MoE.</p>
+        <div class="examples">DeepFM &nbsp;·&nbsp; DCN &nbsp;·&nbsp; Wukong &nbsp;·&nbsp; AutoInt</div>
+      </div>
+      <div class="paradigm-bridge">
+        <div class="question">How do we<br><em>unify</em> them?</div>
+      </div>
+      <div class="paradigm-card sequential">
+        <div class="label">Sequential Modeling</div>
+        <h3>Behavior histories → temporal patterns</h3>
+        <p>Exploits the ordering of historical user actions through recurrent or attention-based encoders.</p>
+        <div class="examples">DIN &nbsp;·&nbsp; SASRec &nbsp;·&nbsp; HSTU &nbsp;·&nbsp; TWIN</div>
+      </div>
+    </div>
+    <div class="pain-points stagger">
+      <div class="pain-point">
+        <span class="num">i</span>
+        <strong>Shallow interaction.</strong> Most pipelines combine the two only at the final prediction layer.
+      </div>
+      <div class="pain-point">
+        <span class="num">ii</span>
+        <strong>Inconsistent objectives.</strong> Sequential branches use auxiliary losses, complicating joint training.
+      </div>
+      <div class="pain-point">
+        <span class="num">iii</span>
+        <strong>Limited scalability.</strong> Recommender architectures plateau quickly with added capacity.
+      </div>
+      <div class="pain-point">
+        <span class="num">iv</span>
+        <strong>Engineering complexity.</strong> Two heterogeneous code paths inflate deployment costs.
+      </div>
+    </div>
+  </section>
+
+  <!-- =================================== SLIDE 3: DATASET =================================== -->
+  <section class="slide" data-slide="3">
+    <div class="eyebrow stagger">02 / The Testbed</div>
+    <h2 class="section-title stagger">TAAC 2026 Academic Track</h2>
+    <p class="lede stagger">A controlled testbed of fully anonymized Tencent advertising impressions, providing one of the largest publicly accessible CTR datasets with rich behavioral structure.</p>
+    <div class="stat-grid stagger">
+      <div class="stat-card">
+        <div class="stat-label">Impressions</div>
+        <div class="stat-num">~1<small>M</small></div>
+        <div class="stat-detail">User–item impressions, each with a temporal context window across multiple behavioral domains.</div>
+      </div>
+      <div class="stat-card">
+        <div class="stat-label">Feature Columns</div>
+        <div class="stat-num">120</div>
+        <div class="stat-detail">5 ID/label · 46 user int · 10 user dense · 14 item int · 0 item dense · 45 sequence.</div>
+      </div>
+      <div class="stat-card">
+        <div class="stat-label">Behavioral Domains</div>
+        <div class="stat-num">4</div>
+        <div class="stat-detail">Domains A–D, with sequence lengths of 256/256/512/512 representing distinct interaction modalities.</div>
+      </div>
+    </div>
+    <div class="key-insight stagger">
+      <strong>Key finding from schema analysis:</strong> Eight (key, value)-aligned column pairs encode user interest at five hierarchical granularities — from 5 coarse categories to 1,473 fine ones. This structure is <strong>not</strong> exploited by the official baseline.
+    </div>
+  </section>
+
+  <!-- =================================== NEW SLIDE: PYRAMID =================================== -->
+  <section class="slide" data-slide="4">
+    <div class="eyebrow stagger">Schema Insight</div>
+    <h2 class="section-title stagger">A <em>pyramid</em> of user interest.</h2>
+    <p class="lede stagger" style="margin-bottom: 24px; max-width: 1000px;">Among the 120 columns, eight (key, value)-aligned pairs map the same user across <strong style="color:var(--text);">five granularities</strong> — from coarse categories to fine entity-level behavior. The baseline collapses this hierarchy into a flat dense vector.</p>
+
+    <div class="pyramid-viz stagger">
+      <div class="pyramid-row" style="--w: 60px; --c: rgba(245, 158, 11, 0.5);">
+        <div class="pyramid-bar"></div>
+        <div class="pyramid-meta">
+          <span class="level">L1</span>
+          <span class="count">5</span>
+          <span class="vocab">vocab 11</span>
+        </div>
+        <div class="pyramid-label">Coarse categories</div>
+      </div>
+      <div class="pyramid-row" style="--w: 130px; --c: rgba(245, 158, 11, 0.7);">
+        <div class="pyramid-bar"></div>
+        <div class="pyramid-meta">
+          <span class="level">L2</span>
+          <span class="count">11</span>
+          <span class="vocab">vocab 46</span>
+        </div>
+        <div class="pyramid-label">Mid-level groups</div>
+      </div>
+      <div class="pyramid-row" style="--w: 220px; --c: #f59e0b;">
+        <div class="pyramid-bar"></div>
+        <div class="pyramid-meta">
+          <span class="level">L3</span>
+          <span class="count">18</span>
+          <span class="vocab">vocab 51</span>
+        </div>
+        <div class="pyramid-label">Sub-categories</div>
+      </div>
+      <div class="pyramid-row" style="--w: 540px; --c: #fbbf24;">
+        <div class="pyramid-bar"></div>
+        <div class="pyramid-meta">
+          <span class="level">L4</span>
+          <span class="count">49</span>
+          <span class="vocab">vocab 443</span>
+        </div>
+        <div class="pyramid-label">Fine-grained</div>
+      </div>
+      <div class="pyramid-row" style="--w: 740px; --c: #fde047;">
+        <div class="pyramid-bar"></div>
+        <div class="pyramid-meta">
+          <span class="level">L5</span>
+          <span class="count">66</span>
+          <span class="vocab">vocab 1,473</span>
+        </div>
+        <div class="pyramid-label">Entity-level</div>
+      </div>
+    </div>
+
+    <div class="pyramid-footnote stagger">
+      <strong>Why this matters:</strong> integer features encode <em>which</em> entities the user engaged with; the aligned dense columns encode <em>how much</em>. The baseline never sees this alignment — it embeds them in separate streams.
+    </div>
+  </section>
+
+  <!-- =================================== SLIDE 4: BASELINE =================================== -->
+  <section class="slide" data-slide="5">
+    <div class="eyebrow stagger">03 / Baseline Architecture</div>
+    <h2 class="section-title stagger">PCVRHyFormer<br><em style="font-size:0.55em;color:var(--text-soft);font-style:normal;">Three token streams, query-mediated fusion</em></h2>
+    <div class="arch-container stagger">
+      <svg class="arch-svg" viewBox="0 0 720 420" xmlns="http://www.w3.org/2000/svg">
+        <defs>
+          <marker id="arrowhead-amber" markerWidth="10" markerHeight="7" refX="9" refY="3.5" orient="auto">
+            <polygon points="0 0, 10 3.5, 0 7" fill="#a0aec0"/>
+          </marker>
+        </defs>
+
+        <!-- Top: 3 token streams -->
+        <g>
+          <rect x="40" y="20" width="180" height="80" rx="10" fill="rgba(245,158,11,0.10)" stroke="#f59e0b" stroke-width="1.5"/>
+          <text x="130" y="55" text-anchor="middle" fill="#f59e0b" font-family="JetBrains Mono" font-size="11" font-weight="600" letter-spacing="2">NS TOKENS</text>
+          <text x="130" y="75" text-anchor="middle" fill="#a0aec0" font-family="Manrope" font-size="11">Static features (8)</text>
+
+          <rect x="270" y="20" width="180" height="80" rx="10" fill="rgba(96,165,250,0.10)" stroke="#60a5fa" stroke-width="1.5"/>
+          <text x="360" y="55" text-anchor="middle" fill="#60a5fa" font-family="JetBrains Mono" font-size="11" font-weight="600" letter-spacing="2">SEQUENCE</text>
+          <text x="360" y="75" text-anchor="middle" fill="#a0aec0" font-family="Manrope" font-size="11">4 domains × per-domain</text>
+
+          <rect x="500" y="20" width="180" height="80" rx="10" fill="rgba(244,114,182,0.10)" stroke="#f472b6" stroke-width="1.5"/>
+          <text x="590" y="55" text-anchor="middle" fill="#f472b6" font-family="JetBrains Mono" font-size="11" font-weight="600" letter-spacing="2">QUERY (Q)</text>
+          <text x="590" y="75" text-anchor="middle" fill="#a0aec0" font-family="Manrope" font-size="11">Learnable readout (Nq=2)</text>
+        </g>
+
+        <!-- Arrows down -->
+        <line x1="130" y1="100" x2="130" y2="150" stroke="#a0aec0" stroke-width="1.5" marker-end="url(#arrowhead-amber)"/>
+        <line x1="360" y1="100" x2="360" y2="150" stroke="#a0aec0" stroke-width="1.5" marker-end="url(#arrowhead-amber)"/>
+        <line x1="590" y1="100" x2="590" y2="150" stroke="#a0aec0" stroke-width="1.5" marker-end="url(#arrowhead-amber)"/>
+
+        <!-- Middle: HyFormer Block -->
+        <rect x="40" y="160" width="640" height="140" rx="12" fill="#11161e" stroke="#2d3748" stroke-width="1.5"/>
+        <text x="360" y="195" text-anchor="middle" fill="#e8edf3" font-family="Fraunces" font-size="18" font-weight="600" font-style="italic">MultiSeqHyFormerBlock × N</text>
+        <text x="360" y="220" text-anchor="middle" fill="#a0aec0" font-family="JetBrains Mono" font-size="10" letter-spacing="1.5">SEQ-EVOLUTION → QUERY-DECODE → FUSION → BOOST</text>
+
+        <g font-family="Manrope" font-size="11" fill="#64748b">
+          <text x="120" y="265" text-anchor="middle">Self-attn / domain</text>
+          <text x="280" y="265" text-anchor="middle">Cross-attn (Q ← S)</text>
+          <text x="440" y="265" text-anchor="middle">Concat all tokens</text>
+          <text x="600" y="265" text-anchor="middle">RankMixer boost</text>
+        </g>
+
+        <!-- Output -->
+        <line x1="360" y1="300" x2="360" y2="340" stroke="#a0aec0" stroke-width="1.5" marker-end="url(#arrowhead-amber)"/>
+        <rect x="280" y="350" width="160" height="50" rx="8" fill="rgba(163,230,53,0.10)" stroke="#a3e635" stroke-width="1.5"/>
+        <text x="360" y="382" text-anchor="middle" fill="#a3e635" font-family="JetBrains Mono" font-size="12" font-weight="600" letter-spacing="1">ŷ ∈ [0, 1]</text>
+      </svg>
+
+      <div class="arch-explainer">
+        <ul class="arch-bullets">
+          <li>
+            <span class="icon amber">NS</span>
+            <span><strong>NS tokens</strong> aggregate static user/item features through a RankMixer-style tokenizer.</span>
+          </li>
+          <li>
+            <span class="icon blue">S</span>
+            <span><strong>Sequence tokens</strong> are tokenized per-domain — no cross-domain ID sharing.</span>
+          </li>
+          <li>
+            <span class="icon pink">Q</span>
+            <span><strong>Query tokens</strong> mediate fusion: they read from sequences, then mix with NS in a shared block.</span>
+          </li>
+        </ul>
+        <div class="limitation-tag">
+          ⚠ Limitation · Query-mediated bottleneck + rigid D mod T = 0 constraint
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- =================================== SLIDE 5: OUR APPROACH =================================== -->
+  <section class="slide" data-slide="6">
+    <div class="eyebrow stagger">04 / Our Approach</div>
+    <h2 class="section-title stagger">PCVRInterFormer<br><em style="font-size:0.55em;color:var(--text-soft);font-style:normal;">Two streams, direct modulation, no query bottleneck</em></h2>
+    <div class="arch-container stagger">
+      <svg class="arch-svg" viewBox="0 0 720 420" xmlns="http://www.w3.org/2000/svg">
+        <defs>
+          <marker id="arr2" markerWidth="10" markerHeight="7" refX="9" refY="3.5" orient="auto">
+            <polygon points="0 0, 10 3.5, 0 7" fill="#a0aec0"/>
+          </marker>
+          <marker id="arr-sage" markerWidth="10" markerHeight="7" refX="9" refY="3.5" orient="auto">
+            <polygon points="0 0, 10 3.5, 0 7" fill="#a3e635"/>
+          </marker>
+        </defs>
+
+        <!-- Top: 2 token streams -->
+        <rect x="80" y="20" width="220" height="80" rx="10" fill="rgba(245,158,11,0.10)" stroke="#f59e0b" stroke-width="1.5"/>
+        <text x="190" y="55" text-anchor="middle" fill="#f59e0b" font-family="JetBrains Mono" font-size="11" font-weight="600" letter-spacing="2">NS TOKENS</text>
+        <text x="190" y="75" text-anchor="middle" fill="#a0aec0" font-family="Manrope" font-size="11">Static user/item features</text>
+
+        <rect x="420" y="20" width="220" height="80" rx="10" fill="rgba(96,165,250,0.10)" stroke="#60a5fa" stroke-width="1.5"/>
+        <text x="530" y="55" text-anchor="middle" fill="#60a5fa" font-family="JetBrains Mono" font-size="11" font-weight="600" letter-spacing="2">SEQUENCE TOKENS</text>
+        <text x="530" y="75" text-anchor="middle" fill="#a0aec0" font-family="Manrope" font-size="11">Per-domain histories</text>
+
+        <!-- Arrows down -->
+        <line x1="190" y1="100" x2="190" y2="148" stroke="#a0aec0" stroke-width="1.5" marker-end="url(#arr2)"/>
+        <line x1="530" y1="100" x2="530" y2="148" stroke="#a0aec0" stroke-width="1.5" marker-end="url(#arr2)"/>
+
+        <!-- Middle: InterFormer Block -->
+        <rect x="40" y="160" width="640" height="160" rx="12" fill="#11161e" stroke="#2d3748" stroke-width="1.5"/>
+        <text x="360" y="190" text-anchor="middle" fill="#e8edf3" font-family="Fraunces" font-size="18" font-weight="600" font-style="italic">InterFormerBlock × N</text>
+
+        <!-- CrossSummary -->
+        <rect x="80" y="210" width="240" height="70" rx="8" fill="rgba(163,230,53,0.08)" stroke="#a3e635" stroke-width="1"/>
+        <text x="200" y="240" text-anchor="middle" fill="#a3e635" font-family="JetBrains Mono" font-size="11" font-weight="600" letter-spacing="1.5">CROSS-SUMMARY</text>
+        <text x="200" y="260" text-anchor="middle" fill="#a0aec0" font-family="Manrope" font-size="11">Aggregate 4 domains → NS</text>
+
+        <!-- PFFN -->
+        <rect x="400" y="210" width="240" height="70" rx="8" fill="rgba(244,114,182,0.08)" stroke="#f472b6" stroke-width="1"/>
+        <text x="520" y="240" text-anchor="middle" fill="#f472b6" font-family="JetBrains Mono" font-size="11" font-weight="600" letter-spacing="1.5">PERSONALIZED FFN</text>
+        <text x="520" y="260" text-anchor="middle" fill="#a0aec0" font-family="Manrope" font-size="11">NS context modulates seq</text>
+
+        <!-- Bidirectional arrow between modules -->
+        <line x1="320" y1="245" x2="400" y2="245" stroke="#a3e635" stroke-width="1.5" stroke-dasharray="4 3" marker-end="url(#arr-sage)"/>
+        <line x1="400" y1="252" x2="320" y2="252" stroke="#f472b6" stroke-width="1.5" stroke-dasharray="4 3"/>
+
+        <!-- Output -->
+        <line x1="360" y1="320" x2="360" y2="345" stroke="#a0aec0" stroke-width="1.5" marker-end="url(#arr2)"/>
+        <rect x="240" y="350" width="240" height="50" rx="8" fill="rgba(163,230,53,0.10)" stroke="#a3e635" stroke-width="1.5"/>
+        <text x="360" y="382" text-anchor="middle" fill="#a3e635" font-family="JetBrains Mono" font-size="12" font-weight="600" letter-spacing="1">Gated Fusion → ŷ</text>
+      </svg>
+
+      <div class="arch-explainer">
+        <ul class="arch-bullets">
+          <li>
+            <span class="icon sage">A</span>
+            <span><strong>Cross-Domain Summary</strong> — two learnable queries (CLS + PMA) aggregate behavior across all 4 domains into the NS stream.</span>
+          </li>
+          <li>
+            <span class="icon pink">B</span>
+            <span><strong>Personalized FFN</strong> — NS context modulates each sequence position via FiLM-style gating, eliminating query tokens.</span>
+          </li>
+          <li>
+            <span class="icon sage">C</span>
+            <span><strong>Gated output fusion</strong> learns the optimal balance between NS and sequential signals.</span>
+          </li>
+        </ul>
+        <div class="limitation-tag" style="background:rgba(163,230,53,0.10);border-color:rgba(163,230,53,0.3);color:var(--sage);">
+          ✓ Half the model dimension · No query bottleneck · No D mod T constraint
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- =================================== SLIDE 6: KEY EQUATION =================================== -->
+  <section class="slide" data-slide="7">
+    <div class="eyebrow stagger">05 / Key Mechanism</div>
+    <h2 class="section-title stagger">Personalized<br>Feed-Forward <em>Modulation</em></h2>
+    <p class="lede stagger" style="margin-bottom:0;">Each sequence position is conditioned on the user's static context — a FiLM-style modulation that lets static features directly shape sequence processing without an intermediate query bottleneck.</p>
+    <div class="equation-container stagger">
+      <p class="equation">
+        PFFN(<span class="var">x</span>, <span class="ctx">c</span>) &nbsp;=&nbsp; FFN<big>(</big><span class="var">x</span> &nbsp;⊙&nbsp; σ(W<sub>g</sub><span class="ctx">c</span>) &nbsp;+&nbsp; W<sub>b</sub><span class="ctx">c</span><big>)</big>
+      </p>
+    </div>
+    <div class="equation-explanation stagger">
+      <div class="eq-piece">
+        <h4 class="amber">x — sequence token</h4>
+        <p>Per-position behavioral embedding from one of four domains.</p>
+      </div>
+      <div class="eq-piece">
+        <h4 class="blue">c — NS context</h4>
+        <p>Static user/item summary derived from the NS stream via gated mean pooling.</p>
+      </div>
+      <div class="eq-piece">
+        <h4 class="sage">σ(W<sub>g</sub>c) · gate</h4>
+        <p>Learned gating + bias scale how strongly static context modulates each position.</p>
+      </div>
+    </div>
+    <div class="stagger" style="margin-top: 24px; font-family: 'JetBrains Mono', monospace; font-size: 12px; color: var(--text-mute); letter-spacing: 0.05em; text-align: center;">
+      Inspired by <span style="color: var(--text-soft); font-style: italic;">FiLM</span> (Perez et al., 2018) — feature-wise linear modulation, originally for visual reasoning, adapted here for sequential CTR prediction.
+    </div>
+  </section>
+
+  <!-- =================================== NEW SLIDE: HERO STAT =================================== -->
+  <section class="slide slide-hero" data-slide="8">
+    <div class="hero-content stagger">
+      <div class="hero-eyebrow">The Result · No Tuning Required</div>
+      <div class="hero-stat">0.8067</div>
+      <div class="hero-divider"></div>
+      <div class="hero-meta">
+        <div><span class="hero-label">d =</span><span class="hero-value">64</span></div>
+        <div><span class="hero-label">tuning steps =</span><span class="hero-value">0</span></div>
+        <div><span class="hero-label">vs HyFormer v0.2 =</span><span class="hero-value text-sage">+0.0115</span></div>
+      </div>
+      <div style="font-family:'Fraunces',serif;font-style:italic;font-size:18px;color:var(--text-mute);margin-top:16px;letter-spacing:0.01em;">
+        — beating the heavily optimized HyFormer baseline at half the dimension.
+      </div>
+    </div>
+  </section>
+
+  <!-- =================================== SLIDE 7: RESULTS =================================== -->
+  <section class="slide" data-slide="9">
+    <div class="eyebrow stagger">06 / Results</div>
+    <h2 class="section-title stagger">Architecture beats<br><em>training tricks</em>.</h2>
+
+    <div class="result-headline stagger">
+      <div class="big-stat">+1.15<span style="font-size:0.5em;color:var(--text-mute);">%</span></div>
+      <div class="big-stat-label">
+        AUC improvement of untuned <strong>InterFormer (v0.1)</strong><br>
+        over heavily optimized <strong>HyFormer (v0.2)</strong><br>
+        — at <strong>half</strong> the model dimension.
+      </div>
+    </div>
+
+    <div class="stagger">
+      <table class="results-table">
+        <thead>
+          <tr>
+            <th>Model</th>
+            <th>Version</th>
+            <th style="text-align:right;">AUC</th>
+            <th style="text-align:right;">d</th>
+            <th>Key Changes</th>
+          </tr>
+        </thead>
+        <tbody>
+          <tr>
+            <td class="model-name">PCVRHyFormer</td>
+            <td class="mono">v0.2</td>
+            <td class="auc">0.7952</td>
+            <td class="delta">128</td>
+            <td>Focal · LongerEnc · RoPE · ItemInteract</td>
+          </tr>
+          <tr class="highlight">
+            <td class="model-name"><strong>PCVRInterFormer</strong></td>
+            <td class="mono">v0.1</td>
+            <td class="auc best">0.8067</td>
+            <td class="delta">64</td>
+            <td><strong>InterFormer arch — no tuning</strong></td>
+          </tr>
+          <tr>
+            <td class="model-name">PCVRInterFormer</td>
+            <td class="mono">v0.3</td>
+            <td class="auc">0.8038</td>
+            <td class="delta">64</td>
+            <td>+ Focal, batch↑1024, cold restart</td>
+          </tr>
+          <tr>
+            <td class="model-name">PCVRInterFormer</td>
+            <td class="mono">v0.5</td>
+            <td class="auc peak">0.8520<sup style="color:var(--amber);">†</sup></td>
+            <td class="delta">64</td>
+            <td>+ DHEN, DCN, GradScaler, warmup</td>
+          </tr>
+        </tbody>
+      </table>
+      <div class="results-footnote">† Peak validation AUC at step 2396; later training exhibited overfitting (analyzed next).</div>
+    </div>
+  </section>
+
+  <!-- =================================== NEW SLIDE: POSTER =================================== -->
+  <section class="slide slide-poster" data-slide="10">
+    <div class="poster-content stagger">
+      <div class="poster-eyebrow">A Pattern Emerges</div>
+      <div class="poster-line line-1">Architecture wins.</div>
+      <div class="poster-line line-2">Training tricks plateau.</div>
+      <div class="poster-divider"></div>
+      <div class="poster-caption">
+        v0.5 added <span class="num">5</span> training modifications — DHEN, DCN, GradScaler, warmup, dropout. Peak validation AUC: <span class="num">0.852</span>. Final validation AUC: <span class="num">0.760</span>. The ceiling was real.
+      </div>
+    </div>
+  </section>
+
+  <!-- =================================== SLIDE 8: LESSONS =================================== -->
+  <section class="slide" data-slide="11">
+    <div class="eyebrow stagger">07 / What We Learned</div>
+    <h2 class="section-title stagger">The bottleneck<br>is <em>features</em>, not training.</h2>
+
+    <div class="lesson-grid stagger">
+      <div class="lesson-card">
+        <div class="lesson-num">01</div>
+        <h3>Compound, not additive.</h3>
+        <p>v0.3 modified <strong>three variables simultaneously</strong> — loss, batch size, and embedding regularization. The −0.0029 AUC regression couldn't be attributed to any single change. Lesson: <span class="accent-text">ablate one variable at a time.</span></p>
+      </div>
+      <div class="lesson-card">
+        <div class="lesson-num">02</div>
+        <h3>Training tricks have a ceiling.</h3>
+        <p>v0.5 added DHEN, DCN, GradScaler, warmup — and reached <strong>0.852 AUC peak</strong> before overfitting to 0.760. <strong>GAUC stayed near zero.</strong> The model captures user-level signal but can't rank within a user. <span class="accent-text">Feature engineering is the next frontier.</span></p>
+      </div>
+    </div>
+
+    <div class="auc-curve-container stagger">
+      <h4>v0.5 validation AUC over training steps</h4>
+      <svg viewBox="0 0 800 180" xmlns="http://www.w3.org/2000/svg">
+        <!-- Grid -->
+        <line x1="60" y1="20" x2="760" y2="20" stroke="#1f2937" stroke-width="1" stroke-dasharray="2 4"/>
+        <line x1="60" y1="60" x2="760" y2="60" stroke="#1f2937" stroke-width="1" stroke-dasharray="2 4"/>
+        <line x1="60" y1="100" x2="760" y2="100" stroke="#1f2937" stroke-width="1" stroke-dasharray="2 4"/>
+        <line x1="60" y1="140" x2="760" y2="140" stroke="#1f2937" stroke-width="1" stroke-dasharray="2 4"/>
+
+        <!-- Y-axis labels -->
+        <text x="50" y="24" text-anchor="end" fill="#64748b" font-family="JetBrains Mono" font-size="10">0.86</text>
+        <text x="50" y="64" text-anchor="end" fill="#64748b" font-family="JetBrains Mono" font-size="10">0.82</text>
+        <text x="50" y="104" text-anchor="end" fill="#64748b" font-family="JetBrains Mono" font-size="10">0.78</text>
+        <text x="50" y="144" text-anchor="end" fill="#64748b" font-family="JetBrains Mono" font-size="10">0.74</text>
+
+        <!-- Curve: peaks at step 2396 then declines -->
+        <!-- Step 1000: AUC ~0.840 -->
+        <!-- Step 2000: AUC ~0.850 -->
+        <!-- Step 2396: AUC ~0.852 PEAK -->
+        <!-- Step 3000: AUC ~0.830 -->
+        <!-- Step 4000: AUC ~0.835 -->
+        <!-- Step 4792: AUC ~0.840 -->
+        <!-- Step 5000: AUC ~0.808 -->
+        <!-- Step 6000: AUC ~0.760 -->
+        <path d="M 100 50 L 200 30 L 280 25 L 360 75 L 460 65 L 540 55 L 600 130 L 760 155"
+              stroke="#60a5fa" stroke-width="2.5" fill="none"
+              stroke-linecap="round" stroke-linejoin="round"/>
+
+        <!-- Peak marker -->
+        <circle cx="280" cy="25" r="6" fill="#a3e635"/>
+        <circle cx="280" cy="25" r="12" fill="none" stroke="#a3e635" stroke-width="1" opacity="0.4"/>
+        <text x="280" y="14" text-anchor="middle" fill="#a3e635" font-family="JetBrains Mono" font-size="10" font-weight="600">PEAK 0.852</text>
+        <line x1="280" y1="38" x2="280" y2="170" stroke="#a3e635" stroke-width="1" stroke-dasharray="2 3" opacity="0.4"/>
+
+        <!-- End marker -->
+        <circle cx="760" cy="155" r="5" fill="#f472b6"/>
+        <text x="730" y="152" text-anchor="end" fill="#f472b6" font-family="JetBrains Mono" font-size="10" font-weight="600">0.760</text>
+
+        <!-- X-axis -->
+        <line x1="60" y1="170" x2="760" y2="170" stroke="#2d3748" stroke-width="1"/>
+        <text x="100" y="178" text-anchor="middle" fill="#64748b" font-family="JetBrains Mono" font-size="9" dy="6">1k</text>
+        <text x="280" y="178" text-anchor="middle" fill="#64748b" font-family="JetBrains Mono" font-size="9" dy="6">2.4k</text>
+        <text x="460" y="178" text-anchor="middle" fill="#64748b" font-family="JetBrains Mono" font-size="9" dy="6">4k</text>
+        <text x="600" y="178" text-anchor="middle" fill="#64748b" font-family="JetBrains Mono" font-size="9" dy="6">5k</text>
+        <text x="760" y="178" text-anchor="middle" fill="#64748b" font-family="JetBrains Mono" font-size="9" dy="6">6k</text>
+        <text x="410" y="178" text-anchor="middle" fill="#a0aec0" font-family="Manrope" font-size="10" dy="20">training step</text>
+      </svg>
+    </div>
+  </section>
+
+  <!-- =================================== SLIDE 9: CLOSING =================================== -->
+  <section class="slide" data-slide="12">
+    <div class="eyebrow stagger">08 / Where Next</div>
+    <h2 class="section-title stagger">Three <em>directions</em>,<br>one open question.</h2>
+    <div class="closing-content stagger">
+      <div>
+        <ul class="future-list">
+          <li>
+            <div class="num">i</div>
+            <div class="text">
+              <strong>Hierarchical interest-weighted embedding.</strong><br>
+              Exploit the eight (key, value)-aligned column pairs as a five-level interest pyramid — the schema's most under-utilized signal.
+            </div>
+          </li>
+          <li>
+            <div class="num">ii</div>
+            <div class="text">
+              <strong>Cross-domain ID sharing.</strong><br>
+              Determine whether the four behavioral domains operate over a common item vocabulary, enabling shared embeddings.
+            </div>
+          </li>
+          <li>
+            <div class="num">iii</div>
+            <div class="text">
+              <strong>Systematic scaling experiments.</strong><br>
+              Test whether InterFormer exhibits more favorable scaling behavior than HyFormer as model dimension grows.
+            </div>
+          </li>
+        </ul>
+      </div>
+      <div class="closing-thanks">
+        <div class="thanks-text">Thank you</div>
+        <div class="questions">Questions?</div>
+        <div class="team-final">
+          <div style="color:var(--text-soft);">Zijian Xu &nbsp;·&nbsp; Zesong Qiu &nbsp;·&nbsp; Qianqian Yang</div>
+          <div style="color:var(--text-soft);">Sauhon Wong &nbsp;·&nbsp; Bingchen Zhang &nbsp;·&nbsp; Xingzhou Xu</div>
+          <div style="margin-top:12px;">The Hong Kong Polytechnic University</div>
+        </div>
+      </div>
+    </div>
+  </section>
+
+</div>
+
+<div class="hint">
+  <kbd>←</kbd> <kbd>→</kbd> navigate &nbsp; · &nbsp; <kbd>F</kbd> fullscreen &nbsp; · &nbsp; <kbd>Home</kbd> / <kbd>End</kbd> jump
+</div>
+
+<div class="nav">
+  <span class="counter"><strong id="cur">1</strong> / 12</span>
+</div>
+
+<script>
+  const slides = document.querySelectorAll('.slide');
+  const total = slides.length;
+  const counter = document.getElementById('cur');
+  const progress = document.getElementById('progress');
+  let current = 0;
+
+  function show(idx) {
+    if (idx < 0 || idx >= total) return;
+    slides.forEach((s, i) => {
+      s.classList.remove('active', 'prev');
+      if (i === idx) s.classList.add('active');
+      else if (i < idx) s.classList.add('prev');
+    });
+    current = idx;
+    counter.textContent = idx + 1;
+    progress.style.width = ((idx + 1) / total * 100) + '%';
+  }
+
+  document.addEventListener('keydown', (e) => {
+    if (e.key === 'ArrowRight' || e.key === ' ' || e.key === 'PageDown') {
+      e.preventDefault();
+      show(Math.min(current + 1, total - 1));
+    } else if (e.key === 'ArrowLeft' || e.key === 'PageUp') {
+      e.preventDefault();
+      show(Math.max(current - 1, 0));
+    } else if (e.key === 'Home') {
+      e.preventDefault();
+      show(0);
+    } else if (e.key === 'End') {
+      e.preventDefault();
+      show(total - 1);
+    } else if (e.key === 'f' || e.key === 'F') {
+      e.preventDefault();
+      if (!document.fullscreenElement) {
+        document.documentElement.requestFullscreen();
+      } else {
+        document.exitFullscreen();
+      }
+    } else if (/^[1-9]$/.test(e.key)) {
+      e.preventDefault();
+      show(parseInt(e.key) - 1);
+    }
+  });
+
+  // Click to advance (left half = back, right half = forward)
+  document.addEventListener('click', (e) => {
+    if (e.target.closest('a, button, kbd')) return;
+    const x = e.clientX;
+    const w = window.innerWidth;
+    if (x < w * 0.3) {
+      show(Math.max(current - 1, 0));
+    } else if (x > w * 0.7) {
+      show(Math.min(current + 1, total - 1));
+    }
+  });
+
+  // Hide first-hint after first navigation
+  let hintHidden = false;
+  document.addEventListener('keydown', () => {
+    if (!hintHidden) {
+      const h = document.querySelector('.first-hint');
+      if (h) h.style.opacity = '0';
+      hintHidden = true;
+    }
+  }, { once: true });
+</script>
+
+</body>
+</html>
