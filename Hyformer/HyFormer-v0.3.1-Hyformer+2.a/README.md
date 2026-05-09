@@ -1,7 +1,7 @@
-# HyFormer-v0.3.1 — Hyformer + 1.b (贝叶斯平滑 CTR)
-> 当前版本：**v0.3.1 · 1.b** | 基于 v0.3 baseline，仅添加了 Step 1b（贝叶斯平滑 CTR）
+# HyFormer-v0.3.1 — Hyformer + 1.a + 1.b + 2.a
+> 当前版本：**v0.3.1 · 1.a + 1.b + 2.a** | 在 1.a+1.b 基础上叠加 Step 2a（平铺型 KV 加权 Embedding）
 >
-> 🔬 用于消融实验：对比 Baseline / 1.a / 1.b / 1.a+1.b 的效果
+> 🔬 用于消融实验：对比 1.a+1.b vs 1.a+1.b+2.a 的效果
 
 ---
 
@@ -44,35 +44,53 @@
 
 **目标**：填补 `item_dense_dim = 0` 的空白，让模型感知商品的"热度"和"历史转化倾向"。
 
-#### 1a. Item 对数频次 ❌ 不包含（此版本仅 1.b）
+#### 1a. Item 对数频次 ✅ 已实现（方案 B：在线计算）
 
-本版本未实现 1.a。如需 Item 对数频次，请使用以下版本：
-- `HyFormer-v0.3.1-Hyformer+1.a` — **仅 1.a**
-- `HyFormer-v0.3.1-Hyformer+1.a+1.b` — **1.a + 1.b 融合**  
+**原理**：统计每个 item_id（fid=16）在训练集中的出现次数，取 `log(1+count)` 作为新的 item dense 特征。热门商品与长尾商品的区分本身就是强信号。
 
-#### 1b. 贝叶斯平滑 CTR ✅ 已实现
+**实现方式**：**完全在线**——`dataset.py` 初始化时自动扫描训练 Row Group 统计 item 频次，构建内存查找表。验证集自动复用训练集的统计结果（防标签泄露）。无需任何预处理脚本或外部文件。
+
+**涉及文件**：
+| 文件 | 改动 |
+|------|------|
+| `schema.json` | 新增 `"item_dense": [[200, 1]]`（定义 1 维 log1p item freq 特征） |
+| `dataset.py` | `_build_item_freq_map()` 在线扫描训练集 → 构建 freq map → 注入 item_dense |
+| `train.py` | **无需改动** |
+| `run.sh` | **无需改动** |
+
+**扫描结果**：  
+- 训练集：扫描了 907,381 行数据，发现了 20,898 个独立的商品 (Unique items)。这告诉你训练集中有交互的商品池大约是 2 万个。  
+- 验证集：扫描了 102,619 行数据，发现了 11,361 个独立的商品。  
+- 总参数量：239,158,977  
+- Dense 参数：1,710,913  
+
+#### 1b. 贝叶斯平滑 CTR ✅ 已实现（与 1a 融合）
 
 **原理**：统计每个 item 的历史转化率（label_type==2 的比例），用全局 CTR 做贝叶斯平滑。
 
 $$ \text{smooth\_ctr} = \frac{\text{clicks} + \alpha \cdot \text{global\_ctr}}{\text{impressions} + \alpha} $$
 
-**实现方式**：**完全在线**——`dataset.py` 初始化时自动扫描训练 Row Group，统计每个 item 的 impressions（出现次数）和 clicks（label==1 的次数），计算全局 CTR 后用 $\alpha=100$ 做贝叶斯平滑。验证集自动复用训练集的统计结果（防标签泄露）。使用 numpy 数组做向量化查表。
+**实现方式**：同 1.b 版本。`dataset.py` 初始化时自动扫描训练集统计 impressions 和 clicks，计算贝叶斯平滑 CTR，作为 `item_dense` 第二列（fid=201）注入。
 
 **涉及文件**：
 | 文件 | 改动 |
 |------|------|
-| `schema.json` | 新增 `"item_dense": [[201, 1]]`（定义 1 维贝叶斯平滑 CTR 特征） |
-| `dataset.py` | `_build_item_ctr_map()` 在线扫描训练集 → 构建 ctr map → 向量化注入 item_dense |
+| `schema.json` | 新增 `"item_dense": [[200, 1], [201, 1]]`（两列：对数频次 + 贝叶斯CTR） |
+| `dataset.py` | `_build_item_freq_map()` + `_build_item_ctr_map()` 在线扫描 → 双特征向量化注入 |
 | `train.py` | **无需改动** |
 | `run.sh` | **无需改动** |
 
-**关键约束**：只在训练集 split 上做统计，然后 map 到验证集，严格防止标签泄露。
+**item_dense 结构**：
+| 列 | fid | 含义 | 来源 |
+|:--:|:---:|------|:----:|
+| 0 | 200 | $\log(1+\text{count})$ 对数频次 | Step 1a |
+| 1 | 201 | $\text{smooth\_ctr}$ 贝叶斯平滑 CTR | Step 1b |
 
 **预期影响**：
-- `item_dense_dim`：`0 → 1`
-- AUC 预期提升：**+0.002~0.005**（CTR 任务直接相关）
+- `item_dense_dim`：`0 → 2`
+- AUC 预期提升：**+0.003~0.008**（两者叠加）
 
-**验证方式**：对比 Baseline 的 AUC / LogLoss。
+**验证方式**：对比 Baseline / 1.a / 1.b 的 AUC / LogLoss。
 
 ---
 
@@ -84,10 +102,16 @@ $$ \text{smooth\_ctr} = \frac{\text{clicks} + \alpha \cdot \text{global\_ctr}}{\
 
 **涉及文件**：`model.py`（主要）、`dataset.py`（可能需要预处理 dense 值）
 
-#### 2a. 平铺型对齐（fid 89/90/91）— 先做这个，改动最小
+#### 2a. 平铺型对齐（fid 89/90/91）✅ 已实现
 
-**原理**：3 对均匀 10×10 特征，各自独立做 weighted pooling。
+**原理**：3 对均匀 10×10 特征（fid 89/90/91），用 user_dense 值作为 softmax 权重对 user_int embedding 做加权聚合，替代原来的平均 pooling。
 
+**实现方式**：
+- 修改 `RankMixerNSTokenizer` 和 `GroupNSTokenizer`：新增 `weighted_fid_config` 参数和 `dense_feats` 可选入参
+- 当 fid 在配置中且有 dense 值时，使用 `softmax(log1p(dense_vals))` 加权 pooling
+- 否则回退到原来的 mean pooling（**向后兼容**）
+
+**核心代码**：
 ```python
 # 对每对 (int_ids, dense_vals):
 emb = embedding(int_ids)                    # [batch, 10, emb_dim]
@@ -95,9 +119,16 @@ w = softmax(log1p(dense_vals))              # [batch, 10]  —— log1p 防极�
 weighted = (emb * w.unsqueeze(-1)).sum(1)   # [batch, emb_dim]
 ```
 
-**涉及文件**：`model.py` — 修改 `NonSequentialTokenizer` 或 `FeatureEmbeddingBank` 的 forward
+**涉及文件**：
+| 文件 | 改动 |
+|------|------|
+| `model.py` | `RankMixerNSTokenizer` + `GroupNSTokenizer` 新增加权 pooling 分支；`PCVRHyFormer` 构建 `_kv_weighted_config` 并传递 `dense_feats` |
+| `train.py` | **无需改动** |
+| `dataset.py` | **无需改动** |
 
-**预期影响**：平铺型 3 对的特征表示质量提升
+**预期影响**：平铺型 3 对的特征表示质量提升，AUC 预期 +0.001~0.003
+
+**验证方式**：对比 1.a+1.b（无 2.a）vs 当前版本（有 2.a）的 AUC / LogLoss。
 
 #### 2b. 金字塔型层次化融合（fid 62→66）
 
@@ -229,8 +260,8 @@ bash run.sh
 | Step | 改动 | Best Val AUC | Best Val LogLoss | Eval AUC | Infer Time | 参数量 | vs Baseline |
 |------|------|-------------|-----------------|----------|------------|--------|-------------|
 | 0 | Baseline | 0.862227 | 0.224119 | 0.806701 | 226.89s | ~2.40亿 | — |
-| 1a | +Item 频次 | 0.8589| 0.2269| | | | |
-| 1b | +贝叶斯 CTR |0.8622 |0.2242 | | | | |
+| 1a | +Item 频次 | | | | | | |
+| 1b | +贝叶斯 CTR | | | | | | |
 | 2a | +KV 平铺型 | | | | | | |
 | 2b | +KV 金字塔型 | | | | | | |
 | 3 | +频率截断 | | | | | | |
