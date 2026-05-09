@@ -1,83 +1,97 @@
-# HyFormer v0.2 — TAAC 2026 优化版
+# HyFormer v0.2 — Optimized PCVRHyFormer Baseline
+
+> **This is our modified version of the official PCVRHyFormer baseline** provided by the TAAC 2026 competition organizers. All architectural and training modifications below are our contributions; the original baseline code is preserved in `HyFormer-v0.0-raw-baseline/`.
 
 ---
 
-## 训练与评估报告
+## Training & Evaluation Summary
 
-### 训练概览
+| Item | Detail |
+|------|--------|
+| **Model** | HyFormer v0.2 (PCVRHyFormer with our optimizations) |
+| **Training start** | 2026-05-07 14:24:36 |
+| **Training end** | 2026-05-07 22:51:52 |
+| **Total training time** | ~8 hours 27 minutes |
+| **Best checkpoint** | `global_step9165.layer=2.head=4.hidden=128.best_model` |
+| **Configuration** | layers=2, heads=4, d_model=128 |
 
-| 项目 | 详情 |
-|------|------|
-| **模型版本** | HyFormer v0.2 |
-| **训练开始时间** | 2026-05-07 14:24:36 |
-| **训练结束时间** | 2026-05-07 22:51:52 |
-| **总训练时长** | 约 8 小时 27 分钟 |
-| **最优 Checkpoint** | `global_step9165.layer=2.head=4.hidden=128.best_model` |
-| **模型配置** | layers=2, heads=4, hidden=128 |
+### Evaluation Results
 
-### 模型架构
+| Metric | Value |
+|--------|-------|
+| **AUC** | **0.7952** |
+| **Inference time** | **155.55 s** |
 
-- **模型名称**：PCVRHyFormer（Post-Click Conversion Rate Hybrid Transformer）
-- **位置编码**：Rotary Position Embedding (RoPE)
-- **激活函数**：SwiGLU
-- **注意力机制**：RoPE 增强多头自注意力（Multi-Head Self-Attention with RoPE）
-- **任务类型**：点击后转化率预估（Binary Classification）
-- **损失函数**：BCEWithLogitsLoss / Focal Loss
+### Training Curves
 
-### 训练过程可视化
-
-训练过程中记录了以下指标变化曲线：
-
-| 图表 | 文件 | 说明 |
-|------|------|------|
-| AUC 曲线 | `AUC.png` | 训练过程中 AUC 指标的变化趋势 |
-| LogLoss 曲线 | `LogLoss.png` | 训练过程中对数损失的变化趋势 |
-| Loss 曲线 | `Loss.png` | 训练过程中损失函数值的变化趋势 |
-
-### 最终评估结果
-
-| 指标 | 数值 |
-|------|------|
-| **AUC** | **0.795213** |
-| **推理时间 (Inference Time)** | **155.55 s** |
-
-### 总结
-
-- 模型在约 8.5 小时的训练后，最优 checkpoint 出现在 global_step 9165 处。
-- 最终评估 AUC 达到 **0.7952**，表明模型在点击后转化率预估任务上具有良好的区分能力。
-- 推理时间为 155.55 秒，可在实际业务场景中进行批量预测。
-
-> 基于 HyFormer (Hybrid Transformer) 架构的 Post-Click Conversion Rate (PCVR) 预测模型
->
-> 针对 **KDD Cup 2026 TAAC** 竞赛 ~100 万级稀疏数据的专项优化
+| Chart | File | Description |
+|-------|------|-------------|
+| AUC | `AUC.png` | Validation AUC over training steps |
+| LogLoss | `LogLoss.png` | Validation log-loss over training steps |
+| Loss | `Loss.png` | Training loss over training steps |
 
 ---
 
-## 📁 文件结构
+## Changes from Official Baseline (v0.0)
+
+| Component | Official Baseline | v0.2 (Ours) |
+|-----------|------------------|-------------|
+| Model dimension | d_model=64 | **d_model=128** |
+| Batch size | 256 | **512** |
+| Dropout | 0.01 | **0.1** |
+| Loss function | BCE | **Focal Loss** (alpha=0.25, gamma=2.0) |
+| Sequence encoder | Transformer | **LongerEncoder** (Top-K=50, causal) |
+| Position encoding | None | **RoPE** (base=10000) |
+| User NS tokens | 5 | **7** |
+| Item NS tokens | 2 | **4** |
+| Num queries | 2 | **1** |
+| Item dense features | Not supported | **Supported** |
+| ItemFeatureInteraction | None | **Gated bilinear cross** |
+| Embedding reinitialization | None | **Cold restart after epoch 1** |
+| High-cardinality ID dropout | None | **2x dropout for vocab > 5K** |
+
+---
+
+## Model Architecture
+
+- **Model**: PCVRHyFormer (Post-Click Conversion Rate Hybrid Transformer)
+- **Position encoding**: Rotary Position Embedding (RoPE)
+- **Activation**: SwiGLU
+- **Attention**: RoPE-enhanced Multi-Head Self-Attention
+- **Task**: CTR / PCVR prediction (binary classification)
+- **Loss**: Focal Loss (alpha=0.25, gamma=2.0)
+
+---
+
+## File Structure
 
 ```
 HyFormer-v0.2/
-├── dataset.py          # Parquet 数据集加载（时间戳排序 + item_dense 支持）
-├── model.py            # PCVRHyFormer 模型（含 ItemFeatureInteraction）
-├── train.py            # 训练入口（支持时间戳划分、Focal Loss 等新参数）
-├── trainer.py          # 训练器（双优化器：AdamW + Adagrad，冷重启策略）
-├── utils.py            # 工具函数（EarlyStopping, Focal Loss, 日志等）
-├── run.sh              # 启动脚本（推荐超参数配置）
-├── generate_schema.py  # Schema 自动生成（含 item_dense 列扫描）
-└── ns_groups.json      # NS 特征分组配置（备选 GroupNSTokenizer 方案）
+├── README.md           # This file
+├── dataset.py          # Parquet dataset loader (timestamp sorting + item_dense support)
+├── model.py            # PCVRHyFormer model (with ItemFeatureInteraction)
+├── train.py            # Training entry point (Focal Loss, timestamp-based split)
+├── trainer.py          # Trainer (dual optimizer: AdamW + Adagrad, cold restart)
+├── utils.py            # Utilities (EarlyStopping, Focal Loss, logging)
+├── run.sh              # Launch script (recommended hyperparameters)
+├── generate_schema.py  # Schema generator (with item_dense column scanning)
+├── ns_groups.json      # NS feature grouping config
+├── AUC.png             # AUC training curve
+├── LogLoss.png         # LogLoss training curve
+└── Loss.png            # Loss training curve
 ```
 
 ---
 
-## 🚀 快速启动
+## Quick Start
 
-### 1. 生成 Schema
+### 1. Generate Schema
 
 ```bash
 python generate_schema.py /path/to/data.parquet ./data/schema.json
 ```
 
-### 2. 启动训练
+### 2. Launch Training
 
 ```bash
 bash run.sh \
@@ -88,7 +102,9 @@ bash run.sh \
     --tf_events_dir ./tf_logs
 ```
 
-### 3. 自定义参数示例
+> **Note**: The TAAC 2026 dataset should be downloaded from the official competition portal. Place the parquet files in `data_dir`. If using the 1000-row demo dataset, it is available at `Interformer/data/demo_1000.parquet`.
+
+### 3. Custom Parameters
 
 ```bash
 python train.py \
@@ -104,185 +120,163 @@ python train.py \
 
 ---
 
-## ✨ v0.2 核心优化
+## Key Optimizations in v0.2
 
-### 1. 时间戳排序与划分
+### 1. Timestamp-Based Data Splitting
 
-| 特性 | 说明 |
-|---|---|
-| **元数据级排序** | 读取 Parquet Row Group 的列统计信息（min/max timestamp），纯元数据操作，不扫描数据行 |
-| **时间复杂度** | $O(N_{rg} \log N_{rg})$，对百万级数据（约数千个 RG）几乎零开销 |
-| **时间维度划分** | `--valid_time_ratio 0.1` → 最近 10% 时间的数据作为验证集，模拟「历史→未来」的真实预测场景 |
-| **向后兼容** | `--no_sort_by_timestamp` 回退到原始文件顺序划分 |
+| Feature | Description |
+|---------|-------------|
+| **Metadata-level sorting** | Reads Parquet Row Group column statistics (min/max timestamp); pure metadata operation, no data scanning |
+| **Time complexity** | O(N_rg log N_rg); near-zero overhead for ~1M samples |
+| **Temporal split** | `--valid_time_ratio 0.1` uses the most recent 10% of data as validation, simulating real-world train-on-past / evaluate-on-future |
+| **Backward compatible** | `--no_sort_by_timestamp` reverts to original file-order split |
 
-**关键参数：**
+### 2. Sparse-Label Optimization
 
-| 参数 | 类型 | 默认值 | 说明 |
-|---|---|---|---|
-| `--sort_by_timestamp` | bool | `True` | 启用时间戳排序 |
-| `--valid_time_ratio` | float | `None` | 时间维度的验证集比例 |
+The TAAC 2026 dataset is characterized by ~1M samples with a low positive rate and high-cardinality features.
 
-### 2. 稀疏场景参数优化
+| Strategy | Parameters | Purpose |
+|----------|-----------|---------|
+| **Focal Loss** | `--loss_type focal --focal_alpha 0.25 --focal_gamma 2.0` | Down-weights easy negatives, focuses on hard samples |
+| **LongerEncoder** | `--seq_encoder_type longer --seq_top_k 50 --seq_causal` | Top-K compression for long sequences + causal masking |
+| **RoPE** | `--use_rope --rope_base 10000.0` | Rotary position encoding for better position awareness |
+| **High-cardinality ID dropout** | `--seq_id_threshold 5000` | 2x dropout for features with vocab > 5K |
+| **Cold restart** | `--reinit_sparse_after_epoch 1 --reinit_cardinality_threshold 10000` | Reinitializes high-cardinality embeddings after each epoch |
+| **Dual optimizer** | Sparse: Adagrad (lr=0.05), Dense: AdamW (lr=1e-4) | Adapts to the sparse gradient characteristics of embeddings |
 
-TAAC 2026 PCVR 数据特点：**百万级样本、标签极度稀疏（正样本率 < 1%）、特征高基数**。
-
-| 优化策略 | 参数设置 | 作用 |
-|---|---|---|
-| **Focal Loss** | `--loss_type focal --focal_alpha 0.25 --focal_gamma 2.0` | 自动聚焦难分样本，缓解正负样本严重不均衡 |
-| **LongerEncoder** | `--seq_encoder_type longer --seq_top_k 50 --seq_causal` | Top-K 压缩长序列 + 因果掩码，高效时序建模 |
-| **RoPE** | `--use_rope --rope_base 10000.0` | 旋转位置编码，增强序列位置感知 |
-| **高基数 ID Dropout** | `--seq_id_threshold 5000` | vocab > 5K 的特征额外 dropout（×2），防止记忆化 |
-| **冷重启** | `--reinit_sparse_after_epoch 1 --reinit_cardinality_threshold 10000` | 每 epoch 结束后重置高基数 Embedding，参考 MultiEpoch 论文 |
-| **双优化器** | 稀疏参数 Adagrad (`lr=0.05`) + 稠密参数 AdamW (`lr=1e-4`) | 适配 Embedding 的稀疏梯度特性 |
-
-**完整推荐超参数（见 `run.sh`）：**
+**Recommended hyperparameters (see `run.sh`):**
 
 ```
-d_model=128          # 主干维度（↑64→128，更大容量）
-batch_size=512       # 批大小（↑256→512，稀疏标签下梯度更稳定）
-dropout_rate=0.1     # Dropout（↑0.01→0.1，防过拟合）
-emb_dim=64           # Embedding 维度
+d_model=128          # Backbone dimension (64 -> 128)
+batch_size=512       # Batch size (256 -> 512)
+dropout_rate=0.1     # Dropout (0.01 -> 0.1)
+emb_dim=64           # Embedding dimension
 num_hyformer_blocks=2
-num_heads=4          # 注意力头数（d_model/num_heads = 32）
-hidden_mult=4        # FFN 扩展倍数
+num_heads=4          # Attention heads (d_model / num_heads = 32)
+hidden_mult=4        # FFN expansion factor
 ```
 
-**RankMixer 约束验证：**
+**RankMixer constraint check:**
 
-$$T = N_q \times S + N_{ns} = 1 \times 4 + 12 = 16, \quad d_{model} \bmod T = 128 \bmod 16 = 0 \quad \checkmark$$
+T = N_q x S + N_ns = 1 x 4 + 12 = 16, and d_model mod T = 128 mod 16 = 0. (Valid.)
 
-其中 $N_{ns} = 7(\text{user}) + 1(\text{user\_dense}) + 4(\text{item}) = 12$
+Where N_ns = 7 (user) + 1 (user_dense) + 4 (item) = 12.
 
-### 3. Item Feature 增强
+### 3. Item Feature Enhancement
 
-#### a) Item Dense 特征支持
+#### a) Item Dense Feature Support
 
-- `dataset.py`：新增 `item_dense_feats_*` 列的解析、缓冲区和处理逻辑
-- `generate_schema.py`：自动扫描 `item_dense_feats_*` 列
-- `model.py`：已有 `item_dense_proj` 模块，将 item 数值特征投影为 NS token
-- **向后兼容**：旧 schema（无 `item_dense` 字段）自动 fallback 到空 tensor
+- `dataset.py`: Added parsing, buffering, and processing for `item_dense_feats_*` columns
+- `generate_schema.py`: Automatically scans for `item_dense_feats_*` columns
+- `model.py`: `item_dense_proj` module projects item numerical features into NS tokens
+- **Backward compatible**: Old schemas without `item_dense` field automatically fall back to empty tensors
 
-#### b) ItemFeatureInteraction 模块
+#### b) ItemFeatureInteraction Module
 
-新增 `ItemFeatureInteraction` 类，在 item NS tokens 进入 HyFormer 块之前进行**门控双线性特征交叉**：
+A new `ItemFeatureInteraction` class performs **gated bilinear feature crossing** on item NS tokens before they enter the HyFormer blocks:
 
 ```
-EnhancedItem = ItemTokens + Gate(ItemTokens) ⊙ Σⱼ Wᵢⱼ · ItemTokenⱼ
+EnhancedItem = ItemTokens + Gate(ItemTokens) * sum_j(W_ij * ItemToken_j)
 ```
 
-- `W ∈ R^{N×N}`：可学习的 token 间交互权重矩阵（softmax 归一化）
-- `Gate(·)`：Sigmoid 门控，自适应控制交互强度
-- 当 `item_ns_tokens ≥ 2` 时自动启用
+- W is a learnable N x N token interaction weight matrix (softmax-normalized)
+- Gate is a sigmoid gate that adaptively controls interaction strength
+- Automatically enabled when `item_ns_tokens >= 2`
 
-#### c) Item NS Token 数量
+#### c) Item NS Token Count
 
-| 版本 | `item_ns_tokens` | 说明 |
-|---|---|---|
-| v0.1/v0.2 原版 | 2 | item 侧表达能力有限 |
-| **v0.2 优化版** | **4** | 更细粒度的 item 特征解耦 |
+| Version | item_ns_tokens | Notes |
+|---------|---------------|-------|
+| Official baseline | 2 | Limited item-side expressiveness |
+| **v0.2 (ours)** | **4** | Finer-grained item feature decomposition |
 
 ---
 
-## 🔧 全部 CLI 参数
+## Full CLI Reference
 
-### 数据路径
+### Data Paths
 
-| 参数 | 默认值 | 环境变量 |
-|---|---|---|
+| Parameter | Default | Env Variable |
+|-----------|---------|-------------|
 | `--data_dir` | — | `TRAIN_DATA_PATH` |
 | `--schema_path` | `<data_dir>/schema.json` | — |
 | `--ckpt_dir` | — | `TRAIN_CKPT_PATH` |
 | `--log_dir` | — | `TRAIN_LOG_PATH` |
 | `--tf_events_dir` | — | `TRAIN_TF_EVENTS_PATH` |
 
-### 数据管道
+### Data Pipeline
 
-| 参数 | 默认值 | 说明 |
-|---|---|---|
-| `--batch_size` | 256 | 批大小 |
-| `--num_workers` | 16 | DataLoader 工作进程数 |
-| `--buffer_batches` | 20 | 随机打乱缓冲区（单位：batch） |
-| `--train_ratio` | 1.0 | 使用训练数据的前 N% |
-| `--valid_ratio` | 0.1 | Row Group 维度的验证比例 |
-| `--valid_time_ratio` | None | ⭐ 时间维度的验证比例 |
-| `--sort_by_timestamp` | True | ⭐ 按时间戳排序 Row Group |
-| `--seq_max_lens` | `seq_a:256,...` | 各序列域的截断长度 |
+| Parameter | Default | Description |
+|-----------|---------|-------------|
+| `--batch_size` | 256 | Batch size |
+| `--num_workers` | 16 | DataLoader worker processes |
+| `--buffer_batches` | 20 | Shuffle buffer size (in batches) |
+| `--train_ratio` | 1.0 | Use first N% of training data |
+| `--valid_ratio` | 0.1 | Validation ratio (Row Group level) |
+| `--valid_time_ratio` | None | Temporal validation ratio |
+| `--sort_by_timestamp` | True | Sort Row Groups by timestamp |
+| `--seq_max_lens` | `seq_a:256,...` | Truncation length per sequence domain |
 
-### 模型结构
+### Model Architecture
 
-| 参数 | 推荐值 | 说明 |
-|---|---|---|
-| `--d_model` | **128** | 主干隐藏维度 |
-| `--emb_dim` | 64 | 单特征 Embedding 维度 |
-| `--num_queries` | **1** | 每序列生成的 Query token 数 |
-| `--num_hyformer_blocks` | 2 | HyFormer 块堆叠层数 |
-| `--num_heads` | 4 | 注意力头数 |
-| `--hidden_mult` | 4 | FFN 隐层倍数 |
-| `--dropout_rate` | **0.1** | Dropout 率 |
-| `--seq_encoder_type` | **longer** | 序列编码器：swiglu / transformer / longer |
-| `--seq_top_k` | 50 | LongerEncoder 保留的最近 token 数 |
-| `--seq_causal` | **True** | LongerEncoder 因果掩码 |
-| `--use_rope` | **True** | 启用 RoPE 位置编码 |
-| `--rank_mixer_mode` | full | RankMixer 模式：full / ffn_only / none |
+| Parameter | Recommended | Description |
+|-----------|------------|-------------|
+| `--d_model` | **128** | Hidden dimension |
+| `--emb_dim` | 64 | Per-feature embedding dimension |
+| `--num_queries` | **1** | Query tokens per sequence domain |
+| `--num_hyformer_blocks` | 2 | Number of stacked HyFormer blocks |
+| `--num_heads` | 4 | Attention heads |
+| `--hidden_mult` | 4 | FFN expansion factor |
+| `--dropout_rate` | **0.1** | Dropout rate |
+| `--seq_encoder_type` | **longer** | Sequence encoder: swiglu / transformer / longer |
+| `--seq_top_k` | 50 | LongerEncoder: number of retained tokens |
+| `--seq_causal` | **True** | LongerEncoder: causal masking |
+| `--use_rope` | **True** | Enable RoPE position encoding |
+| `--rank_mixer_mode` | full | RankMixer mode: full / ffn_only / none |
 
 ### NS Tokenizer
 
-| 参数 | 推荐值 | 说明 |
-|---|---|---|
-| `--ns_tokenizer_type` | rankmixer | NS token 生成方式：group / rankmixer |
-| `--user_ns_tokens` | **7** | User NS token 数量 |
-| `--item_ns_tokens` | **4** | ⭐ Item NS token 数量 |
-| `--ns_groups_json` | `""` | NS 分组 JSON（RankMixer 模式下忽略） |
-| `--emb_skip_threshold` | 1000000 | 超过此词表大小的特征跳过 Embedding |
+| Parameter | Recommended | Description |
+|-----------|------------|-------------|
+| `--ns_tokenizer_type` | rankmixer | NS token generation: group / rankmixer |
+| `--user_ns_tokens` | **7** | Number of user NS tokens |
+| `--item_ns_tokens` | **4** | Number of item NS tokens |
+| `--emb_skip_threshold` | 1000000 | Skip embedding for features with vocab > this |
 
-### 损失函数
+### Loss Function
 
-| 参数 | 推荐值 | 说明 |
-|---|---|---|
-| `--loss_type` | **focal** | 损失类型：bce / focal |
-| `--focal_alpha` | **0.25** | Focal Loss 正类权重 |
-| `--focal_gamma` | **2.0** | Focal Loss 聚焦参数 |
+| Parameter | Recommended | Description |
+|-----------|------------|-------------|
+| `--loss_type` | **focal** | Loss type: bce / focal |
+| `--focal_alpha` | **0.25** | Focal Loss positive-class weight |
+| `--focal_gamma` | **2.0** | Focal Loss focusing parameter |
 
-### 优化器 & 正则化
+### Optimizer & Regularization
 
-| 参数 | 推荐值 | 说明 |
-|---|---|---|
-| `--lr` | 1e-4 | 稠密参数学习率（AdamW） |
-| `--sparse_lr` | 0.05 | 稀疏参数学习率（Adagrad） |
-| `--sparse_weight_decay` | **1e-6** | 稀疏参数权重衰减 |
-| `--reinit_sparse_after_epoch` | **1** | 从第 N epoch 开始冷重启 |
-| `--reinit_cardinality_threshold` | **10000** | 冷重启的基数阈值 |
-| `--seq_id_threshold` | **5000** | ID 特征识别阈值 |
-| `--patience` | 5 | Early Stopping 耐心值 |
-
----
-
-## 📊 预期性能
-
-| 指标 | v0.1/v0.2 原版 | v0.2 优化版 | 提升来源 |
-|---|---|---|---|
-| 数据划分 | 文件顺序 | ⭐ 时间戳排序 | 真实预测场景评估 |
-| 训练速度 | 基准 | ≈持平 | 元数据级排序零开销 |
-| 稀疏标签处理 | BCE Loss | ⭐ Focal Loss | 正负样本自适应加权 |
-| Item 建模 | 2 tokens | ⭐ 4 tokens + 特征交叉 | ItemFeatureInteraction |
-| 过拟合控制 | Dropout 0.01 | ⭐ Dropout 0.1 + ID Dropout + 冷重启 | 多重正则化 |
-| 序列建模 | Transformer | ⭐ LongerEncoder + RoPE + Causal | Top-K 压缩 + 位置编码 |
-| Item 数值特征 | ❌ 不支持 | ⭐ item_dense 支持 | 利用 item 数值属性 |
+| Parameter | Recommended | Description |
+|-----------|------------|-------------|
+| `--lr` | 1e-4 | Dense parameter learning rate (AdamW) |
+| `--sparse_lr` | 0.05 | Sparse parameter learning rate (Adagrad) |
+| `--sparse_weight_decay` | 1e-6 | Sparse parameter weight decay |
+| `--reinit_sparse_after_epoch` | 1 | Cold restart starting from epoch N |
+| `--reinit_cardinality_threshold` | 10000 | Cold restart cardinality threshold |
+| `--seq_id_threshold` | 5000 | High-cardinality ID feature threshold |
+| `--patience` | 5 | Early stopping patience |
 
 ---
 
-## ⚠️ 注意事项
+## Cautions
 
-1. **Schema 兼容性**：新版 `schema.json` 可包含 `item_dense` 字段；旧版 schema 自动兼容（视为空）
-2. **RankMixer 约束**：使用 `rank_mixer_mode=full` 时，须确保 `d_model % T == 0`，否则自动报错并提示合法 T 值
-3. **时间戳列**：Parquet 数据须包含 `timestamp` 列（int64 类型），否则自动回退到文件顺序划分
-4. **内存估计**：`d_model=128, batch_size=512` 约需 12-16 GB GPU 显存；若 OOM 可降低 `batch_size` 至 256
+1. **Schema compatibility**: The updated `schema.json` may include an `item_dense` field; older schemas without it are automatically handled (treated as empty).
+2. **RankMixer constraint**: When using `rank_mixer_mode=full`, ensure `d_model % T == 0`. The code will raise an error with valid T values if violated.
+3. **Timestamp column**: The Parquet data must contain a `timestamp` column (int64). If absent, the system falls back to file-order splitting.
+4. **Memory estimate**: `d_model=128, batch_size=512` requires approximately 12–16 GB GPU memory. Reduce `batch_size` to 256 if OOM occurs.
 
 ---
 
-## 📚 参考资料
+## References
 
-- HyFormer 架构：基于 RankMixer 的混合 Transformer 推荐模型
-- MultiEpoch 冷重启：[MultiEpoch: Reusing Training Data for CTR Prediction](https://arxiv.org/pdf/2305.19531)
-- Focal Loss：[Focal Loss for Dense Object Detection](https://arxiv.org/abs/1708.02002)
-- RoPE：[RoFormer: Enhanced Transformer with Rotary Position Embedding](https://arxiv.org/abs/2104.09864)
+- [HyFormer: Revisiting the Roles of Sequence Modeling and Feature Interaction in CTR Prediction](https://arxiv.org/abs/2601.12681)
+- [MultiEpoch: Reusing Training Data for CTR Prediction](https://arxiv.org/abs/2305.19531)
+- [Focal Loss for Dense Object Detection](https://arxiv.org/abs/1708.02002)
+- [RoFormer: Enhanced Transformer with Rotary Position Embedding](https://arxiv.org/abs/2104.09864)
