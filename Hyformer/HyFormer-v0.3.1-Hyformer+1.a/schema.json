@@ -76,6 +76,9 @@
     [90, 10],
     [91, 10]
   ],
+  "item_dense": [
+    [200, 1]
+  ],
   "seq": {
     "seq_a": {
       "prefix": "domain_a_seq",
