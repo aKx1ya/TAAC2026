@@ -1,3 +1,5 @@
+> **GitHub Repository:** https://github.com/aKx1ya/TAAC2026
+
 # TAAC 2026 — Unified Feature Interaction and Sequence Modeling for CTR Prediction
 
 > **Tencent Advertising Algorithm Competition 2026 · KDD Cup · Academic Track**
