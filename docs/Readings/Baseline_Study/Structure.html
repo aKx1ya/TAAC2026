@@ -1,0 +1,527 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>HyFormer 全架构 · 五文件关系图谱</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Crimson+Pro:ital,wght@0,400;0,500;0,600;0,700;1,400;1,500&family=DM+Sans:wght@400;500;600;700&family=IBM+Plex+Mono:wght@400;500;600&family=Noto+Serif+SC:wght@400;500;600;700&display=swap" rel="stylesheet">
+<style>
+:root{
+  --bg:#faf8f4;--surface:#fff;--card:#f5f2ec;--rule:#e2ddd4;--rule-light:#ede9e2;
+  --ink:#2c2a26;--ink-soft:#5a5650;--ink-faint:#8a857d;
+  --rust:#b84c2a;--rust-light:#fdf0ec;--rust-dim:#d4785c;
+  --moss:#3d7a4a;--moss-light:#edf5ef;--moss-dim:#6ba07a;
+  --slate:#3b6b8a;--slate-light:#edf3f7;--slate-dim:#6e9ab5;
+  --amber:#a07020;--amber-light:#fdf6e8;--amber-dim:#c4983e;
+  --violet:#6b4d9a;--violet-light:#f3eefb;--violet-dim:#8e72b8;
+  --teal:#2a7a7a;--teal-light:#e8f4f4;--teal-dim:#52a3a3;
+  --serif:'Crimson Pro','Noto Serif SC',Georgia,serif;
+  --sans:'DM Sans','Noto Serif SC',system-ui,sans-serif;
+  --mono:'IBM Plex Mono',monospace;
+}
+@media(prefers-color-scheme:dark){
+  :root{
+    --bg:#141210;--surface:#1c1a16;--card:#22201b;--rule:#33302a;--rule-light:#2a2722;
+    --ink:#e5e0d5;--ink-soft:#a89e8e;--ink-faint:#706858;
+    --rust-light:#2a1812;--moss-light:#162018;--slate-light:#141e26;--amber-light:#241e10;--violet-light:#1e1628;--teal-light:#0f1f1f;
+  }
+}
+*{margin:0;padding:0;box-sizing:border-box}
+html{scroll-behavior:smooth}
+body{background:var(--bg);color:var(--ink);font-family:var(--serif);font-size:17px;line-height:1.75}
+.page{max-width:900px;margin:0 auto;padding:60px 32px 120px}
+.masthead{text-align:center;padding-bottom:48px;margin-bottom:56px;border-bottom:2px solid var(--rule)}
+.phase-tag{font-family:var(--mono);font-size:11px;letter-spacing:3px;color:var(--violet);text-transform:uppercase;margin-bottom:16px}
+h1{font-family:var(--serif);font-weight:700;font-size:48px;line-height:1.1;letter-spacing:-0.02em;margin-bottom:12px}
+.subtitle{font-family:var(--sans);font-size:16px;color:var(--ink-soft);max-width:600px;margin:0 auto}
+.completion{display:inline-flex;align-items:center;gap:8px;margin-top:24px;font-family:var(--mono);font-size:12px;color:var(--moss);background:var(--moss-light);padding:6px 16px;border-radius:20px;border:1px solid var(--moss-dim)}
+.completion::before{content:"";width:8px;height:8px;border-radius:50%;background:var(--moss)}
+
+.mindmap{margin:0 0 64px;padding:40px 24px;background:var(--surface);border:1px solid var(--rule);border-radius:12px;overflow-x:auto}
+.mindmap-title{font-family:var(--mono);font-size:11px;letter-spacing:2px;color:var(--ink-faint);text-transform:uppercase;text-align:center;margin-bottom:28px}
+
+.station{margin-bottom:56px}
+.station-hdr{display:flex;align-items:center;gap:16px;margin-bottom:20px}
+.station-dot{width:40px;height:40px;border-radius:50%;display:flex;align-items:center;justify-content:center;font-family:var(--sans);font-weight:700;font-size:14px;flex-shrink:0}
+.dot-1{background:var(--violet-light);color:var(--violet)}
+.dot-2{background:var(--rust-light);color:var(--rust)}
+.dot-3{background:var(--slate-light);color:var(--slate)}
+.dot-4{background:var(--teal-light);color:var(--teal)}
+.dot-5{background:var(--amber-light);color:var(--amber)}
+.dot-6{background:var(--moss-light);color:var(--moss)}
+h2{font-family:var(--serif);font-weight:600;font-size:28px;letter-spacing:-0.01em}
+.station-sub{font-family:var(--sans);font-size:13px;color:var(--ink-faint);margin-top:2px}
+
+.knowledge{display:grid;gap:16px;margin:20px 0}
+.k-card{background:var(--surface);border:1px solid var(--rule);border-radius:10px;padding:24px 28px;position:relative}
+.k-card::before{content:"";position:absolute;top:0;left:0;right:0;height:3px;border-radius:10px 10px 0 0}
+.k-card.k-rust::before{background:var(--rust)}
+.k-card.k-slate::before{background:var(--slate)}
+.k-card.k-moss::before{background:var(--moss)}
+.k-card.k-amber::before{background:var(--amber)}
+.k-card.k-violet::before{background:var(--violet)}
+.k-card.k-teal::before{background:var(--teal)}
+.k-head{display:flex;justify-content:space-between;align-items:baseline;margin-bottom:12px;flex-wrap:wrap;gap:8px}
+.k-term{font-family:var(--sans);font-weight:600;font-size:15px;color:var(--ink)}
+.k-tag{font-family:var(--mono);font-size:10px;letter-spacing:1px;padding:3px 10px;border-radius:4px;text-transform:uppercase}
+.tag-concept{background:var(--rust-light);color:var(--rust)}
+.tag-code{background:var(--slate-light);color:var(--slate)}
+.tag-insight{background:var(--amber-light);color:var(--amber)}
+.tag-core{background:var(--violet-light);color:var(--violet)}
+.tag-improve{background:var(--moss-light);color:var(--moss)}
+.k-pro{font-family:var(--sans);font-size:13px;color:var(--ink-faint);margin-bottom:8px;font-style:italic}
+.k-explain{font-size:15.5px;line-height:1.7;color:var(--ink-soft)}
+.k-explain strong{color:var(--ink);font-weight:600}
+
+.flow-visual{background:var(--card);border-radius:8px;padding:20px 24px;margin:16px 0;overflow-x:auto}
+.flow-label{font-family:var(--mono);font-size:10px;letter-spacing:1.5px;color:var(--ink-faint);text-transform:uppercase;margin-bottom:12px}
+.flow-row{display:flex;align-items:center;gap:4px;flex-wrap:wrap}
+.flow-box{background:var(--surface);border:1px solid var(--rule);border-radius:6px;padding:6px 12px;font-family:var(--mono);font-size:11px;white-space:nowrap;color:var(--ink)}
+.flow-arrow{color:var(--ink-faint);font-size:16px;flex-shrink:0}
+
+.file-role{display:grid;grid-template-columns:repeat(5,1fr);gap:12px;margin:20px 0}
+.file-card{background:var(--surface);border:1px solid var(--rule);border-radius:8px;padding:16px;text-align:center}
+.file-card .file-icon{font-family:var(--mono);font-weight:600;font-size:13px;margin-bottom:6px}
+.file-card .file-role-name{font-family:var(--sans);font-weight:600;font-size:13px;color:var(--ink);margin-bottom:4px}
+.file-card .file-desc{font-family:var(--sans);font-size:11px;color:var(--ink-faint);line-height:1.4}
+.file-card.fc-violet{border-top:3px solid var(--violet)}
+.file-card.fc-rust{border-top:3px solid var(--rust)}
+.file-card.fc-slate{border-top:3px solid var(--slate)}
+.file-card.fc-teal{border-top:3px solid var(--teal)}
+.file-card.fc-amber{border-top:3px solid var(--amber)}
+.file-card .file-icon{color:var(--ink)}
+
+.analogy{background:var(--amber-light);border-left:3px solid var(--amber);border-radius:0 8px 8px 0;padding:16px 20px;margin:16px 0}
+.analogy-tag{font-family:var(--mono);font-size:10px;letter-spacing:1.5px;color:var(--amber);text-transform:uppercase;margin-bottom:4px}
+.analogy p{font-size:14.5px;color:var(--ink-soft);margin:0;font-style:italic}
+
+.connection{background:var(--rust-light);border:1px solid rgba(184,76,42,0.2);border-radius:10px;padding:24px 28px;margin:16px 0}
+.connection-tag{font-family:var(--mono);font-size:10px;letter-spacing:1.5px;color:var(--rust);text-transform:uppercase;margin-bottom:4px}
+.connection p{font-size:14.5px;color:var(--ink-soft);margin:0}
+.connection p+p{margin-top:8px}
+
+.checkpoint{background:var(--moss-light);border:1px solid var(--moss-dim);border-radius:10px;padding:24px 28px;margin:48px 0}
+.checkpoint-title{font-family:var(--sans);font-weight:600;font-size:14px;color:var(--moss);margin-bottom:8px;display:flex;align-items:center;gap:8px}
+.checkpoint-title::before{content:"✓";width:22px;height:22px;background:var(--moss);color:var(--bg);border-radius:50%;display:flex;align-items:center;justify-content:center;font-size:12px;font-weight:700;flex-shrink:0}
+.checkpoint p{font-size:14.5px;color:var(--ink-soft);margin:0}
+
+footer{margin-top:80px;padding-top:24px;border-top:1px solid var(--rule);text-align:center;font-family:var(--mono);font-size:10px;color:var(--ink-faint);letter-spacing:1.5px;text-transform:uppercase}
+
+@media(max-width:720px){
+  .page{padding:40px 16px 80px}
+  h1{font-size:34px}
+  h2{font-size:24px}
+  .file-role{grid-template-columns:1fr}
+}
+</style>
+</head>
+<body>
+<div class="page">
+
+<header class="masthead">
+  <div class="phase-tag">Architecture · DeepSeek 对话笔记</div>
+  <h1>HyFormer<br>五文件架构</h1>
+  <p class="subtitle">dataset.py / model.py / train.py / trainer.py / utils.py —— 五个文件，一个完整训练系统</p>
+  <div class="completion">全架构已理解</div>
+</header>
+
+<!-- ═══════ MIND MAP: FULL ARCHITECTURE ═══════ -->
+<div class="mindmap">
+  <div class="mindmap-title">思维导图 · 五文件关系全景</div>
+  <svg width="100%" viewBox="0 0 840 750" xmlns="http://www.w3.org/2000/svg">
+    <defs>
+      <marker id="arr" viewBox="0 0 10 10" refX="8" refY="5" markerWidth="6" markerHeight="6" orient="auto-start-reverse">
+        <path d="M2 1L8 5L2 9" fill="none" stroke="context-stroke" stroke-width="1.5" stroke-linecap="round"/>
+      </marker>
+    </defs>
+
+    <!-- ENTRY: run.sh -->
+    <rect x="310" y="10" width="220" height="44" rx="22" fill="#6b4d9a" opacity="0.08" stroke="#6b4d9a" stroke-width="1"/>
+    <text x="420" y="33" text-anchor="middle" font-family="'DM Sans',sans-serif" font-weight="600" font-size="13" fill="#6b4d9a">run.sh 启动脚本</text>
+    <text x="420" y="47" text-anchor="middle" font-family="'IBM Plex Mono',monospace" font-size="9" fill="#6b4d9a" opacity="0.6">bash run.sh --batch_size 256 ...</text>
+
+    <!-- ARROW to train.py -->
+    <line x1="420" y1="54" x2="420" y2="80" stroke="#6b4d9a" stroke-width="1.5" marker-end="url(#arr)"/>
+
+    <!-- train.py CENTER -->
+    <rect x="260" y="82" width="320" height="56" rx="12" fill="#6b4d9a" opacity="0.15" stroke="#6b4d9a" stroke-width="2"/>
+    <text x="420" y="104" text-anchor="middle" font-family="'DM Sans',sans-serif" font-weight="700" font-size="16" fill="#6b4d9a">train.py</text>
+    <text x="420" y="124" text-anchor="middle" font-family="'DM Sans',sans-serif" font-size="12" fill="#6b4d9a" opacity="0.8">指挥官 · 装配车间</text>
+
+    <!-- IMPORTS: 4 arrows going out from train.py -->
+    <line x1="310" y1="138" x2="160" y2="190" stroke="#b84c2a" stroke-width="1.5" marker-end="url(#arr)"/>
+    <line x1="370" y1="138" x2="340" y2="190" stroke="#3b6b8a" stroke-width="1.5" marker-end="url(#arr)"/>
+    <line x1="470" y1="138" x2="500" y2="190" stroke="#2a7a7a" stroke-width="1.5" marker-end="url(#arr)"/>
+    <line x1="530" y1="138" x2="680" y2="190" stroke="#a07020" stroke-width="1.5" marker-end="url(#arr)"/>
+
+    <!-- dataset.py -->
+    <rect x="40" y="192" width="240" height="80" rx="10" fill="#b84c2a" opacity="0.08" stroke="#b84c2a" stroke-width="1"/>
+    <text x="160" y="218" text-anchor="middle" font-family="'DM Sans',sans-serif" font-weight="700" font-size="15" fill="#b84c2a">dataset.py</text>
+    <text x="160" y="238" text-anchor="middle" font-family="'DM Sans',sans-serif" font-size="11" fill="#b84c2a" opacity="0.8">配菜员</text>
+    <text x="160" y="258" text-anchor="middle" font-family="'IBM Plex Mono',monospace" font-size="9" fill="#b84c2a" opacity="0.6">分类 · 对齐 · 打包 → DataLoader</text>
+
+    <!-- model.py -->
+    <rect x="300" y="192" width="200" height="80" rx="10" fill="#3b6b8a" opacity="0.08" stroke="#3b6b8a" stroke-width="1"/>
+    <text x="400" y="218" text-anchor="middle" font-family="'DM Sans',sans-serif" font-weight="700" font-size="15" fill="#3b6b8a">model.py</text>
+    <text x="400" y="238" text-anchor="middle" font-family="'DM Sans',sans-serif" font-size="11" fill="#3b6b8a" opacity="0.8">大厨</text>
+    <text x="400" y="258" text-anchor="middle" font-family="'IBM Plex Mono',monospace" font-size="9" fill="#3b6b8a" opacity="0.6">名片 · 序列 · 调查员 → 概率</text>
+
+    <!-- trainer.py -->
+    <rect x="520" y="192" width="200" height="80" rx="10" fill="#2a7a7a" opacity="0.08" stroke="#2a7a7a" stroke-width="1"/>
+    <text x="620" y="218" text-anchor="middle" font-family="'DM Sans',sans-serif" font-weight="700" font-size="15" fill="#2a7a7a">trainer.py</text>
+    <text x="620" y="238" text-anchor="middle" font-family="'DM Sans',sans-serif" font-size="11" fill="#2a7a7a" opacity="0.8">教练</text>
+    <text x="620" y="258" text-anchor="middle" font-family="'IBM Plex Mono',monospace" font-size="9" fill="#2a7a7a" opacity="0.6">8步循环 · 验证 · 早停 · 存档</text>
+
+    <!-- utils.py -->
+    <rect x="600" y="192" width="200" height="80" rx="10" fill="#a07020" opacity="0.08" stroke="#a07020" stroke-width="1"/>
+    <text x="700" y="218" text-anchor="middle" font-family="'DM Sans',sans-serif" font-weight="700" font-size="15" fill="#a07020">utils.py</text>
+    <text x="700" y="238" text-anchor="middle" font-family="'DM Sans',sans-serif" font-size="11" fill="#a07020" opacity="0.8">工具箱</text>
+    <text x="700" y="258" text-anchor="middle" font-family="'IBM Plex Mono',monospace" font-size="9" fill="#a07020" opacity="0.6">seed · log · 早停 · FocalLoss</text>
+
+    <!-- DATASET DETAIL: what it provides to train.py -->
+    <line x1="160" y1="272" x2="160" y2="310" stroke="#b84c2a" stroke-width="0.5" stroke-dasharray="4 3"/>
+    <rect x="40" y="312" width="240" height="70" rx="8" fill="none" stroke="#b84c2a" stroke-width="0.5" stroke-dasharray="4 3"/>
+    <text x="160" y="335" text-anchor="middle" font-family="'DM Sans',sans-serif" font-size="11" fill="#b84c2a">train.py 调用：</text>
+    <text x="160" y="355" text-anchor="middle" font-family="'IBM Plex Mono',monospace" font-size="10" fill="#b84c2a" opacity="0.8">get_pcvr_data()</text>
+    <text x="160" y="372" text-anchor="middle" font-family="'IBM Plex Mono',monospace" font-size="10" fill="#b84c2a" opacity="0.8">→ train_loader, valid_loader, dataset</text>
+
+    <!-- MODEL DETAIL: what it receives from dataset -->
+    <line x1="400" y1="272" x2="400" y2="310" stroke="#3b6b8a" stroke-width="0.5" stroke-dasharray="4 3"/>
+    <rect x="300" y="312" width="200" height="70" rx="8" fill="none" stroke="#3b6b8a" stroke-width="0.5" stroke-dasharray="4 3"/>
+    <text x="400" y="335" text-anchor="middle" font-family="'DM Sans',sans-serif" font-size="11" fill="#3b6b8a">train.py 传入：</text>
+    <text x="400" y="355" text-anchor="middle" font-family="'IBM Plex Mono',monospace" font-size="10" fill="#3b6b8a" opacity="0.8">user_int_feature_specs</text>
+    <text x="400" y="372" text-anchor="middle" font-family="'IBM Plex Mono',monospace" font-size="10" fill="#3b6b8a" opacity="0.8">vocab_sizes, seq_vocab_sizes...</text>
+
+    <!-- TRAINER DETAIL: what it receives -->
+    <line x1="620" y1="272" x2="620" y2="310" stroke="#2a7a7a" stroke-width="0.5" stroke-dasharray="4 3"/>
+    <rect x="520" y="312" width="200" height="70" rx="8" fill="none" stroke="#2a7a7a" stroke-width="0.5" stroke-dasharray="4 3"/>
+    <text x="620" y="335" text-anchor="middle" font-family="'DM Sans',sans-serif" font-size="11" fill="#2a7a7a">train.py 传入：</text>
+    <text x="620" y="355" text-anchor="middle" font-family="'IBM Plex Mono',monospace" font-size="10" fill="#2a7a7a" opacity="0.8">model + train_loader +</text>
+    <text x="620" y="372" text-anchor="middle" font-family="'IBM Plex Mono',monospace" font-size="10" fill="#2a7a7a" opacity="0.8">valid_loader + early_stopping</text>
+
+    <!-- UTILS DETAIL: what it provides -->
+    <line x1="700" y1="272" x2="700" y2="310" stroke="#a07020" stroke-width="0.5" stroke-dasharray="4 3"/>
+    <rect x="620" y="312" width="180" height="70" rx="8" fill="none" stroke="#a07020" stroke-width="0.5" stroke-dasharray="4 3"/>
+    <text x="710" y="335" text-anchor="middle" font-family="'DM Sans',sans-serif" font-size="11" fill="#a07020">提供：</text>
+    <text x="710" y="355" text-anchor="middle" font-family="'IBM Plex Mono',monospace" font-size="10" fill="#a07020" opacity="0.8">set_seed, create_logger</text>
+    <text x="710" y="372" text-anchor="middle" font-family="'IBM Plex Mono',monospace" font-size="10" fill="#a07020" opacity="0.8">EarlyStopping, focal_loss</text>
+
+    <!-- BOTTOM: TRAINER INTERNAL LOOP -->
+    <rect x="40" y="420" width="760" height="185" rx="10" fill="#2a7a7a" opacity="0.04" stroke="#2a7a7a" stroke-width="0.5"/>
+    <text x="60" y="445" font-family="'IBM Plex Mono',monospace" font-size="10" fill="#2a7a7a" letter-spacing="1.5">trainer.py 内部 · 训练主循环</text>
+
+    <rect x="60" y="462" width="110" height="36" rx="6" fill="#2a7a7a" opacity="0.08" stroke="#2a7a7a" stroke-width="0.5"/>
+    <text x="115" y="484" text-anchor="middle" font-family="'DM Sans',sans-serif" font-weight="600" font-size="11" fill="#2a7a7a">取 batch</text>
+    <text x="178" y="482" font-family="'DM Sans',sans-serif" font-size="14" fill="#2a7a7a">→</text>
+    <rect x="195" y="462" width="110" height="36" rx="6" fill="#2a7a7a" opacity="0.08" stroke="#2a7a7a" stroke-width="0.5"/>
+    <text x="250" y="484" text-anchor="middle" font-family="'DM Sans',sans-serif" font-weight="600" font-size="11" fill="#2a7a7a">zero_grad</text>
+    <text x="313" y="482" font-family="'DM Sans',sans-serif" font-size="14" fill="#2a7a7a">→</text>
+    <rect x="330" y="462" width="110" height="36" rx="6" fill="#2a7a7a" opacity="0.1" stroke="#2a7a7a" stroke-width="0.5"/>
+    <text x="385" y="484" text-anchor="middle" font-family="'DM Sans',sans-serif" font-weight="600" font-size="11" fill="#2a7a7a">forward</text>
+    <text x="448" y="482" font-family="'DM Sans',sans-serif" font-size="14" fill="#2a7a7a">→</text>
+    <rect x="465" y="462" width="110" height="36" rx="6" fill="#2a7a7a" opacity="0.08" stroke="#2a7a7a" stroke-width="0.5"/>
+    <text x="520" y="484" text-anchor="middle" font-family="'DM Sans',sans-serif" font-weight="600" font-size="11" fill="#2a7a7a">loss</text>
+    <text x="583" y="482" font-family="'DM Sans',sans-serif" font-size="14" fill="#2a7a7a">→</text>
+    <rect x="600" y="462" width="180" height="36" rx="6" fill="#2a7a7a" opacity="0.12" stroke="#2a7a7a" stroke-width="0.5"/>
+    <text x="690" y="484" text-anchor="middle" font-family="'DM Sans',sans-serif" font-weight="600" font-size="11" fill="#2a7a7a">backward + clip + step</text>
+
+    <rect x="60" y="518" width="730" height="30" rx="4" fill="none" stroke="#2a7a7a" stroke-width="0.5" stroke-dasharray="4 3"/>
+    <text x="425" y="538" text-anchor="middle" font-family="'DM Sans',sans-serif" font-size="11" fill="#2a7a7a">每 epoch / 每 N step → evaluate() → AUC + LogLoss → EarlyStopping → counter≥5 停训</text>
+
+    <rect x="60" y="560" width="730" height="30" rx="4" fill="none" stroke="#2a7a7a" stroke-width="0.5" stroke-dasharray="4 3"/>
+    <text x="425" y="580" text-anchor="middle" font-family="'DM Sans',sans-serif" font-size="11" fill="#2a7a7a">创新高 → 保存 checkpoint: model.pt + schema.json + ns_groups.json + train_config.json</text>
+
+    <!-- THREE PHASES LABEL -->
+    <rect x="40" y="640" width="760" height="50" rx="8" fill="#6b4d9a" opacity="0.06" stroke="#6b4d9a" stroke-width="0.5"/>
+    <text x="420" y="660" text-anchor="middle" font-family="'DM Sans',sans-serif" font-weight="600" font-size="12" fill="#6b4d9a">Phase 1 (dataset) — 格式矛盾 · 硬件妥协 ｜ Phase 2 (model) — 语义矛盾 · 信息蒸馏 ｜ Phase 3 (trainer+utils) — 训练矛盾 · 从瞎猜到变准</text>
+    <text x="420" y="680" text-anchor="middle" font-family="'DM Sans',sans-serif" font-size="11" fill="#6b4d9a" opacity="0.7">train.py 把三者串成完整流水线</text>
+  </svg>
+</div>
+
+<!-- ═══════ STATION 1: FIVE FILES AT A GLANCE ═══════ -->
+<section class="station">
+  <div class="station-hdr">
+    <div class="station-dot dot-1">1</div>
+    <div><h2>五文件角色一览</h2><div class="station-sub">每个文件解决一个独立的矛盾，train.py 把它们串起来</div></div>
+  </div>
+
+  <div class="file-role">
+    <div class="file-card fc-rust">
+      <div class="file-icon" style="color:var(--rust)">dataset.py</div>
+      <div class="file-role-name">配菜员</div>
+      <div class="file-desc">解决"格式矛盾"<br>数据参差 vs GPU整齐<br>分类·对齐·打包</div>
+    </div>
+    <div class="file-card fc-slate">
+      <div class="file-icon" style="color:var(--slate)">model.py</div>
+      <div class="file-role-name">大厨</div>
+      <div class="file-desc">解决"语义矛盾"<br>信息杂乱 vs 提取判断<br>名片·序列·查询·蒸馏</div>
+    </div>
+    <div class="file-card fc-violet">
+      <div class="file-icon" style="color:var(--violet)">train.py</div>
+      <div class="file-role-name">指挥官</div>
+      <div class="file-desc">装配所有零件<br>解析参数·创建对象<br>发号施令·启动训练</div>
+    </div>
+    <div class="file-card fc-teal">
+      <div class="file-icon" style="color:var(--teal)">trainer.py</div>
+      <div class="file-role-name">教练</div>
+      <div class="file-desc">跑训练循环<br>8步·验证·早停<br>双优化器·存档</div>
+    </div>
+    <div class="file-card fc-amber">
+      <div class="file-icon" style="color:var(--amber)">utils.py</div>
+      <div class="file-role-name">工具箱</div>
+      <div class="file-desc">提供底层工具<br>seed·log·早停<br>FocalLoss</div>
+    </div>
+  </div>
+
+  <div class="analogy">
+    <div class="analogy-tag">一句话概括</div>
+    <p>train.py 是总指挥，它 import 其他四个文件，把模型、数据、训练器组装在一起，然后调用 trainer.train() 启动整个训练流程。</p>
+  </div>
+</section>
+
+<!-- ═══════ STATION 2: TRAIN.PY DEEP DIVE ═══════ -->
+<section class="station">
+  <div class="station-hdr">
+    <div class="station-dot dot-2">2</div>
+    <div><h2>train.py — 指挥官的四项职责</h2><div class="station-sub">不自己干活，只"装配零件、发号施令"</div></div>
+  </div>
+
+  <div class="knowledge">
+    <div class="k-card k-rust">
+      <div class="k-head"><span class="k-term">职责 1：创建数据管道</span><span class="k-tag tag-code">调用 dataset.py</span></div>
+      <div class="k-pro">get_pcvr_data(data_dir, schema_path, batch_size=256, valid_ratio=0.1, ...)</div>
+      <div class="k-explain">调用 dataset.py 的 <code>get_pcvr_data()</code>，获得三个东西：<strong>train_loader</strong>（训练数据流）、<strong>valid_loader</strong>（验证数据流）、<strong>pcvr_dataset</strong>（含 feature schema、vocab sizes 信息）。</div>
+    </div>
+
+    <div class="k-card k-slate">
+      <div class="k-head"><span class="k-term">职责 2：构建模型</span><span class="k-tag tag-code">调用 model.py</span></div>
+      <div class="k-pro">从 dataset 提取 spec → build_feature_specs() → PCVRHyFormer(**model_args)</div>
+      <div class="k-explain">从 dataset 对象中提取 user_int 的 vocab_size、dense_dim、seq 的 vocab_sizes 等信息，加上命令行传入的超参（d_model=64, num_heads=4, num_hyformer_blocks=2...），拼成 model_args 字典，传给 <code>PCVRHyFormer(**model_args)</code> 构建模型。</div>
+    </div>
+
+    <div class="k-card k-teal">
+      <div class="k-head"><span class="k-term">职责 3：创建训练器</span><span class="k-tag tag-code">调用 trainer.py</span></div>
+      <div class="k-pro">PCVRHyFormerRankingTrainer(model, train_loader, valid_loader, early_stopping, ...)</div>
+      <div class="k-explain">把前面创建好的 model、train_loader、valid_loader、early_stopping，加上所有训练超参（lr, sparse_lr, loss_type, patience...），传给 <code>PCVRHyFormerRankingTrainer(...)</code>，训练器内部自己创建双优化器。</div>
+    </div>
+
+    <div class="k-card k-amber">
+      <div class="k-head"><span class="k-term">职责 4：启动 + 收尾</span><span class="k-tag tag-code">工具调用</span></div>
+      <div class="k-pro">set_seed(42) → create_logger() → trainer.train() → writer.close()</div>
+      <div class="k-explain">固定随机种子（utils.set_seed）→ 启动日志（utils.create_logger）→ 调用 <strong>trainer.train()</strong>，此后 train.py 的使命基本完成。训练结束后关闭 TensorBoard writer。</div>
+    </div>
+  </div>
+
+  <div class="flow-visual">
+    <div class="flow-label">train.py 的执行顺序</div>
+    <div class="flow-row">
+      <span class="flow-box">解析 CLI 参数</span>
+      <span class="flow-arrow">→</span>
+      <span class="flow-box">set_seed + create_logger</span>
+      <span class="flow-arrow">→</span>
+      <span class="flow-box">get_pcvr_data()</span>
+      <span class="flow-arrow">→</span>
+      <span class="flow-box">提取 spec + 构建模型</span>
+      <span class="flow-arrow">→</span>
+      <span class="flow-box">创建 EarlyStopping</span>
+      <span class="flow-arrow">→</span>
+      <span class="flow-box">创建 Trainer</span>
+      <span class="flow-arrow">→</span>
+      <span class="flow-box">trainer.train()</span>
+    </div>
+  </div>
+</section>
+
+<!-- ═══════ STATION 3: TRAINER.PY DEEP DIVE ═══════ -->
+<section class="station">
+  <div class="station-hdr">
+    <div class="station-dot dot-3">3</div>
+    <div><h2>trainer.py — 教练的训练计划</h2><div class="station-sub">一个 step 8 个动作 · 双优化器 · 验证 + 早停 · 存档管理</div></div>
+  </div>
+
+  <div class="knowledge">
+    <div class="k-card k-teal">
+      <div class="k-head"><span class="k-term">__init__：创建双优化器</span><span class="k-tag tag-code">初始化</span></div>
+      <div class="k-pro">Adagrad(sparse_params, lr=0.05) + AdamW(dense_params, lr=1e-4)</div>
+      <div class="k-explain">模型提供 <code>get_sparse_params()</code> 和 <code>get_dense_params()</code> 两个方法，trainer 据此分成两组：Embedding 参数给 Adagrad（"谁来得少给谁涨工资"），其余参数给 AdamW（动量+自适应+权重衰减）。</div>
+    </div>
+
+    <div class="k-card k-teal">
+      <div class="k-head"><span class="k-term">_train_step：8 个动作</span><span class="k-tag tag-code">核心循环</span></div>
+      <div class="k-pro">batch_to_device → make_model_input → zero_grad → forward → loss → backward → clip_grad → step ×2</div>
+      <div class="k-explain">每 256 条数据执行这 8 步。关键技术点：① 双优化器各自 zero_grad() 和 step()；② backward 之后 step 之前插入 <code>clip_grad_norm_(max_norm=1.0)</code> 防梯度爆炸；③ loss 可选 BCE（统一扣分）或 Focal（重点批改难题）。</div>
+    </div>
+
+    <div class="k-card k-teal">
+      <div class="k-head"><span class="k-term">evaluate：考试模式</span><span class="k-tag tag-code">验证</span></div>
+      <div class="k-pro">model.eval() + torch.no_grad() → 跑验证集 → 算 AUC + LogLoss</div>
+      <div class="k-explain">关 Dropout、不算梯度、不改参数。用 sklearn 的 <code>roc_auc_score</code> 算 AUC，用 PyTorch 的 <code>binary_cross_entropy_with_logits</code> 算 LogLoss。<strong>过滤 NaN 预测</strong>——如果梯度爆炸导致输出 NaN，这些样本不参与指标计算。</div>
+    </div>
+
+    <div class="k-card k-teal">
+      <div class="k-head"><span class="k-term">_handle_validation_result：存档逻辑</span><span class="k-tag tag-code">Checkpoint</span></div>
+      <div class="k-pro">AUC 创新高 → 删旧 best → 写 model.pt + 3 个 sidecar</div>
+      <div class="k-explain">只有当 AUC 实际上超过当前最佳时才写磁盘。保存 4 个文件：<code>model.pt</code>（参数）、<code>schema.json</code>（特征布局）、<code>ns_groups.json</code>（NS 分组）、<code>train_config.json</code>（完整超参）。旧的最佳 checkpoint 自动删除。</div>
+    </div>
+  </div>
+
+  <div class="connection">
+    <div class="connection-tag">trainer.py 和 utils.py 的关系</div>
+    <p>trainer.py 从 utils.py 引入两个东西：<strong>sigmoid_focal_loss</strong>（当 loss_type='focal' 时使用）和 <strong>EarlyStopping</strong>（每轮验证后调用）。<strong>trainer 不依赖 utils 的 set_seed 和 create_logger</strong>——那些是 train.py 启动时一次性调用的。</p>
+  </div>
+</section>
+
+<!-- ═══════ STATION 4: UTILS.PY DEEP DIVE ═══════ -->
+<section class="station">
+  <div class="station-hdr">
+    <div class="station-dot dot-4">4</div>
+    <div><h2>utils.py — 工具箱的四件工具</h2><div class="station-sub">被 train.py 和 trainer.py 分别引用，各取所需</div></div>
+  </div>
+
+  <div class="knowledge">
+    <div class="k-card k-amber">
+      <div class="k-head"><span class="k-term">set_seed(42)</span><span class="k-tag tag-code">工具 1</span></div>
+      <div class="k-pro">锁死 Python random、NumPy、PyTorch CPU/CUDA 所有随机数生成器，cuDNN 设 deterministic。</div>
+      <div class="k-explain">保证每次训练跑出来的结果<strong>可复现</strong>。被 train.py 在启动时调用一次。注意：完全 bitwise 确定性还需要关 cuDNN auto-tuning（会降速），这里只开了 deterministic，保留速度。</div>
+    </div>
+
+    <div class="k-card k-amber">
+      <div class="k-head"><span class="k-term">create_logger(path)</span><span class="k-tag tag-code">工具 2</span></div>
+      <div class="k-pro">创建日志系统：文件（DEBUG 级别，详细）+ 控制台（INFO 级别，简洁），带时间戳前缀。</div>
+      <div class="k-explain">日志前缀格式："日期 时间 - 已运行时长"。比如你看到 <code>"05/12/26 14:32:10 - 2:15:03"</code> 就知道训练跑了 2 小时 15 分。<strong>多行消息自动对齐</strong>，不会因为前缀长短不一而错位。</div>
+    </div>
+
+    <div class="k-card k-amber">
+      <div class="k-head"><span class="k-term">EarlyStopping</span><span class="k-tag tag-code">工具 3</span></div>
+      <div class="k-pro">跟踪最佳 AUC，计数连续未见涨次数。创新高 → 保存 + counter 归零；没改进 → counter+1；counter≥patience → 喊停。</div>
+      <div class="k-explain">三个关键设计：① <strong>delta 阈值</strong>（必须超过 best_score+delta 才算改进，避免浮点波动误判）；② <strong>内存 + 磁盘双保存</strong>（best_model 存内存、model.pt 存磁盘）；③ <strong>每次创新高 counter 立刻归零</strong>——给模型留足翻身空间。</div>
+    </div>
+
+    <div class="k-card k-amber">
+      <div class="k-head"><span class="k-term">sigmoid_focal_loss()</span><span class="k-tag tag-code">工具 4</span></div>
+      <div class="k-pro">FL(p_t) = -α_t · (1-p_t)^γ · log(p_t)，γ 压扁简单样本，α 调类别权重。</div>
+      <div class="k-explain">γ=0 退化为 BCE，γ=2 是论文标准值。α 默认 0.1（压低正样本）。Baseline 用 BCE（默认），Focal 是预留选项——调不好可能比 BCE 还差，工业实践里先用 BCE 跑通再说。</div>
+    </div>
+  </div>
+
+  <div class="flow-visual">
+    <div class="flow-label">utils.py 被谁引用</div>
+    <div class="flow-row">
+      <span class="flow-box">train.py</span>
+      <span class="flow-arrow">→</span>
+      <span class="flow-box">set_seed</span>
+      <span class="flow-arrow">+</span>
+      <span class="flow-box">create_logger</span>
+      <span class="flow-arrow">+</span>
+      <span class="flow-box">EarlyStopping</span>
+    </div>
+    <div class="flow-row" style="margin-top:8px">
+      <span class="flow-box">trainer.py</span>
+      <span class="flow-arrow">→</span>
+      <span class="flow-box">sigmoid_focal_loss</span>
+      <span class="flow-arrow">+</span>
+      <span class="flow-box">EarlyStopping</span>
+    </div>
+  </div>
+</section>
+
+<!-- ═══════ STATION 5: COMPLETE DATA FLOW ═══════ -->
+<section class="station">
+  <div class="station-hdr">
+    <div class="station-dot dot-5">5</div>
+    <div><h2>完整数据流：从 run.sh 到点击概率</h2><div class="station-sub">跨 5 个文件的端到端旅程</div></div>
+  </div>
+
+  <div class="knowledge">
+    <div class="k-card k-violet">
+      <div class="k-head"><span class="k-term">启动阶段（train.py main）</span><span class="k-tag tag-core">Phase 1 → 2 衔接</span></div>
+      <div class="k-pro">parse_args → set_seed → create_logger → get_pcvr_data → build model → create trainer → trainer.train()</div>
+      <div class="k-explain">
+        <strong>这里的关键信息流：</strong>dataset 对象里的 schema 信息（vocab_sizes, feature_specs）流向 model 的构造函数，model 据此创建正确大小的 Embedding 表和网络层。
+        <br><br>如果 schema 说 user_int 某特征 vocab_size=1725，模型的 Embedding 就是 (1725, 64)；如果 schema 说 seq 某域有 5 个 sideinfo 特征，序列编码器就准备 5 张 Embedding 表。
+      </div>
+    </div>
+
+    <div class="k-card k-violet">
+      <div class="k-head"><span class="k-term">训练阶段（trainer.train）</span><span class="k-tag tag-core">Phase 2 → 3 循环</span></div>
+      <div class="k-pro">for epoch in 1..999: for batch in train_loader: _train_step(batch) → evaluate() → early_stopping()</div>
+      <div class="k-explain">
+        <strong>batch 的旅程：</strong>Phase 1 的 dataset 产出 batch dict → trainer 的 _batch_to_device 搬上 GPU → _make_model_input 转成 ModelInput → model.forward() 跑 Phase 2 的 5 步流水线 → 得到 logits → 算 loss → backward 算梯度 → step 拧旋钮。
+        <br><br>
+        <strong>验证的旅程：</strong>valid_loader 产出 batch → model.eval() + no_grad → model.predict() → 得到 logits → sklearn 算 AUC → EarlyStopping 判停/继续。
+      </div>
+    </div>
+
+    <div class="k-card k-amber">
+      <div class="k-head"><span class="k-term">train.py 为什么存在？</span><span class="k-tag tag-insight">架构洞察</span></div>
+      <div class="k-pro">如果只有 dataset + model + trainer，三者仍然是孤立零件。train.py 是"胶水"——它知道 schema 信息怎么从 dataset 流向 model，知道怎么把 model + data + tools 拼成 trainer。</div>
+      <div class="k-explain">这就是软件工程的<strong>关注点分离</strong>：dataset 不关心模型长什么样，model 不关心数据从哪来，trainer 不关心超参从哪传入。train.py 承担了所有"把零件组装起来"的职责。如果换个项目、换个模型架构，你只需要改 train.py 的组装逻辑，其他四个文件可以保持不变。</div>
+    </div>
+  </div>
+
+  <div class="flow-visual">
+    <div class="flow-label">完整端到端数据流</div>
+    <div class="flow-row">
+      <span class="flow-box">run.sh</span>
+      <span class="flow-arrow">→</span>
+      <span class="flow-box">train.py 装配</span>
+      <span class="flow-arrow">→</span>
+      <span class="flow-box">dataset 配菜</span>
+      <span class="flow-arrow">→</span>
+      <span class="flow-box">model 大厨</span>
+      <span class="flow-arrow">→</span>
+      <span class="flow-box">trainer 教练</span>
+      <span class="flow-arrow">→</span>
+      <span class="flow-box">utils 工具箱</span>
+      <span class="flow-arrow">→</span>
+      <span class="flow-box">checkpoint 存档</span>
+    </div>
+  </div>
+</section>
+
+<!-- ═══════ STATION 6: THREE PHASES UNIFIED ═══════ -->
+<section class="station">
+  <div class="station-hdr">
+    <div class="station-dot dot-6">6</div>
+    <div><h2>三大 Phase 统一视角</h2><div class="station-sub">把 Phase 1/2/3 的"矛盾框架"映射到五个文件上</div></div>
+  </div>
+
+  <div class="knowledge">
+    <div class="k-card k-rust">
+      <div class="k-head"><span class="k-term">Phase 1 — dataset.py</span><span class="k-tag tag-concept">格式矛盾</span></div>
+      <div class="k-pro">主要矛盾：真实数据的非结构化特征 vs GPU 计算要求的规整矩阵</div>
+      <div class="k-explain">① 分类 = 语义理解→工程分派（数据驱动）<br>② 对齐 = 对硬件的妥协（截断补零与业务逻辑无关）<br>③ 打包 = 效率工程（256 条/batch + 打乱）<br><strong>本质：配菜摆盘，不是洗菜。</strong></div>
+    </div>
+
+    <div class="k-card k-slate">
+      <div class="k-head"><span class="k-term">Phase 2 — model.py</span><span class="k-tag tag-concept">语义矛盾</span></div>
+      <div class="k-pro">主要矛盾：原始信息杂乱 vs 要提取出判断</div>
+      <div class="k-explain">① NS Tokenizer：把几百维散乱信息压成 8 张名片<br>② Sequence Encoder：翻译行为日志 + Self-Attention 捕捉关联<br>③ Query 三件套：用少量 token 从漫长序列蒸馏精华<br><strong>本质：信息蒸馏，这才是智力活。</strong></div>
+    </div>
+
+    <div class="k-card k-teal">
+      <div class="k-head"><span class="k-term">Phase 3 — trainer.py + utils.py</span><span class="k-tag tag-concept">训练矛盾</span></div>
+      <div class="k-pro">主要矛盾：模型当前状态 vs 理想状态，如何高效逼近</div>
+      <div class="k-explain">① 一个 step 8 个动作：backward "想清楚" + step "动手改"<br>② 双优化器：兼职员工 Adagrad + 全职高管 AdamW<br>③ 验证+早停：考试判好坏，连输 5 把离场<br><strong>本质：反复试错，从瞎猜到变准。</strong></div>
+    </div>
+
+    <div class="k-card k-violet">
+      <div class="k-head"><span class="k-term">train.py — 把所有矛盾串起来</span><span class="k-tag tag-core">胶水层</span></div>
+      <div class="k-pro">train.py 不解决任何矛盾，但它知道每个矛盾由哪个文件解决，以及它们之间的信息如何传递。</div>
+      <div class="k-explain">schema 信息从 dataset → model；data loader 从 dataset → trainer；model 从 train.py → trainer；early_stopping 从 utils → train.py → trainer。<strong>train.py 是信息枢纽，不是矛盾解决者。</strong></div>
+    </div>
+  </div>
+</section>
+
+<div class="checkpoint">
+  <div class="checkpoint-title">全架构检查点 — 已理解</div>
+  <p>你现在能画出 HyFormer 的<strong>完整五文件架构图</strong>，能解释每个文件的角色和它们之间的信息流：<strong>train.py 是指挥官</strong>，它调用 dataset 创建数据管道，从 dataset 提取 schema 信息构建 model，创建 EarlyStopping 和 Trainer，最后调用 trainer.train() 启动整个训练循环。<strong>五个文件各司其职，没有一个是多余的。</strong></p>
+</div>
+
+<footer>TAAC 2026 · File Architecture DeepSeek Notes · 2026.05.14</footer>
+
+</div>
+</body>
+</html>

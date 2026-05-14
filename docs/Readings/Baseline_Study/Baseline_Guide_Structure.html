@@ -1,0 +1,619 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Baseline 吃透计划 — TAAC2026 学习路线图</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@400;500;600;700&family=JetBrains+Mono:wght@400;500;600&family=Noto+Sans+SC:wght@400;500;600;700&display=swap" rel="stylesheet">
+<style>
+:root {
+  --bg: #08090c;
+  --surface: #11131a;
+  --card: #171b25;
+  --border: #222838;
+  --text: #d8dce6;
+  --bright: #f2f4f8;
+  --dim: #7e879a;
+  --faint: #4a5168;
+  --green: #34d399;
+  --green-bg: rgba(52,211,153,0.08);
+  --blue: #60a5fa;
+  --blue-bg: rgba(96,165,250,0.08);
+  --purple: #a78bfa;
+  --purple-bg: rgba(167,139,250,0.08);
+  --amber: #fbbf24;
+  --amber-bg: rgba(251,191,36,0.08);
+  --rose: #fb7185;
+  --rose-bg: rgba(251,113,133,0.08);
+  --cyan: #22d3ee;
+  --cyan-bg: rgba(34,211,238,0.08);
+  --display: 'Space Grotesk','Noto Sans SC',system-ui,sans-serif;
+  --body: 'Noto Sans SC','Space Grotesk',system-ui,sans-serif;
+  --mono: 'JetBrains Mono',monospace;
+}
+*{margin:0;padding:0;box-sizing:border-box}
+html{scroll-behavior:smooth}
+body{background:var(--bg);color:var(--text);font-family:var(--body);font-size:15.5px;line-height:1.75;-webkit-font-smoothing:antialiased}
+.wrap{max-width:960px;margin:0 auto;padding:56px 28px 120px}
+
+/* ── HEADER ── */
+.hdr{margin-bottom:64px;border-bottom:1px solid var(--border);padding-bottom:48px}
+.badge{display:inline-flex;align-items:center;gap:8px;font-family:var(--mono);font-size:10px;letter-spacing:2px;text-transform:uppercase;color:var(--green);background:var(--green-bg);border:1px solid rgba(52,211,153,0.2);padding:5px 14px;border-radius:100px;margin-bottom:24px}
+.badge::before{content:"";width:6px;height:6px;border-radius:50%;background:var(--green);box-shadow:0 0 8px var(--green)}
+h1{font-family:var(--display);font-weight:700;font-size:52px;line-height:1.05;letter-spacing:-0.03em;color:var(--bright);margin-bottom:16px}
+h1 .hi{color:var(--green)}
+.sub{font-size:17px;color:var(--dim);max-width:640px;line-height:1.6}
+.status-bar{display:grid;grid-template-columns:repeat(auto-fit,minmax(200px,1fr));gap:12px;margin-top:32px}
+.status-item{background:var(--surface);border:1px solid var(--border);border-radius:8px;padding:16px 20px}
+.status-label{font-family:var(--mono);font-size:10px;letter-spacing:1.5px;text-transform:uppercase;color:var(--dim);margin-bottom:4px}
+.status-val{font-family:var(--display);font-weight:600;font-size:15px;color:var(--bright);display:flex;align-items:center;gap:8px}
+.dot{width:8px;height:8px;border-radius:50%;flex-shrink:0}
+.dot-green{background:var(--green);box-shadow:0 0 6px var(--green)}
+.dot-amber{background:var(--amber);box-shadow:0 0 6px var(--amber)}
+.dot-dim{background:var(--faint)}
+
+/* ── OVERVIEW ── */
+.overview{margin-bottom:64px}
+.overview h2{font-family:var(--display);font-weight:700;font-size:28px;color:var(--bright);margin-bottom:20px}
+.overview p{margin-bottom:14px;max-width:700px}
+.principle{background:var(--surface);border-left:3px solid var(--green);border-radius:0 8px 8px 0;padding:20px 24px;margin:24px 0}
+.principle-label{font-family:var(--mono);font-size:10px;letter-spacing:2px;text-transform:uppercase;color:var(--green);margin-bottom:6px}
+.principle p{margin:0;font-style:italic;color:var(--text)}
+
+/* ── PHASE ── */
+.phase{margin-bottom:56px;position:relative}
+.phase-hdr{display:flex;align-items:flex-start;gap:20px;margin-bottom:24px}
+.phase-icon{width:56px;height:56px;border-radius:14px;display:flex;align-items:center;justify-content:center;font-family:var(--display);font-weight:700;font-size:22px;flex-shrink:0}
+.phase-icon.p1{background:var(--green-bg);color:var(--green);border:1px solid rgba(52,211,153,0.25)}
+.phase-icon.p2{background:var(--blue-bg);color:var(--blue);border:1px solid rgba(96,165,250,0.25)}
+.phase-icon.p3{background:var(--purple-bg);color:var(--purple);border:1px solid rgba(167,139,250,0.25)}
+.phase-icon.p4{background:var(--amber-bg);color:var(--amber);border:1px solid rgba(251,191,36,0.25)}
+.phase-icon.p5{background:var(--rose-bg);color:var(--rose);border:1px solid rgba(251,113,133,0.25)}
+.phase-info{flex:1}
+.phase-tag{font-family:var(--mono);font-size:10px;letter-spacing:2px;text-transform:uppercase;margin-bottom:4px}
+.tag-green{color:var(--green)}
+.tag-blue{color:var(--blue)}
+.tag-purple{color:var(--purple)}
+.tag-amber{color:var(--amber)}
+.tag-rose{color:var(--rose)}
+h2.phase-title{font-family:var(--display);font-weight:700;font-size:26px;color:var(--bright);margin-bottom:4px;letter-spacing:-0.01em}
+.phase-time{font-family:var(--mono);font-size:11px;color:var(--faint)}
+.phase-body{padding-left:76px}
+.phase-body p{margin-bottom:12px;max-width:680px}
+
+/* ── TASK CARD ── */
+.tasks{display:grid;gap:16px;margin:20px 0}
+.task{background:var(--surface);border:1px solid var(--border);border-radius:10px;padding:22px 24px;position:relative;overflow:hidden}
+.task::before{content:"";position:absolute;left:0;top:0;bottom:0;width:3px;border-radius:3px 0 0 3px}
+.task.t-green::before{background:var(--green)}
+.task.t-blue::before{background:var(--blue)}
+.task.t-purple::before{background:var(--purple)}
+.task.t-amber::before{background:var(--amber)}
+.task.t-rose::before{background:var(--rose)}
+.task-head{display:flex;justify-content:space-between;align-items:baseline;margin-bottom:8px;flex-wrap:wrap;gap:8px}
+.task-name{font-family:var(--display);font-weight:600;font-size:16px;color:var(--bright)}
+.task-tool{font-family:var(--mono);font-size:10px;letter-spacing:1px;text-transform:uppercase;padding:3px 10px;border-radius:4px;background:var(--card);color:var(--dim);border:1px solid var(--border)}
+.task p{font-size:14.5px;margin-bottom:8px;color:var(--text)}
+.task p:last-child{margin-bottom:0}
+
+/* ── PROMPT BOX ── */
+.prompt-box{background:var(--bg);border:1px solid var(--border);border-radius:6px;padding:14px 18px;margin:12px 0;font-family:var(--mono);font-size:12.5px;color:var(--green);line-height:1.6;white-space:pre-wrap;overflow-x:auto}
+
+/* ── MAPPING TABLE ── */
+.mapping{margin:20px 0;border:1px solid var(--border);border-radius:8px;overflow:hidden}
+.map-row{display:grid;grid-template-columns:1fr 1fr 1fr;border-bottom:1px solid var(--border)}
+.map-row:last-child{border-bottom:none}
+.map-row.header{background:var(--card)}
+.map-cell{padding:12px 16px;font-size:13.5px}
+.map-cell:not(:last-child){border-right:1px solid var(--border)}
+.map-row.header .map-cell{font-family:var(--mono);font-size:10px;letter-spacing:1.5px;text-transform:uppercase;color:var(--dim);font-weight:500}
+.map-cell code{font-family:var(--mono);font-size:12px;color:var(--cyan);background:var(--bg);padding:1px 6px;border-radius:3px}
+.map-cell strong{color:var(--bright);font-weight:600}
+
+/* ── CHECKPOINT ── */
+.check{background:var(--green-bg);border:1px solid rgba(52,211,153,0.2);border-radius:8px;padding:16px 20px;margin:20px 0;display:flex;gap:12px;align-items:flex-start}
+.check-icon{font-size:18px;line-height:1;margin-top:2px}
+.check p{margin:0;font-size:14px;color:var(--text)}
+.check strong{color:var(--green)}
+
+/* ── TIMELINE CONNECTOR ── */
+.connector{width:3px;height:32px;background:linear-gradient(180deg,var(--border),transparent);margin:0 0 0 27px;border-radius:2px}
+
+/* ── FOOTER ── */
+footer{margin-top:80px;padding-top:24px;border-top:1px solid var(--border);text-align:center;font-family:var(--mono);font-size:10px;color:var(--faint);letter-spacing:1.5px;text-transform:uppercase}
+
+code{font-family:var(--mono);font-size:0.88em;color:var(--cyan);background:var(--bg);padding:1px 6px;border-radius:3px}
+
+@media(max-width:720px){
+  .wrap{padding:40px 16px 80px}
+  h1{font-size:36px}
+  .phase-body{padding-left:0;margin-top:16px}
+  .map-row{grid-template-columns:1fr}
+  .map-cell:not(:last-child){border-right:none;border-bottom:1px solid var(--border)}
+  .status-bar{grid-template-columns:1fr}
+}
+</style>
+</head>
+<body>
+<div class="wrap">
+
+<!-- ════════ HEADER ════════ -->
+<header class="hdr">
+  <div class="badge">Learning Roadmap · 学习路线图</div>
+  <h1>吃透 Baseline<br><span class="hi">五阶段计划</span></h1>
+  <p class="sub">从"能跑"到"能改"的系统学习路线。配合你已经部署好的 Claude Code 和正在跑的 baseline 训练，边学边练，5 个阶段递进。</p>
+
+  <div class="status-bar">
+    <div class="status-item">
+      <div class="status-label">VSCode + Claude Code</div>
+      <div class="status-val"><span class="dot dot-green"></span>已就绪</div>
+    </div>
+    <div class="status-item">
+      <div class="status-label">HyFormer Baseline 训练</div>
+      <div class="status-val"><span class="dot dot-amber"></span>训练中</div>
+    </div>
+    <div class="status-item">
+      <div class="status-label">InterFormer v0.1 代码</div>
+      <div class="status-val"><span class="dot dot-green"></span>已读取</div>
+    </div>
+    <div class="status-item">
+      <div class="status-label">三篇论文解析</div>
+      <div class="status-val"><span class="dot dot-green"></span>已掌握</div>
+    </div>
+  </div>
+</header>
+
+<!-- ════════ OVERVIEW ════════ -->
+<section class="overview">
+  <h2>学习哲学</h2>
+  <p>理解一个深度学习系统，本质上是理解三件事：<strong>数据怎么进去</strong>（dataset.py）、<strong>模型怎么处理</strong>（model.py）、<strong>怎么变聪明</strong>（trainer.py）。下面五个阶段就是沿着这条线逐步深入。</p>
+
+  <div class="principle">
+    <div class="principle-label">核心原则</div>
+    <p>每个阶段都在 Claude Code 里边问边学，不是只读文档。让 Claude Code 打开真实代码，逐行给你解释，你提问它回答——这是最高效的学习方式。</p>
+  </div>
+</section>
+
+<!-- ════════ PHASE 1 ════════ -->
+<section class="phase">
+  <div class="phase-hdr">
+    <div class="phase-icon p1">1</div>
+    <div class="phase-info">
+      <div class="phase-tag tag-green">Phase 01 · Data Pipeline</div>
+      <h2 class="phase-title">数据怎么进去的？</h2>
+      <div class="phase-time">⏱ 建议时间：1-2 小时 · 核心文件：dataset.py</div>
+    </div>
+  </div>
+
+  <div class="phase-body">
+    <p><strong>目标：</strong>理解 100 万条 Parquet 数据的 120 列怎么被加载、分组、填充、变换，最终变成模型能"吃"的张量（Tensor）。</p>
+
+    <div class="tasks">
+      <div class="task t-green">
+        <div class="task-head">
+          <span class="task-name">1.1 理解数据的全貌</span>
+          <span class="task-tool">Claude Code</span>
+        </div>
+        <p>先让 Claude Code 给你画一个全景图：120 列被分成哪几大类？每类有多少列？</p>
+        <div class="prompt-box">请打开 Hyformer/HyFormer-v0.0/dataset.py，解释一下这个文件做了什么。
+特别是：
+1. 120列数据被分成了哪几大类？（用户特征、物品特征、序列等）
+2. 每一类在代码里对应哪个变量名？
+3. FeatureSchema 这个类是干什么的？
+请用通俗的中文解释，我是非CS背景。</div>
+      </div>
+
+      <div class="task t-green">
+        <div class="task-head">
+          <span class="task-name">1.2 理解序列数据的处理</span>
+          <span class="task-tool">Claude Code</span>
+        </div>
+        <p>4 个行为序列（seq_a/b/c/d）是整个模型最复杂的输入。搞懂它们怎么从变长列表变成固定长度的张量。</p>
+        <div class="prompt-box">在 dataset.py 里，4个行为序列（domain_a_seq, domain_b_seq, domain_c_seq, domain_d_seq）是怎么被处理的？
+1. 每个序列包含哪些列？
+2. 变长序列怎么被截断和填充（padding）？
+3. seq_max_lens 参数（a:256, b:256, c:512, d:512）是什么意思？
+4. time_bucket 是怎么算的？</div>
+      </div>
+
+      <div class="task t-green">
+        <div class="task-head">
+          <span class="task-name">1.3 理解 DataLoader 的工作方式</span>
+          <span class="task-tool">Claude Code</span>
+        </div>
+        <p>了解数据怎么被分批次（batch）送给模型，以及训练集/验证集怎么划分。</p>
+        <div class="prompt-box">在 dataset.py 的 get_pcvr_data 函数里：
+1. 训练集和验证集是怎么划分的？（valid_ratio=0.1 是什么意思？）
+2. 一个 batch 的数据长什么样？包含哪些字段？
+3. buffer_batches=20 的 shuffle 机制是怎么工作的？
+4. collate_fn 做了什么？</div>
+      </div>
+    </div>
+
+    <div class="check">
+      <div class="check-icon">✓</div>
+      <div><p><strong>阶段检查点：</strong>你能用自己的话说出"一条样本包含哪些信息"和"一个 batch 是怎么组装的"，就算通过了。</p></div>
+    </div>
+  </div>
+</section>
+
+<div class="connector"></div>
+
+<!-- ════════ PHASE 2 ════════ -->
+<section class="phase">
+  <div class="phase-hdr">
+    <div class="phase-icon p2">2</div>
+    <div class="phase-info">
+      <div class="phase-tag tag-blue">Phase 02 · Model Architecture</div>
+      <h2 class="phase-title">模型怎么处理数据的？</h2>
+      <div class="phase-time">⏱ 建议时间：3-4 小时（最重要的阶段）· 核心文件：model.py</div>
+    </div>
+  </div>
+
+  <div class="phase-body">
+    <p><strong>目标：</strong>理解 PCVRHyFormer 的 forward() 函数——数据进入模型后经过哪些变换，每一步的输入/输出是什么形状（shape），最终怎么变成一个概率值。</p>
+
+    <p>这个阶段分 5 个子任务，对应 HyFormer 论文的 5 个核心组件：</p>
+
+    <div class="mapping">
+      <div class="map-row header">
+        <div class="map-cell">论文概念</div>
+        <div class="map-cell">代码位置</div>
+        <div class="map-cell">做什么</div>
+      </div>
+      <div class="map-row">
+        <div class="map-cell"><strong>NS Tokenizer</strong></div>
+        <div class="map-cell"><code>GroupNSTokenizer</code> / <code>RankMixerNSTokenizer</code></div>
+        <div class="map-cell">把 46 列用户特征 + 14 列物品特征 → 几个 token 向量</div>
+      </div>
+      <div class="map-row">
+        <div class="map-cell"><strong>Sequence Encoding</strong></div>
+        <div class="map-cell"><code>TransformerEncoder</code> / <code>SwiGLUEncoder</code></div>
+        <div class="map-cell">把 4 个行为序列各自编码成上下文感知的表征</div>
+      </div>
+      <div class="map-row">
+        <div class="map-cell"><strong>Query Generation</strong></div>
+        <div class="map-cell"><code>MultiSeqQueryGenerator</code></div>
+        <div class="map-cell">从 NS token + 序列摘要生成全局查询 token</div>
+      </div>
+      <div class="map-row">
+        <div class="map-cell"><strong>Query Decoding</strong></div>
+        <div class="map-cell"><code>CrossAttention</code></div>
+        <div class="map-cell">查询 token 从行为序列里"提取"相关信息</div>
+      </div>
+      <div class="map-row">
+        <div class="map-cell"><strong>Query Boosting</strong></div>
+        <div class="map-cell"><code>RankMixerBlock</code></div>
+        <div class="map-cell">Token Mixing + FFN，增强跨查询/跨特征交互</div>
+      </div>
+    </div>
+
+    <div class="tasks">
+      <div class="task t-blue">
+        <div class="task-head">
+          <span class="task-name">2.1 NS Tokenizer — 特征怎么变成 token</span>
+          <span class="task-tool">Claude Code</span>
+        </div>
+        <p>这是数据进入模型的第一步：把零散的特征 ID 变成统一维度的向量。</p>
+        <div class="prompt-box">请打开 model.py，找到 GroupNSTokenizer 和 RankMixerNSTokenizer 两个类。
+1. 它们各自怎么把多个特征 embedding 变成几个 NS token？
+2. RankMixer 模式下 user_ns_tokens=5, item_ns_tokens=2 是什么意思？
+3. forward() 的输入和输出的 shape 分别是什么？
+4. 用类比帮我理解：这一步相当于在做什么？</div>
+      </div>
+
+      <div class="task t-blue">
+        <div class="task-head">
+          <span class="task-name">2.2 序列编码 — 行为历史怎么被理解</span>
+          <span class="task-tool">Claude Code</span>
+        </div>
+        <p>4 个行为序列各自经过 Transformer 编码，捕获"用户行为的时间模式"。</p>
+        <div class="prompt-box">请解释 model.py 里的 TransformerEncoder 类：
+1. 自注意力（self-attention）在序列上做了什么？用日常类比解释。
+2. RoPE（旋转位置编码）是干什么的？为什么比普通位置编码好？
+3. _embed_seq_domain 方法怎么把序列从 ID 变成 embedding？
+4. time_bucket embedding 起什么作用？</div>
+      </div>
+
+      <div class="task t-blue">
+        <div class="task-head">
+          <span class="task-name">2.3 Query 生成 + Decoding + Boosting</span>
+          <span class="task-tool">Claude Code</span>
+        </div>
+        <p>这是 HyFormer 论文最核心的创新——理解了这部分，你就理解了整个模型。</p>
+        <div class="prompt-box">请解释 model.py 里的这三个类，重点是数据流向：
+1. MultiSeqQueryGenerator: 怎么从 NS tokens + 序列生成 Query tokens？
+2. CrossAttention: Query tokens 怎么从序列里"提问"并获取信息？
+3. RankMixerBlock: Token Mixing 的 reshape-transpose 技巧做了什么？
+
+请画出数据流：NS tokens → Query 生成 → 交叉注意力 → RankMixer → 输出
+每一步标注 tensor 的 shape 变化。</div>
+      </div>
+
+      <div class="task t-blue">
+        <div class="task-head">
+          <span class="task-name">2.4 完整 forward 走一遍</span>
+          <span class="task-tool">Claude Code</span>
+        </div>
+        <p>把上面所有组件串起来，跟踪一个 batch 从输入到输出的完整路径。</p>
+        <div class="prompt-box">请打开 model.py 的 forward() 方法（PCVRHyFormer 类），
+从头到尾走一遍，假设 batch_size=256, d_model=64：
+1. 输入的 ModelInput 包含哪些字段，shape 分别是什么？
+2. 每一步变换后 tensor 的 shape 怎么变？
+3. 最终 logits 的 shape 是什么？怎么从 logits 变成 0-1 概率？
+请用表格列出每一步的 shape 变化。</div>
+      </div>
+    </div>
+
+    <div class="check">
+      <div class="check-icon">✓</div>
+      <div><p><strong>阶段检查点：</strong>你能画出（或口述）从"120 列原始数据"到"一个 0-1 概率"的完整数据流图，包括每一步的关键操作和 tensor shape 变化。</p></div>
+    </div>
+  </div>
+</section>
+
+<div class="connector"></div>
+
+<!-- ════════ PHASE 3 ════════ -->
+<section class="phase">
+  <div class="phase-hdr">
+    <div class="phase-icon p3">3</div>
+    <div class="phase-info">
+      <div class="phase-tag tag-purple">Phase 03 · Training Mechanics</div>
+      <h2 class="phase-title">模型怎么"变聪明"的？</h2>
+      <div class="phase-time">⏱ 建议时间：1-2 小时 · 核心文件：trainer.py + utils.py</div>
+    </div>
+  </div>
+
+  <div class="phase-body">
+    <p><strong>目标：</strong>理解训练循环——模型怎么从"瞎猜"变成"越来越准"。这部分决定了你后续能做哪些训练技巧的改进。</p>
+
+    <div class="tasks">
+      <div class="task t-purple">
+        <div class="task-head">
+          <span class="task-name">3.1 训练循环的骨架</span>
+          <span class="task-tool">Claude Code</span>
+        </div>
+        <p>理解 train_one_epoch 里的每一步：取数据 → 模型预测 → 算损失 → 更新参数。</p>
+        <div class="prompt-box">请打开 trainer.py 的 train_one_epoch 方法：
+1. 一个 training step 具体做了哪些事？按顺序列出。
+2. loss.backward() 和 optimizer.step() 分别在干什么？
+3. 为什么有两个 optimizer（sparse_optimizer + dense_optimizer）？
+   Adagrad 和 AdamW 各自负责哪些参数，为什么要分开？
+4. gradient clipping (max_norm=1.0) 是干什么的？</div>
+      </div>
+
+      <div class="task t-purple">
+        <div class="task-head">
+          <span class="task-name">3.2 验证和早停</span>
+          <span class="task-tool">Claude Code</span>
+        </div>
+        <p>理解模型怎么知道自己"学好了"或"学过头了"。</p>
+        <div class="prompt-box">请解释 trainer.py 里的 evaluate 方法和 EarlyStopping 类：
+1. 验证（validation）和训练有什么区别？为什么要分开？
+2. AUC 是怎么算的？它衡量的是什么？
+3. EarlyStopping 的 patience=5 意味着什么？
+4. 模型什么时候保存 checkpoint？保存了什么？</div>
+      </div>
+
+      <div class="task t-purple">
+        <div class="task-head">
+          <span class="task-name">3.3 损失函数</span>
+          <span class="task-tool">Claude Code</span>
+        </div>
+        <p>理解 BCE Loss 和 Focal Loss 的区别——这直接影响模型学什么。</p>
+        <div class="prompt-box">请解释 utils.py 里的 sigmoid_focal_loss：
+1. BCE Loss 和 Focal Loss 分别是什么？用考试打分的类比。
+2. alpha 和 gamma 两个参数分别控制什么？
+3. 为什么在类别不平衡时 Focal Loss 可能更好？
+4. baseline 用的是哪个 loss？（看 run.sh 和 train.py 的默认值）</div>
+      </div>
+    </div>
+
+    <div class="check">
+      <div class="check-icon">✓</div>
+      <div><p><strong>阶段检查点：</strong>你能解释"为什么 Loss 会震荡"（sparse_lr=0.05 太大）以及"为什么 AUC 会 plateau"（模型停止学新东西）——这些和训练曲线上看到的现象完全对应。</p></div>
+    </div>
+  </div>
+</section>
+
+<div class="connector"></div>
+
+<!-- ════════ PHASE 4 ════════ -->
+<section class="phase">
+  <div class="phase-hdr">
+    <div class="phase-icon p4">4</div>
+    <div class="phase-info">
+      <div class="phase-tag tag-amber">Phase 04 · Interpret Results</div>
+      <h2 class="phase-title">训练结果怎么看？</h2>
+      <div class="phase-time">⏱ 建议时间：1 小时 · 工具：Angel 平台 Output 页面</div>
+    </div>
+  </div>
+
+  <div class="phase-body">
+    <p><strong>目标：</strong>等 baseline 训练完成后，能读懂 Loss / AUC / LogLoss 三条曲线，并从中诊断出训练的问题。</p>
+    <p><strong>前置条件：</strong>你的 HyFormer baseline 训练已经跑完（状态变为 Finished(Success)）。</p>
+
+    <div class="tasks">
+      <div class="task t-amber">
+        <div class="task-head">
+          <span class="task-name">4.1 分析三条训练曲线</span>
+          <span class="task-tool">Angel 平台 + 这个 Chat</span>
+        </div>
+        <p>训练完成后，截图 Loss、AUC、LogLoss 三条曲线发给我（在这个 Chat 里），我帮你逐条分析。重点看：</p>
+        <p>• <strong>Loss 曲线</strong>：是否有剧烈震荡？趋势是否下降？spike 频率如何？<br>
+        • <strong>AUC 曲线</strong>：最高到多少？什么 step 开始 plateau？<br>
+        • <strong>LogLoss 曲线</strong>：是否持续下降，还是在某处反弹？</p>
+      </div>
+
+      <div class="task t-amber">
+        <div class="task-head">
+          <span class="task-name">4.2 对比两个 baseline</span>
+          <span class="task-tool">这个 Chat</span>
+        </div>
+        <p>你的 HyFormer baseline 结果 vs 你同学之前跑的 InterFormer v0.1 结果：</p>
+        <div class="mapping">
+          <div class="map-row header">
+            <div class="map-cell">指标</div>
+            <div class="map-cell">HyFormer v0.0（你的）</div>
+            <div class="map-cell">InterFormer v0.1（同学的）</div>
+          </div>
+          <div class="map-row">
+            <div class="map-cell"><strong>Eval AUC</strong></div>
+            <div class="map-cell">等你的结果…</div>
+            <div class="map-cell">0.8067</div>
+          </div>
+          <div class="map-row">
+            <div class="map-cell"><strong>d_model</strong></div>
+            <div class="map-cell">64</div>
+            <div class="map-cell">64</div>
+          </div>
+          <div class="map-row">
+            <div class="map-cell"><strong>架构</strong></div>
+            <div class="map-cell">单向 Query Decoding</div>
+            <div class="map-cell">双向 InterFormer</div>
+          </div>
+        </div>
+        <p>这个对比会直观告诉你：双向交互（InterFormer）比单向提取（HyFormer）好了多少。</p>
+      </div>
+
+      <div class="task t-amber">
+        <div class="task-head">
+          <span class="task-name">4.3 诊断训练问题</span>
+          <span class="task-tool">Claude Code</span>
+        </div>
+        <p>带着训练结果回到代码，让 Claude Code 帮你定位具体是哪段代码导致了曲线上的问题。</p>
+        <div class="prompt-box">我的 HyFormer baseline 训练结果显示：
+- Loss 在 0.15-0.8 之间剧烈震荡
+- AUC 在 step ~3000 后就 plateau 不再上升
+- LogLoss 缓慢下降
+
+请在代码中找出导致这些现象的原因，并告诉我哪些参数可以调整来改善。</div>
+      </div>
+    </div>
+
+    <div class="check">
+      <div class="check-icon">✓</div>
+      <div><p><strong>阶段检查点：</strong>你能指着训练曲线说出"这个震荡是因为 sparse_lr=0.05 太大"、"这个 plateau 是因为没有 warmup 和 cosine annealing"、"InterFormer 比 HyFormer 高了 X 个点因为双向交互"。</p></div>
+    </div>
+  </div>
+</section>
+
+<div class="connector"></div>
+
+<!-- ════════ PHASE 5 ════════ -->
+<section class="phase">
+  <div class="phase-hdr">
+    <div class="phase-icon p5">5</div>
+    <div class="phase-info">
+      <div class="phase-tag tag-rose">Phase 05 · Where to Improve</div>
+      <h2 class="phase-title">我能从哪里下手提高？</h2>
+      <div class="phase-time">⏱ 建议时间：1-2 小时 · 工具：Claude Code + 这个 Chat</div>
+    </div>
+  </div>
+
+  <div class="phase-body">
+    <p><strong>目标：</strong>基于你对 baseline 的完整理解，梳理所有可能的改进方向，按 "投入产出比" 排优先级，为后续的版本迭代做准备。</p>
+
+    <div class="tasks">
+      <div class="task t-rose">
+        <div class="task-head">
+          <span class="task-name">5.1 低成本高收益 — 修 Bug + 调参</span>
+          <span class="task-tool">Claude Code</span>
+        </div>
+        <p>不改架构，只修已知问题和调超参，预期 AUC +0.003~0.01：</p>
+        <p>• 修 <code>reinit_high_cardinality_params</code> 逻辑反转 bug<br>
+        • 降低 <code>sparse_lr</code>（0.05 → 0.02 或 0.01）减少震荡<br>
+        • 加 warmup + cosine annealing 学习率调度<br>
+        • 增大 batch size（256 → 512 或 1024）</p>
+        <div class="prompt-box">请在 Interformer/v0.1/trainer.py 里找到 reinit_high_cardinality_params 的 bug，
+告诉我应该怎么修。然后帮我写一个修复后的版本。</div>
+      </div>
+
+      <div class="task t-rose">
+        <div class="task-head">
+          <span class="task-name">5.2 中等成本 — 特征工程</span>
+          <span class="task-tool">Claude Code</span>
+        </div>
+        <p>在 dataset.py 里构造新特征，不改模型结构，预期 AUC +0.003~0.008：</p>
+        <p>• Item log-frequency（物品出现频次的对数）<br>
+        • Bayesian smoothed CTR（物品的历史点击率）<br>
+        • 序列长度特征（用户活跃度指标）</p>
+        <div class="prompt-box">请打开 dataset.py，告诉我如果要添加一个 item_log_frequency 特征
+（每个 item_id 在训练集中出现的次数取 log），应该在哪里改？怎么改？</div>
+      </div>
+
+      <div class="task t-rose">
+        <div class="task-head">
+          <span class="task-name">5.3 高成本高收益 — 架构改进</span>
+          <span class="task-tool">Claude Code + 论文</span>
+        </div>
+        <p>改 model.py 的架构，需要深入理解才能做好：</p>
+        <p>• <strong>HyFormer → InterFormer</strong>：引入双向交互（你同学已经做了，AUC +0.01）<br>
+        • <strong>加 DCN/DHEN</strong>：在 Interaction Arch 加显式特征交叉<br>
+        • <strong>OneTrans 思路</strong>：统一 Tokenizer + 因果注意力（最激进但潜力最大）<br>
+        • <strong>混合精度训练 (GradScaler)</strong>：加速训练 + 正则化效果</p>
+        <div class="prompt-box">请对比 Hyformer/HyFormer-v0.0/model.py 和 Interformer/v0.1/model.py，
+告诉我 Zesong 到底改了哪些地方，为什么这些改动让 AUC 从 ~0.80 涨到 0.8067。</div>
+      </div>
+    </div>
+
+    <div class="check">
+      <div class="check-icon">✓</div>
+      <div><p><strong>阶段检查点：</strong>你能列出 5 个具体的改进方向，每个都能说出"改哪个文件、改哪行代码、预期效果是什么"。到这里，你就从"理解 baseline"毕业了，可以开始动手改代码了。</p></div>
+    </div>
+  </div>
+</section>
+
+<!-- ════════ TIMELINE SUMMARY ════════ -->
+<section style="margin-top:64px;">
+  <h2 style="font-family:var(--display);font-weight:700;font-size:28px;color:var(--bright);margin-bottom:24px;">时间安排建议</h2>
+
+  <div class="mapping">
+    <div class="map-row header">
+      <div class="map-cell">时间</div>
+      <div class="map-cell">做什么</div>
+      <div class="map-cell">产出</div>
+    </div>
+    <div class="map-row">
+      <div class="map-cell"><strong>今晚（训练还在跑）</strong></div>
+      <div class="map-cell">Phase 1 + Phase 2 的前半</div>
+      <div class="map-cell">理解数据流 + NS Tokenizer</div>
+    </div>
+    <div class="map-row">
+      <div class="map-cell"><strong>明天上午</strong></div>
+      <div class="map-cell">Phase 2 后半 + Phase 3</div>
+      <div class="map-cell">理解完整 forward + 训练循环</div>
+    </div>
+    <div class="map-row">
+      <div class="map-cell"><strong>明天下午（训练应该跑完了）</strong></div>
+      <div class="map-cell">Phase 4：分析训练结果</div>
+      <div class="map-cell">训练曲线诊断报告</div>
+    </div>
+    <div class="map-row">
+      <div class="map-cell"><strong>后天</strong></div>
+      <div class="map-cell">Phase 5：制定改进计划</div>
+      <div class="map-cell">可执行的改进清单</div>
+    </div>
+    <div class="map-row">
+      <div class="map-cell"><strong>第 3-11 天</strong></div>
+      <div class="map-cell">迭代改进：修 bug → 调参 → 特征 → 架构</div>
+      <div class="map-cell">每个版本一个 AUC 数字</div>
+    </div>
+  </div>
+
+  <div class="principle" style="margin-top:32px;">
+    <div class="principle-label">重要提醒</div>
+    <p>Phase 1-3 全部在 Claude Code 里完成——你问它答，它打开真实代码逐行解释。这个 Chat 负责宏观规划和训练结果分析。两边配合是最高效的学习方式。</p>
+  </div>
+</section>
+
+<footer>
+  TAAC 2026 · Baseline 吃透计划 · v1.0 · 2026.05.12
+</footer>
+
+</div>
+</body>
+</html>
