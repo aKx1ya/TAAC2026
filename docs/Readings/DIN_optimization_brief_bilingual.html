@@ -1,0 +1,1246 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>DIN 优化地图 · TAAC 2026</title>
+<link href="https://fonts.googleapis.com/css2?family=Fraunces:ital,opsz,wght@0,9..144,300;0,9..144,500;0,9..144,700;0,9..144,900;1,9..144,400&family=Noto+Serif+SC:wght@400;500;600;700&family=Noto+Sans+SC:wght@300;400;500;600;700&family=JetBrains+Mono:wght@400;500;700&display=swap" rel="stylesheet">
+<style>
+:root {
+  --bg: #0a0d10;
+  --bg2: #0f1318;
+  --bg3: #161b22;
+  --bg4: #1c2330;
+  --line: #1f2733;
+  --line2: #2a3340;
+  --ink: #e8e6e1;
+  --ink2: #b5b2a9;
+  --dim: #7a7d85;
+  --mute: #4a4e58;
+  --amber: #d4a347;
+  --amber-soft: #b8862c;
+  --gold: #e8c773;
+  --teal: #4fb8a8;
+  --teal-soft: #2d8a7a;
+  --rose: #c47a8a;
+  --crimson: #b85567;
+  --blue: #6a93c0;
+  --purple: #8b7cb8;
+  --serif: 'Fraunces', 'Noto Serif SC', Georgia, serif;
+  --sans: 'Noto Sans SC', 'IBM Plex Sans', system-ui, sans-serif;
+  --mono: 'JetBrains Mono', monospace;
+}
+* { margin: 0; padding: 0; box-sizing: border-box; }
+
+body {
+  background: var(--bg);
+  color: var(--ink);
+  font-family: var(--sans);
+  font-size: 15.5px;
+  line-height: 1.85;
+  font-weight: 300;
+  padding: 0;
+  overflow-x: hidden;
+}
+
+::selection { background: var(--amber); color: var(--bg); }
+
+/* ─── Layout ─── */
+.wrap { max-width: 920px; margin: 0 auto; padding: 0 32px; }
+.full { max-width: 1080px; margin: 0 auto; padding: 0 32px; }
+
+/* ─── Hero ─── */
+.hero {
+  padding: 100px 0 80px;
+  border-bottom: 1px solid var(--line);
+  position: relative;
+  overflow: hidden;
+}
+.hero::before {
+  content: '';
+  position: absolute;
+  top: 0; left: 50%; transform: translateX(-50%);
+  width: 600px; height: 400px;
+  background: radial-gradient(ellipse, rgba(212,163,71,0.08) 0%, transparent 70%);
+  pointer-events: none;
+}
+.hero .meta {
+  font-family: var(--mono);
+  font-size: 11px;
+  letter-spacing: 4px;
+  text-transform: uppercase;
+  color: var(--amber);
+  margin-bottom: 32px;
+  display: flex;
+  align-items: center;
+  gap: 16px;
+}
+.hero .meta::before, .hero .meta::after {
+  content: '';
+  flex: 1;
+  height: 1px;
+  background: var(--line2);
+  max-width: 80px;
+}
+.hero h1 {
+  font-family: var(--serif);
+  font-size: clamp(42px, 6vw, 76px);
+  font-weight: 700;
+  line-height: 1.08;
+  letter-spacing: -0.02em;
+  margin-bottom: 28px;
+  text-align: center;
+}
+.hero h1 em {
+  font-style: italic;
+  font-weight: 500;
+  color: var(--amber);
+}
+.hero .lead {
+  font-family: var(--serif);
+  font-style: italic;
+  font-weight: 400;
+  font-size: 19px;
+  line-height: 1.65;
+  color: var(--ink2);
+  max-width: 640px;
+  margin: 0 auto 48px;
+  text-align: center;
+}
+.hero-key {
+  border-top: 1px solid var(--line2);
+  border-bottom: 1px solid var(--line2);
+  padding: 24px 0;
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  gap: 32px;
+  max-width: 720px;
+  margin: 0 auto;
+}
+.hero-key div { text-align: center; }
+.hero-key .k {
+  font-family: var(--mono);
+  font-size: 10px;
+  letter-spacing: 2px;
+  text-transform: uppercase;
+  color: var(--dim);
+  margin-bottom: 8px;
+}
+.hero-key .v {
+  font-family: var(--serif);
+  font-size: 24px;
+  font-weight: 600;
+  color: var(--ink);
+}
+.hero-key .v.amber { color: var(--amber); }
+.hero-key .v.teal { color: var(--teal); }
+
+/* ─── Section ─── */
+.section {
+  padding: 96px 0;
+  border-bottom: 1px solid var(--line);
+}
+.section-num {
+  font-family: var(--mono);
+  font-size: 11px;
+  letter-spacing: 3px;
+  color: var(--amber);
+  display: block;
+  margin-bottom: 16px;
+}
+.section h2 {
+  font-family: var(--serif);
+  font-size: clamp(30px, 4vw, 42px);
+  font-weight: 600;
+  line-height: 1.2;
+  letter-spacing: -0.01em;
+  margin-bottom: 16px;
+  max-width: 780px;
+}
+.section h2 em { font-style: italic; color: var(--amber); font-weight: 500; }
+.section .deck {
+  font-family: var(--serif);
+  font-style: italic;
+  font-size: 18px;
+  font-weight: 400;
+  color: var(--ink2);
+  max-width: 680px;
+  margin-bottom: 56px;
+  line-height: 1.6;
+}
+
+.section h3 {
+  font-family: var(--serif);
+  font-size: 24px;
+  font-weight: 600;
+  margin: 56px 0 20px;
+  letter-spacing: -0.01em;
+}
+.section h4 {
+  font-family: var(--sans);
+  font-size: 13px;
+  font-weight: 600;
+  text-transform: uppercase;
+  letter-spacing: 2px;
+  color: var(--amber);
+  margin: 32px 0 12px;
+}
+
+.section p { margin-bottom: 18px; color: var(--ink); }
+.section p.tight { margin-bottom: 8px; }
+
+/* ─── Code blocks ─── */
+pre.code {
+  font-family: var(--mono);
+  font-size: 13px;
+  background: var(--bg2);
+  border: 1px solid var(--line);
+  border-left: 3px solid var(--amber);
+  border-radius: 0 6px 6px 0;
+  padding: 20px 24px;
+  margin: 20px 0;
+  line-height: 1.7;
+  color: var(--ink2);
+  overflow-x: auto;
+  white-space: pre;
+}
+pre.code .c { color: var(--mute); font-style: italic; }
+pre.code .k { color: var(--amber); }
+pre.code .s { color: var(--teal); }
+pre.code .n { color: var(--rose); }
+
+code.inline {
+  font-family: var(--mono);
+  font-size: 13px;
+  background: var(--bg3);
+  border: 1px solid var(--line2);
+  padding: 1px 7px;
+  border-radius: 3px;
+  color: var(--gold);
+}
+
+/* ─── Tables ─── */
+table.t {
+  width: 100%;
+  border-collapse: collapse;
+  margin: 24px 0;
+  font-size: 14px;
+}
+table.t th {
+  text-align: left;
+  font-family: var(--mono);
+  font-size: 10px;
+  letter-spacing: 2px;
+  text-transform: uppercase;
+  color: var(--amber);
+  padding: 14px 16px;
+  border-bottom: 1px solid var(--line2);
+  font-weight: 500;
+}
+table.t td {
+  padding: 14px 16px;
+  border-bottom: 1px solid var(--line);
+  color: var(--ink2);
+  vertical-align: top;
+  line-height: 1.7;
+}
+table.t td:first-child {
+  color: var(--ink);
+  font-weight: 400;
+}
+table.t tr:hover td { background: rgba(212,163,71,0.03); }
+
+.stars { color: var(--amber); letter-spacing: 1px; }
+
+/* ─── Pull quote ─── */
+.pull {
+  border-left: 2px solid var(--amber);
+  padding: 6px 0 6px 28px;
+  margin: 36px 0;
+  font-family: var(--serif);
+  font-style: italic;
+  font-size: 20px;
+  font-weight: 400;
+  color: var(--ink);
+  line-height: 1.55;
+}
+.pull cite {
+  display: block;
+  font-style: normal;
+  font-family: var(--mono);
+  font-size: 11px;
+  letter-spacing: 2px;
+  text-transform: uppercase;
+  color: var(--dim);
+  margin-top: 14px;
+  font-weight: 400;
+}
+
+/* ─── Callout boxes ─── */
+.box {
+  border: 1px solid var(--line2);
+  border-radius: 6px;
+  padding: 22px 26px;
+  margin: 24px 0;
+  background: var(--bg2);
+}
+.box .tag {
+  font-family: var(--mono);
+  font-size: 10px;
+  letter-spacing: 2px;
+  text-transform: uppercase;
+  color: var(--amber);
+  margin-bottom: 10px;
+}
+.box.warn { border-color: var(--crimson); }
+.box.warn .tag { color: var(--rose); }
+.box.tip { border-color: var(--teal-soft); }
+.box.tip .tag { color: var(--teal); }
+
+/* ─── Direction cards ─── */
+.dir {
+  display: grid;
+  grid-template-columns: 80px 1fr;
+  gap: 28px;
+  padding: 36px 0;
+  border-top: 1px solid var(--line);
+}
+.dir:last-child { border-bottom: 1px solid var(--line); }
+.dir-num {
+  font-family: var(--serif);
+  font-size: 56px;
+  font-weight: 700;
+  line-height: 1;
+  color: var(--amber);
+  font-style: italic;
+}
+.dir-num.dim { color: var(--mute); }
+.dir h3 {
+  font-family: var(--serif);
+  font-size: 26px;
+  font-weight: 600;
+  line-height: 1.2;
+  margin: 0 0 8px;
+  letter-spacing: -0.01em;
+}
+.dir .rating {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  margin-bottom: 16px;
+  font-family: var(--mono);
+  font-size: 11px;
+  letter-spacing: 1.5px;
+  text-transform: uppercase;
+  color: var(--dim);
+  flex-wrap: wrap;
+}
+.dir .rating .priority {
+  font-family: var(--mono);
+  font-size: 10px;
+  padding: 3px 10px;
+  border-radius: 3px;
+  letter-spacing: 1.5px;
+  text-transform: uppercase;
+  font-weight: 500;
+}
+.priority.p5 { background: var(--amber); color: var(--bg); }
+.priority.p4 { background: var(--teal-soft); color: var(--bg); }
+.priority.p3 { background: var(--line2); color: var(--ink2); }
+.priority.p2 { background: var(--bg3); color: var(--dim); border: 1px solid var(--line2); }
+
+/* ─── Matrix ─── */
+.matrix {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 24px;
+  margin: 28px 0;
+}
+.matrix-cell {
+  border: 1px solid var(--line);
+  border-radius: 4px;
+  padding: 20px 22px;
+  background: var(--bg2);
+}
+.matrix-cell .label {
+  font-family: var(--mono);
+  font-size: 10px;
+  letter-spacing: 2px;
+  text-transform: uppercase;
+  color: var(--amber);
+  margin-bottom: 10px;
+}
+.matrix-cell .content {
+  font-size: 14px;
+  color: var(--ink2);
+  line-height: 1.7;
+}
+
+/* ─── Timeline ─── */
+.timeline {
+  margin: 32px 0;
+  position: relative;
+  padding-left: 32px;
+}
+.timeline::before {
+  content: '';
+  position: absolute;
+  left: 8px; top: 12px; bottom: 12px;
+  width: 1px;
+  background: var(--line2);
+}
+.timeline-item {
+  position: relative;
+  padding-bottom: 32px;
+}
+.timeline-item::before {
+  content: '';
+  position: absolute;
+  left: -32px; top: 8px;
+  width: 17px; height: 17px;
+  border: 2px solid var(--amber);
+  border-radius: 50%;
+  background: var(--bg);
+}
+.timeline-item .when {
+  font-family: var(--mono);
+  font-size: 10px;
+  letter-spacing: 2px;
+  text-transform: uppercase;
+  color: var(--amber);
+  margin-bottom: 6px;
+}
+.timeline-item .what {
+  font-family: var(--serif);
+  font-size: 20px;
+  font-weight: 600;
+  margin-bottom: 6px;
+}
+.timeline-item p { font-size: 14.5px; color: var(--ink2); margin: 0; line-height: 1.75; }
+
+/* ─── Footer ─── */
+footer {
+  padding: 64px 0;
+  text-align: center;
+  border-top: 1px solid var(--line);
+}
+footer .seal {
+  font-family: var(--serif);
+  font-style: italic;
+  font-size: 13px;
+  color: var(--dim);
+  margin-bottom: 8px;
+}
+footer .meta {
+  font-family: var(--mono);
+  font-size: 10px;
+  letter-spacing: 2px;
+  text-transform: uppercase;
+  color: var(--mute);
+}
+
+/* ─── Ornament ─── */
+.orn {
+  text-align: center;
+  margin: 80px 0;
+  font-family: var(--serif);
+  color: var(--mute);
+  font-size: 28px;
+  letter-spacing: 12px;
+}
+
+/* ─── Numbered lists ─── */
+ol.refined {
+  list-style: none;
+  counter-reset: refined;
+  margin: 20px 0;
+  padding: 0;
+}
+ol.refined li {
+  counter-increment: refined;
+  padding: 14px 0 14px 56px;
+  position: relative;
+  border-bottom: 1px solid var(--line);
+  color: var(--ink2);
+  line-height: 1.8;
+}
+ol.refined li::before {
+  content: counter(refined, decimal-leading-zero);
+  position: absolute;
+  left: 0;
+  top: 14px;
+  font-family: var(--mono);
+  font-size: 12px;
+  color: var(--amber);
+  font-weight: 500;
+}
+ol.refined li:last-child { border-bottom: none; }
+
+ul.bullets {
+  list-style: none;
+  padding: 0;
+  margin: 16px 0;
+}
+ul.bullets li {
+  padding: 6px 0 6px 24px;
+  position: relative;
+  color: var(--ink2);
+}
+ul.bullets li::before {
+  content: '—';
+  position: absolute;
+  left: 0;
+  color: var(--amber);
+}
+
+/* ─── Responsive ─── */
+@media (max-width: 720px) {
+  .wrap, .full { padding: 0 20px; }
+  .hero { padding: 64px 0 56px; }
+  .section { padding: 64px 0; }
+  .matrix { grid-template-columns: 1fr; }
+  .hero-key { grid-template-columns: 1fr; gap: 20px; }
+  .dir { grid-template-columns: 1fr; gap: 12px; }
+  .dir-num { font-size: 40px; }
+  table.t { font-size: 13px; }
+  table.t th, table.t td { padding: 10px 8px; }
+}
+
+@media print {
+  body { background: white; color: black; }
+  .hero, .section { border-color: #ccc; page-break-inside: avoid; }
+  .dir { page-break-inside: avoid; }
+}
+</style>
+</head>
+<body>
+
+<!-- ════════ HERO ════════ -->
+<header class="hero">
+  <div class="wrap">
+    <div class="meta">Technical Brief · TAAC 2026 · 技术简报</div>
+    <h1>DIN <em>临界点</em></h1>
+    <p class="lead">
+      我们已经触到了"架构微调"这条路的天花板。<br>
+      下一个突破口是<strong>个性化（personalization）</strong>，而 DIN 就是这条路的教科书。
+    </p>
+    <div class="hero-key">
+      <div>
+        <div class="k">Current Peak · 当前峰值</div>
+        <div class="v">0.852</div>
+      </div>
+      <div>
+        <div class="k">Target · 目标</div>
+        <div class="v amber">0.82+ 稳定</div>
+      </div>
+      <div>
+        <div class="k">Critical Metric · 关键指标</div>
+        <div class="v teal">GAUC ↑</div>
+      </div>
+    </div>
+  </div>
+</header>
+
+<!-- ════════ SECTION 1 — WHAT IS DIN ════════ -->
+<section class="section">
+  <div class="wrap">
+    <span class="section-num">§ 01 · Foundations · 基础</span>
+    <h2>DIN <em>到底</em>在说什么</h2>
+    <p class="deck">
+      抛开所有营销包装，Deep Interest Network 其实只有一个架构洞察 + 两个训练技巧。
+      理解核心论点，是后续一切讨论的前提。
+    </p>
+
+    <h3>核心洞察 · The single insight</h3>
+    <p>
+      传统 CTR 模型把用户所有的多元兴趣压缩成一个固定长度的向量。无论候选 item 是手机、
+      连衣裙还是菜谱，用户表示都一样。<strong>这是错的</strong>——因为对任何给定的候选，
+      只有用户历史行为的一小部分是相关的。
+    </p>
+
+    <div class="pull">
+      A female swimmer will click a recommended goggle mostly due to the bought
+      of bathing suit rather than the shoes in her last week's shopping list.
+      <br>
+      <span style="color: var(--dim); font-size: 16px; font-style: normal;">
+        一位女游泳爱好者点击推荐的泳镜，主要是因为她买过泳衣，而不是因为她上周买的鞋。
+      </span>
+      <cite>— Zhou et al., DIN, KDD 2018</cite>
+    </div>
+
+    <p>
+      DIN 的解法：不再对所有行为做 mean pooling，而是<strong>把候选 item 作为 query，
+      让每条历史行为去竞争 attention 权重</strong>。与候选相关的行为被放大，不相关的
+      被压制。用户表示从此<em>随着每个候选 item 变化</em>。
+    </p>
+
+    <h3>三个容易被忽视的细节 · The three subtle details</h3>
+    <p>大多数实现都会忽略这些细节。每一个都比表面看起来更重要。</p>
+
+    <ol class="refined">
+      <li>
+        <strong>不做 softmax 归一化。</strong>
+        DIN 故意放弃了 Σwᵢ = 1 的约束。被激活的总兴趣强度本身就是信号：一个 90% 行为
+        是衣服的用户，看到 T 恤候选应该产生强烈响应（‖v_U‖ 大），看到手机候选应该
+        产生弱响应（‖v_U‖ 小）。Softmax 会把这种"强度差异"抹平。
+      </li>
+      <li>
+        <strong>激活函数使用 outer product。</strong>
+        a(behavior, candidate) 不是简单的 dot product——它是一个小 MLP，输入是
+        <code class="inline">[behavior, candidate, behavior ⊙ candidate]</code>。
+        这个 outer product 显式地把交叉信息注入网络。
+      </li>
+      <li>
+        <strong>作者试过 LSTM，没用。</strong>
+        论文里直接写了"用户行为序列噪声太大，跳跃和突然终止使得序列建模不如 attention"。
+        这给我们一个信号：<em>不要在 sequence 维度做太复杂的时序建模，target-aware 的
+        "软搜索"更重要</em>。这点对你们 InterFormer 的 Transformer encoder 是个挑战。
+      </li>
+    </ol>
+
+    <h3>两个训练技巧 · Two training techniques</h3>
+    <div class="matrix">
+      <div class="matrix-cell">
+        <div class="label">Mini-Batch Aware Regularization</div>
+        <div class="content">
+          标准 L2 正则化在 240M 参数上根本不可行。MBA 只对当前 mini-batch 里出现过的
+          embedding 行做正则化，按反频次加权。结果：即使是十亿级稀疏特征也能稳定训练，
+          不会过拟合崩溃。
+        </div>
+      </div>
+      <div class="matrix-cell">
+        <div class="label">Dice Activation Function</div>
+        <div class="content">
+          PReLU 的泛化版本，整流点 (rectification point) 根据每个 batch 的输入分布
+          自适应调整（E[s] 和 Var[s]）。这在你们的场景特别关键——不同层看到的激活分布
+          差异巨大（vocab 从 3 到 86M 不等）。
+        </div>
+      </div>
+    </div>
+
+    <div class="orn">· · ·</div>
+  </div>
+</section>
+
+<!-- ════════ SECTION 2 — WHY DIN FITS ════════ -->
+<section class="section">
+  <div class="wrap">
+    <span class="section-num">§ 02 · Diagnosis · 诊断</span>
+    <h2>为什么 DIN 恰好<em>解决</em>我们的问题</h2>
+    <p class="deck">
+      我们的痛点和 DIN 的能力之间的匹配度高得诡异——以至于让人怀疑这不是巧合。
+      事实是：我们只不过走到了 DIN 当初为了解决而被写出来的那个问题面前。
+    </p>
+
+    <table class="t">
+      <thead>
+        <tr>
+          <th style="width: 38%">我们的症状 · Our Symptom</th>
+          <th style="width: 47%">DIN 的诊断 · DIN's Diagnosis</th>
+          <th style="width: 15%">匹配度</th>
+        </tr>
+      </thead>
+      <tbody>
+        <tr>
+          <td>GAUC ≈ 0（即使 AUC 达到 0.852）</td>
+          <td>固定长度向量是表达多元兴趣的瓶颈</td>
+          <td class="stars">★★★★★</td>
+        </tr>
+        <tr>
+          <td>v0.5 峰值后过拟合</td>
+          <td>强行把所有兴趣压进一个向量需要极大维度 → 在有限数据下必然 overfit</td>
+          <td class="stars">★★★★★</td>
+        </tr>
+        <tr>
+          <td>4 个 sequence 域共享 Transformer 权重</td>
+          <td>对变长行为做 mean pooling 会损失信息</td>
+          <td class="stars">★★★★</td>
+        </tr>
+        <tr>
+          <td>item_dense_dim = 0（item 信号弱）</td>
+          <td>DIN 用多粒度 target（goods_id + cate_id + shop_id）</td>
+          <td class="stars">★★★</td>
+        </tr>
+        <tr>
+          <td>240M 参数，难以正则化</td>
+          <td>Mini-Batch Aware Regularization 正是为这种规模设计的</td>
+          <td class="stars">★★★</td>
+        </tr>
+      </tbody>
+    </table>
+
+    <div class="box tip">
+      <div class="tag">综合判断 · The synthesis</div>
+      <p style="margin: 0;">
+        我们的 InterFormer v0.5 已经具备一流的特征交互（DHEN + DCN + RoPE）、
+        精巧的序列编码、激进的正则化策略（cold restart、AMP）。它<strong>唯一缺少</strong>
+        的，是<em>让模型根据候选 item 改变自身行为</em>的机制。加 DIN 不是要替换 v0.5
+        的优点——而是补上缺失的那块拼图。
+      </p>
+    </div>
+  </div>
+</section>
+
+<!-- ════════ SECTION 3 — THE 7 DIRECTIONS ════════ -->
+<section class="section">
+  <div class="full">
+    <span class="section-num">§ 03 · Optimization Map · 优化地图</span>
+    <h2>七个方向，<em>按杠杆排序</em></h2>
+    <p class="deck">
+      每个方向都是独立的干预措施。它们可以组合，但<strong>必须一次只加一个</strong>，
+      这样效果才能被归因——这是我们从 v0.3 负向结果里付费学到的最核心教训。
+    </p>
+
+    <!-- Direction 1 -->
+    <div class="dir">
+      <div class="dir-num">01</div>
+      <div>
+        <div class="rating">
+          <span class="priority p5">最高杠杆</span>
+          <span>工作量：中等 · 风险：低 · 预期增益：+0.003 ~ +0.008 AUC</span>
+        </div>
+        <h3>Target-Aware Sequence Encoder · 候选感知的序列编码器</h3>
+        <p>
+          <strong>单次最大的杠杆。</strong>目前你们的 Sequence Arch 把每个行为域编码成一个
+          "通用 summary"——无论要预测哪个 item，summary 都一样。在编码前注入候选 query，
+          summary 就变成<em>随候选条件化</em>的了。
+        </p>
+
+<pre class="code"><span class="c"># 改造前（v0.1）</span>
+seq_a_tokens → TransformerEncoder → seq_a_summary
+<span class="c"># seq_a_summary 对所有候选都一样</span>
+
+<span class="c"># 改造后（v0.6）</span>
+candidate_emb = concat(4 个 item NS tokens)
+weights = DIN_Activation(seq_a_tokens, candidate_emb)
+weighted_tokens = weights * seq_a_tokens
+weighted_tokens → TransformerEncoder → <span class="n">seq_a_summary(c)</span>
+<span class="c"># 现在 summary 随候选 item 变化</span></pre>
+
+        <p>
+          DIN activation 函数严格按论文写法：
+          <code class="inline">a(h, c) = MLP([h, c, h⊙c])</code>，输出 raw 权重，
+          <strong>不做 softmax</strong>。
+        </p>
+
+        <p><strong>为什么这条最关键：</strong>GAUC ≈ 0 意味着模型对所有用户一视同仁。
+        这是打破这个困局最直接的机制。</p>
+      </div>
+    </div>
+
+    <!-- Direction 2 -->
+    <div class="dir">
+      <div class="dir-num">02</div>
+      <div>
+        <div class="rating">
+          <span class="priority p4">高优先级</span>
+          <span>工作量：低 · 风险：低 · 预期增益：+0.001 ~ +0.003 AUC</span>
+        </div>
+        <h3>Multi-Granularity Target Query · 多粒度 target 查询</h3>
+        <p>
+          DIN 的一个隐藏 trick：它的 query 是 <code class="inline">goods_id + cate_id + shop_id</code>
+          拼起来用，<strong>不只是 goods_id</strong>。这给候选一个多分辨率的画像，
+          对长尾 item 更鲁棒。
+        </p>
+
+        <p>你们的数据集恰好有需要的结构：</p>
+
+        <table class="t">
+          <thead>
+            <tr><th>fid</th><th>Vocab</th><th>粒度</th><th>角色</th></tr>
+          </thead>
+          <tbody>
+            <tr><td>16</td><td>23,700</td><td>最细</td><td>item_id</td></tr>
+            <tr><td>11</td><td>21,528 × 20</td><td>多类别</td><td>item categories</td></tr>
+            <tr><td>84</td><td>234</td><td>中等</td><td>item attribute</td></tr>
+            <tr><td>81</td><td>3</td><td>最粗</td><td>顶层类型</td></tr>
+          </tbody>
+        </table>
+
+        <p>
+          <strong>为什么有效：</strong>当 item_id 处于长尾时（你们 2 万个 item 里大部分是长尾），
+          细粒度 embedding 不可靠。粗粒度特征提供 fallback 信号。这正是 dataset-analysis.md
+          里发现的"金字塔结构"在 item 侧的应用。
+        </p>
+      </div>
+    </div>
+
+    <!-- Direction 3 -->
+    <div class="dir">
+      <div class="dir-num">03</div>
+      <div>
+        <div class="rating">
+          <span class="priority p4">高优先级</span>
+          <span>工作量：极小 · 风险：中等 · 预期增益：+0.001 ~ +0.003 AUC</span>
+        </div>
+        <h3>Remove Softmax from CrossSummary · 移除 CrossSummary 的 Softmax</h3>
+        <p>
+          这是那种"成本几乎为零、几乎总被忽略"的改动。你们的 v0.1 CrossSummary 用标准
+          softmax attention 汇总序列 tokens。DIN 论证：这破坏了"兴趣强度"信号。
+        </p>
+
+<pre class="code"><span class="c"># 当前实现</span>
+attn = <span class="k">softmax</span>(Q @ K.T / sqrt(d))
+summary = attn @ V
+
+<span class="c"># DIN 风格</span>
+attn = sigmoid(MLP([Q, K, Q*K])) / N
+summary = attn @ V
+<span class="c"># summary 的范数可大可小，编码兴趣强度</span></pre>
+
+        <p>
+          <strong>风险点：</strong>没有 softmax 的自然归一化，训练稳定性会下降。
+          用 GradScaler（v0.5 已经有）和 gradient clipping 缓解。
+          学习率降 30% 作为保险。
+        </p>
+      </div>
+    </div>
+
+    <!-- Direction 4 -->
+    <div class="dir">
+      <div class="dir-num">04</div>
+      <div>
+        <div class="rating">
+          <span class="priority p4">高优先级 · 论文级</span>
+          <span>工作量：高 · 风险：中等 · 预期增益：+0.003 ~ +0.008 AUC</span>
+        </div>
+        <h3>(Key, Value)-Pair DIN-ization · 对齐特征对的 DIN 化</h3>
+        <p>
+          <strong>你们最独特的资产</strong>：8 对对齐的 (int, dense) 特征
+          （fids 62–66 金字塔结构、89–91 平铺结构），int 列存储实体 ID，
+          dense 列存储该实体的统计量。Baseline 是分开处理的。
+          DIN 给我们一个融合两者的方法——把统计量作为先验注入。
+        </p>
+
+<pre class="code"><span class="c"># 标准 DIN</span>
+w = sigmoid(MLP([behavior_emb, target_emb]))
+
+<span class="c"># 我们的增强版</span>
+w = sigmoid(MLP([behavior_emb, target_emb, <span class="n">dense_value</span>]))
+<span class="c"># dense_value = 该实体的预计算统计量</span>
+<span class="c"># （停留时长、历史 CTR、log-frequency 等）</span>
+<span class="c"># 强证据的行为会被自然放大</span></pre>
+
+        <p>
+          <strong>为什么这是论文级的改动：</strong>标准 DIN 完全从零学习权重。
+          我们的增强版注入了领域先验——模型有了"先验知识"。这足以单独成为一个
+          publication section："Statistic-Augmented Target Attention（统计量增强的
+          target attention）"。
+        </p>
+      </div>
+    </div>
+
+    <!-- Direction 5 -->
+    <div class="dir">
+      <div class="dir-num">05</div>
+      <div>
+        <div class="rating">
+          <span class="priority p3">中等</span>
+          <span>工作量：中等 · 风险：低 · 收益：减少 overfit，允许更大 d_model</span>
+        </div>
+        <h3>Mini-Batch Aware Regularization · 批级感知正则化</h3>
+        <p>
+          v0.5 的第 3 epoch 后崩溃（峰值 0.852 → 0.760），部分原因是 embedding reinit bug，
+          但你们 240M 参数的模型本身就是过拟合倾向的。标准 L2 在这个规模根本不可行。
+          DIN 的 MBA 正则化就是工业级的解法。
+        </p>
+
+        <p><strong>机制：</strong></p>
+<pre class="code">for each mini-batch:
+    active_fids = 这个 batch 实际用到的特征
+    for fid in active_fids:
+        emb = embedding[fid]
+        loss += λ * ||emb||² / global_freq[fid]
+<span class="c"># 高频特征 → 惩罚少（已经被训练得好）</span>
+<span class="c"># 低频特征 → 惩罚多（噪声大，容易 overfit）</span></pre>
+
+        <p>
+          DIN 论文报告：单 MBA 就贡献 +0.0031 AUC。对你们更重要的是，它让你们能
+          安全地训练更久、用更大的 d_model。
+        </p>
+      </div>
+    </div>
+
+    <!-- Direction 6 -->
+    <div class="dir">
+      <div class="dir-num">06</div>
+      <div>
+        <div class="rating">
+          <span class="priority p3">中等</span>
+          <span>工作量：极小 · 风险：低 · 预期增益：+0.001 ~ +0.002 AUC</span>
+        </div>
+        <h3>Dice Activation Function · Dice 激活函数</h3>
+        <p>
+          把网络里所有 ReLU / PReLU 换成 Dice。在你们的场景下尤其重要——因为你们的
+          embedding 统计量在不同层差异巨大（vocab 3 的实体和 vocab 86M 的实体绝不
+          应该共享同一个整流点）。
+        </p>
+
+        <p>
+          <code class="inline">f(s) = p(s) · s + (1 - p(s)) · α·s</code>
+          其中 <code class="inline">p(s) = sigmoid((s - E[s]) / √(Var[s]+ε))</code>。
+          根据 batch 统计量自适应调整；当 E[s]=0、Var[s]=0 时退化为 PReLU。
+        </p>
+
+        <p><strong>为什么放最后：</strong>和其他改动兼容，成本几乎为零，但单独收益小。
+        和方向 1–5 叠加使用。</p>
+      </div>
+    </div>
+
+    <!-- Direction 7 -->
+    <div class="dir">
+      <div class="dir-num dim">07</div>
+      <div>
+        <div class="rating">
+          <span class="priority p5">元原则</span>
+          <span>不是代码改动——是一种纪律</span>
+        </div>
+        <h3>Reject Complexity. Embrace Attribution. · 拒绝复杂度，拥抱可归因性</h3>
+        <p>
+          看看你们的版本演进：v0.1（一次架构选择）带来 +0.0115 AUC。v0.3（同时改动 4 个东西）
+          负向退步。v0.5（6 个新特性 + 未修的 bug）峰值更高但灾难性衰减。
+          <strong>这个模式毫不含糊。</strong>
+        </p>
+
+        <div class="pull">
+          DIN 的优雅之处在于：它只加了一个机制——Local Activation Unit——就改变了整个
+          工业界的轨迹。<strong>精心执行的简单想法 > 急于堆叠的复杂想法。</strong>
+        </div>
+
+        <p>
+          v0.6 应该是 "v0.1 + 仅方向 1"，<strong>其他什么都不加</strong>。GAUC 涨了，
+          你知道为什么。AUC 涨了，你知道为什么。然后 v0.6.1 加方向 2。每一步都有自己的
+          checkpoint、自己的 log、自己可衡量的论点。
+        </p>
+
+        <p>
+          这是我们自己 v0.3 负向实验告诉我们的教训的复述。我们已经为这个教训付过费——
+          现在该用上它了。
+        </p>
+      </div>
+    </div>
+
+    <div class="orn">· · ·</div>
+  </div>
+</section>
+
+<!-- ════════ SECTION 4 — PITFALLS ════════ -->
+<section class="section">
+  <div class="wrap">
+    <span class="section-num">§ 04 · Pitfalls · 陷阱</span>
+    <h2>什么会<em>悄悄毁掉</em>实验</h2>
+    <p class="deck">
+      这些不是理论上的顾虑。每一条如果被忽视，都会让结果"看起来不错但其实
+      无法解释或无法复现"。
+    </p>
+
+    <div class="box warn">
+      <div class="tag">陷阱 1 · 训练/推理不一致</div>
+      <p style="margin: 0;">
+        DIN 假设打分时知道候选 item 是什么。在训练时，每行数据的
+        <code class="inline">item_int_feats_16</code> 就是候选（被点击或未点击的那个 item）。
+        但在推理时，如果要给一批 item 排序，<strong>每个候选都要单独跑一次 forward pass</strong>，
+        计算量乘以 N。在动手之前必须确认这个开销在延迟预算内可接受。
+      </p>
+    </div>
+
+    <div class="box warn">
+      <div class="tag">陷阱 2 · 异构域之间共享权重</div>
+      <p style="margin: 0;">
+        你们 4 个序列域 vocab 量级差异巨大（seq_a 最大 75 万，seq_b 最大 6471 万）。
+        如果共享同一个 DIN MLP，大 vocab 域的噪声会污染小 vocab 域。
+        <strong>每个域必须有独立的 DIN module</strong>。参数代价微乎其微（4 个小 MLP），
+        隔离收益巨大。
+      </p>
+    </div>
+
+    <div class="box warn">
+      <div class="tag">陷阱 3 · 在未修 bug 之上堆 DIN</div>
+      <p style="margin: 0;">
+        v0.5 有两个已知 bug：embedding reinit 逻辑反转（导致 AUC cliff）、
+        GAUC 硬编码为零。如果在 v0.5 之上加 DIN，AUC 提升可能是 DIN 的功劳，
+        也可能是 bug 触发频率变化的结果，无法归因。
+        <strong>v0.6 应该从 v0.1 分支，而不是从 v0.5</strong>。
+        把 v0.5 的 bug 修复显式地一个个迁移过来。
+      </p>
+    </div>
+
+    <div class="box warn">
+      <div class="tag">陷阱 4 · 测错了指标</div>
+      <p style="margin: 0;">
+        DIN 承诺的胜利在<em>个性化</em>，不在原始 AUC。如果只盯 AUC，可能会错过最重要的信号：
+        +0.001 AUC 但 +0.05 GAUC 的结果，远好于 +0.005 AUC 但 GAUC 持平。
+        <strong>在跑 v0.6 之前必须先修好 GAUC 实现</strong>。
+        没有正确的 GAUC，我们无法声称 DIN 对我们有效——只能说 AUC 动了。
+      </p>
+    </div>
+
+    <div class="box warn">
+      <div class="tag">陷阱 5 · 忘了延迟约束</div>
+      <p style="margin: 0;">
+        TAAC 有硬延迟预算。给 4 个域每个加 DIN 模块，再加上每个候选都单独跑 forward，
+        可能直接爆掉预算。在庆祝 AUC 数字之前，<strong>必须用真实 batch size 打 profile</strong>。
+        一个违反延迟约束的模型，无论 AUC 多高都等于零分。
+      </p>
+    </div>
+
+    <div class="box tip">
+      <div class="tag">小贴士 · 5 分钟自测</div>
+      <p style="margin: 0;">
+        在投入完整训练之前，先写一个 unit test 确认：(1) DIN 改造后的模型对同一用户
+        + 不同候选会产生<em>不同</em>的输出，(2) 输出量级变化方向合理，(3) 梯度能正确
+        反传过 DIN 模块。其中任何一项失败，说明实现是坏的，跑训练只是浪费时间。
+      </p>
+    </div>
+  </div>
+</section>
+
+<!-- ════════ SECTION 5 — DERIVED PRINCIPLES ════════ -->
+<section class="section">
+  <div class="wrap">
+    <span class="section-num">§ 05 · Derived Principles · 衍生原理</span>
+    <h2>超越 DIN 本身：<em>这篇论文教给我们的</em></h2>
+    <p class="deck">
+      DIN 是 2018 年的论文。它至今仍是 CTR 领域的主导 baseline，是因为背后的原理具有
+      普适性。这里抽出三条值得思考的衍生想法。
+    </p>
+
+    <h3>原理 1 · Context-conditioned representation · 上下文条件化表示</h3>
+    <p>
+      DIN 最深层的论点是<strong>"正确的表示取决于被问的问题"</strong>。这和 Transformer 里的
+      cross-attention、meta-learning 里的 hypernetwork、vision 里的 FiLM layer 是同一个洞察。
+      一旦接受这点，就会看到一系列 DIN 之外的衍生动作：
+    </p>
+    <ul class="bullets">
+      <li>把 NS token 生成本身也基于候选条件化（不只是 behavior tokens）</li>
+      <li>把 PersonalizedFFN 的 gate / bias 也基于候选条件化（目前只基于 NS）</li>
+      <li>极端版本：让 Tokenizer 的参数也是候选相关的</li>
+    </ul>
+
+    <h3>原理 2 · 信息<em>强度</em>很重要，不只是方向</h3>
+    <p>
+      移除 softmax 保留的是<em>用户有多在乎</em>，而不只是<em>在乎什么</em>。
+      这个原理可以推广：
+    </p>
+    <ul class="bullets">
+      <li>序列 pooling 保留聚合后的<em>范数</em>，不只是方向</li>
+      <li>特征交互的输出允许有可变量级（不强制归一化）</li>
+      <li>损失函数按置信度加权（Focal Loss 已经是一个例子）</li>
+    </ul>
+
+    <h3>原理 3 · 训练技巧不是事后想法</h3>
+    <p>
+      DIN 的 MBA Reg + Dice 加起来贡献 +0.0046 AUC——几乎和架构改动本身一样多。
+      Report 倾向于歌颂模型架构，把训练当成水管工程。DIN 把这个搞反了：
+      <strong>在工业级规模上，训练技巧本身就是模型的一部分</strong>。
+      未来工作应该把正则化和激活函数的选择视为<em>一级设计决策</em>，而不是后期调参。
+    </p>
+
+    <h3>值得探索的开放性问题 · Open questions</h3>
+    <ol class="refined">
+      <li>
+        Target-aware attention 是否对<strong>非序列特征</strong>也有效？我们现在只想着序列，
+        但 46 个 user_int 特征对不同候选的相关性也是变化的。NS-side DIN 是未被探索的方向。
+      </li>
+      <li>
+        我们的问题有没有"DIEN 等价物"——在 target attention 之上加序列建模？
+        还是 v0.5 的证据（以及 DIN 论文自己关于 LSTM 没用的结论）已经确认了：
+        对噪声大的电商行为，target attention 胜过时序建模？
+      </li>
+      <li>
+        能否把 DIN 的 attention 权重作为<strong>可解释性工具</strong>？这些权重告诉我们
+        模型对每次预测关注了哪些行为。在 Report 里，这能制作 DIN 论文 Figure 5 风格的
+        可视化——展示模型"在思考"，比纯 AUC 表格有说服力得多。
+      </li>
+      <li>
+        是否应该重新审视 InterFormer 的三模块设计？如果 DIN 工作良好，Sequence Arch
+        可能不需要单独的 query tokens、CrossSummary 和 PersonalizedFFN——
+        DIN 可能已经吸收了 CrossSummary 的功能。
+      </li>
+      <li>
+        MBA Reg 和我们目前的 cold-restart 策略是什么关系？两者都针对高基数 embedding。
+        是互补还是冗余？一个针对这点的 ablation 实验会很有信息量。
+      </li>
+    </ol>
+  </div>
+</section>
+
+<!-- ════════ SECTION 6 — ROADMAP ════════ -->
+<section class="section">
+  <div class="wrap">
+    <span class="section-num">§ 06 · Roadmap · 路线图</span>
+    <h2>从<em>这周</em>到下一篇论文</h2>
+    <p class="deck">
+      一个四步计划。每一步都有明确的交付物、可衡量的论点、以及失败时的退路。
+    </p>
+
+    <div class="timeline">
+      <div class="timeline-item">
+        <div class="when">Week 1 · v0.6.0</div>
+        <div class="what">纯 Target-Aware Encoder</div>
+        <p>
+          把 v0.1 复制成 v0.6。只加方向 1。同时在 trainer.py 里修复 GAUC 计算。
+          训练，同时测 AUC 和 GAUC。成功标准：GAUC 明显从零移动；AUC 稳定或上升。
+        </p>
+      </div>
+
+      <div class="timeline-item">
+        <div class="when">Week 2 · v0.6.1</div>
+        <div class="what">多粒度 Target</div>
+        <p>
+          在 v0.6.0 基础上，把 DIN query 从单个 item_id 换成多粒度拼接
+          （fids 16、11、84、81）。重新训练。成功标准：相对 v0.6.0 有增量 AUC 增益；
+          在长尾 item 上更鲁棒。
+        </p>
+      </div>
+
+      <div class="timeline-item">
+        <div class="when">Week 3 · v0.6.2</div>
+        <div class="what">移除 Softmax + 加 Dice</div>
+        <p>
+          两个小而低风险的改动一起加（方向 3 和 6）。两者都瞄准训练动态，不是架构。
+          注意前 1000 步的不稳定性；必要时降 30% 学习率。
+        </p>
+      </div>
+
+      <div class="timeline-item">
+        <div class="when">Week 4 · v0.7</div>
+        <div class="what">论文级创新</div>
+        <p>
+          Statistic-Augmented Target Attention（方向 4）+ Mini-Batch Aware Regularization
+          （方向 5）。这个版本可以写成 publication：一个针对带对齐 (K, V) 对的工业级
+          CTR 数据集的新颖 DIN 变体。
+        </p>
+      </div>
+    </div>
+
+    <div class="orn">· · ·</div>
+  </div>
+</section>
+
+<!-- ════════ SECTION 7 — CONVERSATION CHECKLIST ════════ -->
+<section class="section">
+  <div class="wrap">
+    <span class="section-num">§ 07 · Conversation · 对话清单</span>
+    <h2>带去和 ZeSong 讨论的问题</h2>
+    <p class="deck">
+      下次和同学讨论时带上这些问题。每一个都被精心设计成<strong>邀请技术回答</strong>——
+      不是 yes/no 的问题，而是设计决策。你们合作的质量，取决于你提问的质量。
+    </p>
+
+    <ol class="refined">
+      <li>
+        "v0.6 的起点——从 v0.1（干净 baseline）还是 v0.5（峰值但带 bug）分支？
+        我的判断是 v0.1，因为可归因性更好。你怎么看？"
+      </li>
+      <li>
+        "候选 query 我们用 4 个 item NS tokens 直接拼，还是回到 raw embedding
+        （fids 16 / 11 / 84 / 81）做 concat？哪种更便于上线？"
+      </li>
+      <li>
+        "目前的 CrossSummary 用的是什么 attention 机制？如果是 softmax，
+        值不值得试 DIN 风格的无归一化版本？"
+      </li>
+      <li>
+        "推理延迟预算——加上 DIN 后 forward pass 成本会乘以候选数量。
+        我们大概知道 TAAC 的延迟预算是多少吗？"
+      </li>
+      <li>
+        "Mini-Batch Aware Regularization——你之前实现过类似的吗，还是要按 DIN 论文 Eq.7 从头写？"
+      </li>
+      <li>
+        "v0.5 的 embedding reinit bug——你是想先修了再 port 到 v0.6，
+        还是让 v0.5 维持原样、v0.6 干净起步？"
+      </li>
+      <li>
+        "GAUC——我们要不要先把硬编码为零的问题修了再训 v0.6？没有正确的 GAUC，
+        我们其实测不出 DIN 是不是在做个性化。"
+      </li>
+    </ol>
+
+    <div class="box tip" style="margin-top: 32px;">
+      <div class="tag">战略说明 · Strategic note</div>
+      <p style="margin: 0;">
+        注意这些问题的结构。每一个都在传达："我已经想过了，我有一个默认答案，
+        我想知道你的答案是不是不同。"这就是<strong>一个团队里资历较浅的成员，
+        如何从 ZeSong 这种已经跑过多轮训练的人那里赢得技术尊重</strong>。
+        你不是请他来领路——你是请他来验证或修正你的方向。
+      </p>
+    </div>
+  </div>
+</section>
+
+<!-- ════════ SECTION 8 — PROJECTIONS ════════ -->
+<section class="section">
+  <div class="wrap">
+    <span class="section-num">§ 08 · Projections · 预测</span>
+    <h2>成功<em>长什么样</em></h2>
+    <p class="deck">
+      基于 DIN 论文报告的数字（按我们的语境缩放），这是每个里程碑应该带来的结果。
+      这些是预测，不是承诺——但足够扎实，可以作为规划基础。
+    </p>
+
+    <table class="t">
+      <thead>
+        <tr>
+          <th>版本</th>
+          <th>新增</th>
+          <th>预测 AUC</th>
+          <th>预测 GAUC</th>
+        </tr>
+      </thead>
+      <tbody>
+        <tr>
+          <td>v0.1 (baseline)</td>
+          <td>—</td>
+          <td>0.8067</td>
+          <td>≈ 0.00</td>
+        </tr>
+        <tr>
+          <td>v0.6.0</td>
+          <td>+ DIN core</td>
+          <td>~0.812</td>
+          <td>~0.05 ~ 0.10</td>
+        </tr>
+        <tr>
+          <td>v0.6.1</td>
+          <td>+ 多粒度 target</td>
+          <td>~0.815</td>
+          <td>~0.08 ~ 0.12</td>
+        </tr>
+        <tr>
+          <td>v0.6.2</td>
+          <td>+ 移除 softmax + Dice</td>
+          <td>~0.817</td>
+          <td>~0.10 ~ 0.14</td>
+        </tr>
+        <tr>
+          <td>v0.7 (论文级)</td>
+          <td>+ K-V Pair DIN + MBA</td>
+          <td>~0.821</td>
+          <td>~0.13 ~ 0.18</td>
+        </tr>
+      </tbody>
+    </table>
+
+    <p>
+      <strong>头条不是 0.821 AUC。头条是：<em>0.821 AUC + 有意义的 GAUC + 不出现
+      v0.5 的崩溃</em></strong>。一个在持续训练下能保持峰值表现的模型，才是真正能交付的成果——
+      是我们真正可以宣称"work"的东西。
+    </p>
+
+    <div class="pull">
+      v0.5 摸到了 0.852，我们庆祝了一个小时，然后看着它衰减到 0.760。
+      v0.7 在 0.821——稳定、可归因、有用户级判别力——这才是更好的故事。
+    </div>
+  </div>
+</section>
+
+<!-- ════════ FOOTER ════════ -->
+<footer>
+  <div class="seal">— prepared for the AMA564 Project Team · 为 AMA564 项目团队整理 —</div>
+  <div class="meta">Technical Brief · DIN Optimization Map · May 2026</div>
+</footer>
+
+</body>
+</html>

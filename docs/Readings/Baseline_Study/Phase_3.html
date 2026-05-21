@@ -1,0 +1,467 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Phase 3 总结 — 训练机制完全理解</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Crimson+Pro:ital,wght@0,400;0,500;0,600;0,700;1,400;1,500&family=DM+Sans:wght@400;500;600;700&family=IBM+Plex+Mono:wght@400;500;600&family=Noto+Serif+SC:wght@400;500;600;700&display=swap" rel="stylesheet">
+<style>
+:root{
+  --bg:#faf8f4;--surface:#fff;--card:#f5f2ec;--rule:#e2ddd4;--rule-light:#ede9e2;
+  --ink:#2c2a26;--ink-soft:#5a5650;--ink-faint:#8a857d;
+  --rust:#b84c2a;--rust-light:#fdf0ec;--rust-dim:#d4785c;
+  --moss:#3d7a4a;--moss-light:#edf5ef;--moss-dim:#6ba07a;
+  --slate:#3b6b8a;--slate-light:#edf3f7;--slate-dim:#6e9ab5;
+  --amber:#a07020;--amber-light:#fdf6e8;--amber-dim:#c4983e;
+  --violet:#6b4d9a;--violet-light:#f3eefb;--violet-dim:#8e72b8;
+  --teal:#2a7a7a;--teal-light:#e8f4f4;--teal-dim:#52a3a3;
+  --serif:'Crimson Pro','Noto Serif SC',Georgia,serif;
+  --sans:'DM Sans','Noto Serif SC',system-ui,sans-serif;
+  --mono:'IBM Plex Mono',monospace;
+}
+@media(prefers-color-scheme:dark){
+  :root{
+    --bg:#141210;--surface:#1c1a16;--card:#22201b;--rule:#33302a;--rule-light:#2a2722;
+    --ink:#e5e0d5;--ink-soft:#a89e8e;--ink-faint:#706858;
+    --rust-light:#2a1812;--moss-light:#162018;--slate-light:#141e26;--amber-light:#241e10;--violet-light:#1e1628;--teal-light:#0f1f1f;
+  }
+}
+*{margin:0;padding:0;box-sizing:border-box}
+html{scroll-behavior:smooth}
+body{background:var(--bg);color:var(--ink);font-family:var(--serif);font-size:17px;line-height:1.75}
+.page{max-width:900px;margin:0 auto;padding:60px 32px 120px}
+.masthead{text-align:center;padding-bottom:48px;margin-bottom:56px;border-bottom:2px solid var(--rule)}
+.phase-tag{font-family:var(--mono);font-size:11px;letter-spacing:3px;color:var(--violet);text-transform:uppercase;margin-bottom:16px}
+h1{font-family:var(--serif);font-weight:700;font-size:48px;line-height:1.1;letter-spacing:-0.02em;margin-bottom:12px}
+.subtitle{font-family:var(--sans);font-size:16px;color:var(--ink-soft);max-width:580px;margin:0 auto}
+.completion{display:inline-flex;align-items:center;gap:8px;margin-top:24px;font-family:var(--mono);font-size:12px;color:var(--moss);background:var(--moss-light);padding:6px 16px;border-radius:20px;border:1px solid var(--moss-dim)}
+.completion::before{content:"";width:8px;height:8px;border-radius:50%;background:var(--moss)}
+
+.mindmap{margin:0 0 64px;padding:40px 24px;background:var(--surface);border:1px solid var(--rule);border-radius:12px;overflow-x:auto}
+.mindmap-title{font-family:var(--mono);font-size:11px;letter-spacing:2px;color:var(--ink-faint);text-transform:uppercase;text-align:center;margin-bottom:28px}
+
+.station{margin-bottom:56px}
+.station-hdr{display:flex;align-items:center;gap:16px;margin-bottom:20px}
+.station-dot{width:40px;height:40px;border-radius:50%;display:flex;align-items:center;justify-content:center;font-family:var(--sans);font-weight:700;font-size:14px;flex-shrink:0}
+.dot-1{background:var(--violet-light);color:var(--violet)}
+.dot-2{background:var(--teal-light);color:var(--teal)}
+.dot-3{background:var(--amber-light);color:var(--amber)}
+h2{font-family:var(--serif);font-weight:600;font-size:28px;letter-spacing:-0.01em}
+.station-sub{font-family:var(--sans);font-size:13px;color:var(--ink-faint);margin-top:2px}
+
+.knowledge{display:grid;gap:16px;margin:20px 0}
+.k-card{background:var(--surface);border:1px solid var(--rule);border-radius:10px;padding:24px 28px;position:relative}
+.k-card::before{content:"";position:absolute;top:0;left:0;right:0;height:3px;border-radius:10px 10px 0 0}
+.k-card.k-rust::before{background:var(--rust)}
+.k-card.k-slate::before{background:var(--slate)}
+.k-card.k-moss::before{background:var(--moss)}
+.k-card.k-amber::before{background:var(--amber)}
+.k-card.k-violet::before{background:var(--violet)}
+.k-card.k-teal::before{background:var(--teal)}
+.k-head{display:flex;justify-content:space-between;align-items:baseline;margin-bottom:12px;flex-wrap:wrap;gap:8px}
+.k-term{font-family:var(--sans);font-weight:600;font-size:15px;color:var(--ink)}
+.k-tag{font-family:var(--mono);font-size:10px;letter-spacing:1px;padding:3px 10px;border-radius:4px;text-transform:uppercase}
+.tag-concept{background:var(--rust-light);color:var(--rust)}
+.tag-code{background:var(--slate-light);color:var(--slate)}
+.tag-insight{background:var(--amber-light);color:var(--amber)}
+.tag-core{background:var(--violet-light);color:var(--violet)}
+.tag-improve{background:var(--moss-light);color:var(--moss)}
+.k-pro{font-family:var(--sans);font-size:13px;color:var(--ink-faint);margin-bottom:8px;font-style:italic}
+.k-explain{font-size:15.5px;line-height:1.7;color:var(--ink-soft)}
+.k-explain strong{color:var(--ink);font-weight:600}
+
+.flow-visual{background:var(--card);border-radius:8px;padding:20px 24px;margin:16px 0;overflow-x:auto}
+.flow-label{font-family:var(--mono);font-size:10px;letter-spacing:1.5px;color:var(--ink-faint);text-transform:uppercase;margin-bottom:12px}
+.flow-row{display:flex;align-items:center;gap:4px;flex-wrap:wrap}
+.flow-box{background:var(--surface);border:1px solid var(--rule);border-radius:6px;padding:6px 12px;font-family:var(--mono);font-size:11px;white-space:nowrap;color:var(--ink)}
+.flow-arrow{color:var(--ink-faint);font-size:16px;flex-shrink:0}
+.flow-box.hl-violet{border-color:var(--violet);background:var(--violet-light);color:var(--violet)}
+.flow-box.hl-teal{border-color:var(--teal);background:var(--teal-light);color:var(--teal)}
+.flow-box.hl-amber{border-color:var(--amber);background:var(--amber-light);color:var(--amber)}
+
+.comparison{display:grid;grid-template-columns:1fr 1fr;gap:16px;margin:20px 0}
+.compare-card{background:var(--surface);border:1px solid var(--rule);border-radius:8px;padding:20px 24px}
+.compare-card h4{font-family:var(--sans);font-weight:600;font-size:14px;margin-bottom:12px;display:flex;align-items:center;gap:8px}
+.compare-card.left h4{color:var(--violet)}
+.compare-card.right h4{color:var(--teal)}
+.compare-card ul{list-style:none;padding:0;font-size:13.5px;color:var(--ink-soft)}
+.compare-card li{padding:4px 0 4px 16px;position:relative}
+.compare-card li::before{content:"·";position:absolute;left:0;color:var(--ink-faint)}
+
+.analogy{background:var(--amber-light);border-left:3px solid var(--amber);border-radius:0 8px 8px 0;padding:16px 20px;margin:16px 0}
+.analogy-tag{font-family:var(--mono);font-size:10px;letter-spacing:1.5px;color:var(--amber);text-transform:uppercase;margin-bottom:4px}
+.analogy p{font-size:14.5px;color:var(--ink-soft);margin:0;font-style:italic}
+
+.vocab{margin:24px 0;border:1px solid var(--rule);border-radius:8px;overflow:hidden}
+.vocab-row{display:grid;grid-template-columns:170px 1fr 1fr;border-bottom:1px solid var(--rule-light)}
+.vocab-row:last-child{border-bottom:none}
+.vocab-row.v-hdr{background:var(--card)}
+.vocab-cell{padding:10px 14px;font-size:13px}
+.vocab-cell:not(:last-child){border-right:1px solid var(--rule-light)}
+.v-hdr .vocab-cell{font-family:var(--mono);font-size:10px;letter-spacing:1.5px;color:var(--ink-faint);text-transform:uppercase;font-weight:500}
+.vocab-cell code{font-family:var(--mono);font-size:12px;color:var(--slate);background:var(--slate-light);padding:1px 6px;border-radius:3px}
+
+.checkpoint{background:var(--moss-light);border:1px solid var(--moss-dim);border-radius:10px;padding:24px 28px;margin:48px 0}
+.checkpoint-title{font-family:var(--sans);font-weight:600;font-size:14px;color:var(--moss);margin-bottom:8px;display:flex;align-items:center;gap:8px}
+.checkpoint-title::before{content:"✓";width:22px;height:22px;background:var(--moss);color:var(--bg);border-radius:50%;display:flex;align-items:center;justify-content:center;font-size:12px;font-weight:700;flex-shrink:0}
+.checkpoint p{font-size:14.5px;color:var(--ink-soft);margin:0}
+
+.connection{background:var(--rust-light);border:1px solid rgba(184,76,42,0.2);border-radius:10px;padding:24px 28px;margin:32px 0}
+.connection-title{font-family:var(--sans);font-weight:600;font-size:14px;color:var(--rust);margin-bottom:12px}
+.connection p{font-size:14.5px;color:var(--ink-soft);margin-bottom:8px}
+.connection p:last-child{margin-bottom:0}
+.connection strong{color:var(--ink)}
+
+.next{margin-top:64px;padding:32px;background:var(--violet-light);border-radius:12px;text-align:center}
+.next h3{font-family:var(--serif);font-weight:600;font-size:22px;margin-bottom:8px}
+.next p{font-family:var(--sans);font-size:14px;color:var(--ink-soft);margin:0}
+
+footer{margin-top:80px;padding-top:24px;border-top:1px solid var(--rule);text-align:center;font-family:var(--mono);font-size:10px;color:var(--ink-faint);letter-spacing:1.5px;text-transform:uppercase}
+
+@media(max-width:720px){
+  .page{padding:40px 16px 80px}
+  h1{font-size:34px}
+  h2{font-size:24px}
+  .vocab-row{grid-template-columns:1fr}
+  .vocab-cell:not(:last-child){border-right:none;border-bottom:1px solid var(--rule-light)}
+  .comparison{grid-template-columns:1fr}
+}
+</style>
+</head>
+<body>
+<div class="page">
+
+<header class="masthead">
+  <div class="phase-tag">Phase 3 · 阶段性总结</div>
+  <h1>训练机制<br>完全理解</h1>
+  <p class="subtitle">模型怎么从"瞎猜"变成"越来越准" — trainer.py + utils.py 的训练循环全解</p>
+  <div class="completion">Phase 3 已通过</div>
+</header>
+
+<!-- ═══════ MIND MAP ═══════ -->
+<div class="mindmap">
+  <div class="mindmap-title">Phase 3 思维导图 · 训练循环全景</div>
+  <svg width="100%" viewBox="0 0 840 720" xmlns="http://www.w3.org/2000/svg">
+    <defs>
+      <marker id="arr" viewBox="0 0 10 10" refX="8" refY="5" markerWidth="6" markerHeight="6" orient="auto-start-reverse">
+        <path d="M2 1L8 5L2 9" fill="none" stroke="context-stroke" stroke-width="1.5" stroke-linecap="round"/>
+      </marker>
+    </defs>
+
+    <!-- TITLE -->
+    <rect x="260" y="20" width="320" height="44" rx="22" fill="#6b4d9a" opacity="0.12" stroke="#6b4d9a" stroke-width="1"/>
+    <text x="420" y="48" text-anchor="middle" font-family="'DM Sans',sans-serif" font-weight="700" font-size="14" fill="#6b4d9a">训练循环 · 重复约 47000 次</text>
+
+    <!-- TRAINING STEP DETAILS -->
+    <rect x="40" y="90" width="760" height="280" rx="10" fill="#6b4d9a" opacity="0.04" stroke="#6b4d9a" stroke-width="0.5"/>
+    <text x="60" y="112" font-family="'IBM Plex Mono',monospace" font-size="10" fill="#6b4d9a" letter-spacing="1.5">3.1 · 一个 TRAINING STEP</text>
+
+    <!-- 8 steps as a flow -->
+    <rect x="60" y="128" width="110" height="48" rx="6" fill="#6b4d9a" opacity="0.08" stroke="#6b4d9a" stroke-width="0.5"/>
+    <text x="115" y="146" text-anchor="middle" font-family="'DM Sans',sans-serif" font-weight="600" font-size="11" fill="#6b4d9a">① 取 batch</text>
+    <text x="115" y="162" text-anchor="middle" font-family="'IBM Plex Mono',monospace" font-size="9" fill="#6b4d9a" opacity="0.7">数据上 GPU</text>
+
+    <text x="178" y="156" font-family="'DM Sans',sans-serif" font-size="14" fill="#6b4d9a">→</text>
+
+    <rect x="195" y="128" width="110" height="48" rx="6" fill="#6b4d9a" opacity="0.08" stroke="#6b4d9a" stroke-width="0.5"/>
+    <text x="250" y="146" text-anchor="middle" font-family="'DM Sans',sans-serif" font-weight="600" font-size="11" fill="#6b4d9a">② zero_grad</text>
+    <text x="250" y="162" text-anchor="middle" font-family="'IBM Plex Mono',monospace" font-size="9" fill="#6b4d9a" opacity="0.7">清空旧梯度</text>
+
+    <text x="313" y="156" font-family="'DM Sans',sans-serif" font-size="14" fill="#6b4d9a">→</text>
+
+    <rect x="330" y="128" width="110" height="48" rx="6" fill="#6b4d9a" opacity="0.1" stroke="#6b4d9a" stroke-width="0.5"/>
+    <text x="385" y="146" text-anchor="middle" font-family="'DM Sans',sans-serif" font-weight="600" font-size="11" fill="#6b4d9a">③ forward</text>
+    <text x="385" y="162" text-anchor="middle" font-family="'IBM Plex Mono',monospace" font-size="9" fill="#6b4d9a" opacity="0.7">→ logits (B, 1)</text>
+
+    <text x="448" y="156" font-family="'DM Sans',sans-serif" font-size="14" fill="#6b4d9a">→</text>
+
+    <rect x="465" y="128" width="110" height="48" rx="6" fill="#6b4d9a" opacity="0.08" stroke="#6b4d9a" stroke-width="0.5"/>
+    <text x="520" y="146" text-anchor="middle" font-family="'DM Sans',sans-serif" font-weight="600" font-size="11" fill="#6b4d9a">④ loss</text>
+    <text x="520" y="162" text-anchor="middle" font-family="'IBM Plex Mono',monospace" font-size="9" fill="#6b4d9a" opacity="0.7">BCE 算误差</text>
+
+    <text x="583" y="156" font-family="'DM Sans',sans-serif" font-size="14" fill="#6b4d9a">→</text>
+
+    <rect x="600" y="128" width="180" height="48" rx="6" fill="#6b4d9a" opacity="0.12" stroke="#6b4d9a" stroke-width="0.5"/>
+    <text x="690" y="146" text-anchor="middle" font-family="'DM Sans',sans-serif" font-weight="600" font-size="11" fill="#6b4d9a">⑤ loss.backward()</text>
+    <text x="690" y="162" text-anchor="middle" font-family="'IBM Plex Mono',monospace" font-size="9" fill="#6b4d9a" opacity="0.7">"想清楚"每个参数怎么改</text>
+
+    <!-- Row 2 of steps -->
+    <line x1="60" y1="195" x2="60" y2="215" stroke="#6b4d9a" stroke-width="1" stroke-dasharray="3 2"/>
+
+    <rect x="60" y="218" width="180" height="48" rx="6" fill="#a07020" opacity="0.1" stroke="#a07020" stroke-width="0.5"/>
+    <text x="150" y="236" text-anchor="middle" font-family="'DM Sans',sans-serif" font-weight="600" font-size="11" fill="#a07020">⑥ 梯度裁剪</text>
+    <text x="150" y="252" text-anchor="middle" font-family="'IBM Plex Mono',monospace" font-size="9" fill="#a07020" opacity="0.7">max_norm=1.0 防爆炸</text>
+
+    <text x="248" y="246" font-family="'DM Sans',sans-serif" font-size="14" fill="#a07020">→</text>
+
+    <rect x="265" y="218" width="240" height="48" rx="6" fill="#3b6b8a" opacity="0.1" stroke="#3b6b8a" stroke-width="0.5"/>
+    <text x="385" y="236" text-anchor="middle" font-family="'DM Sans',sans-serif" font-weight="600" font-size="11" fill="#3b6b8a">⑦ 双优化器 step()</text>
+    <text x="385" y="252" text-anchor="middle" font-family="'IBM Plex Mono',monospace" font-size="9" fill="#3b6b8a" opacity="0.7">Adagrad + AdamW 各管各的</text>
+
+    <text x="513" y="246" font-family="'DM Sans',sans-serif" font-size="14" fill="#3b6b8a">→</text>
+
+    <rect x="530" y="218" width="240" height="48" rx="6" fill="#6b4d9a" opacity="0.08" stroke="#6b4d9a" stroke-width="0.5"/>
+    <text x="650" y="236" text-anchor="middle" font-family="'DM Sans',sans-serif" font-weight="600" font-size="11" fill="#6b4d9a">⑧ 记录 loss · 返回循环</text>
+    <text x="650" y="252" text-anchor="middle" font-family="'IBM Plex Mono',monospace" font-size="9" fill="#6b4d9a" opacity="0.7">下一个 batch 继续</text>
+
+    <!-- Dual optimizer detail -->
+    <line x1="385" y1="266" x2="385" y2="290" stroke="#3b6b8a" stroke-width="1" stroke-dasharray="3 2"/>
+
+    <rect x="80" y="290" width="340" height="70" rx="8" fill="#3b6b8a" opacity="0.06" stroke="#3b6b8a" stroke-width="0.5"/>
+    <text x="250" y="310" text-anchor="middle" font-family="'DM Sans',sans-serif" font-weight="600" font-size="12" fill="#3b6b8a">Adagrad (sparse)</text>
+    <text x="250" y="328" text-anchor="middle" font-family="'DM Sans',sans-serif" font-size="11" fill="#3b6b8a" opacity="0.8">管 Embedding · 230M 参数 · lr=0.05</text>
+    <text x="250" y="346" text-anchor="middle" font-family="'IBM Plex Mono',monospace" font-size="10" fill="#3b6b8a" opacity="0.6">冷门 ID 大步走 · 热门 ID 小步走</text>
+
+    <rect x="440" y="290" width="340" height="70" rx="8" fill="#3b6b8a" opacity="0.06" stroke="#3b6b8a" stroke-width="0.5"/>
+    <text x="610" y="310" text-anchor="middle" font-family="'DM Sans',sans-serif" font-weight="600" font-size="12" fill="#3b6b8a">AdamW (dense)</text>
+    <text x="610" y="328" text-anchor="middle" font-family="'DM Sans',sans-serif" font-size="11" fill="#3b6b8a" opacity="0.8">管其他参数 · 10M · lr=1e-4</text>
+    <text x="610" y="346" text-anchor="middle" font-family="'IBM Plex Mono',monospace" font-size="10" fill="#3b6b8a" opacity="0.6">动量 + 自适应 + 权重衰减</text>
+
+    <!-- VALIDATION + EARLY STOPPING -->
+    <rect x="40" y="390" width="760" height="180" rx="10" fill="#2a7a7a" opacity="0.05" stroke="#2a7a7a" stroke-width="0.5"/>
+    <text x="60" y="412" font-family="'IBM Plex Mono',monospace" font-size="10" fill="#2a7a7a" letter-spacing="1.5">3.2 · 验证 + EARLY STOPPING (每若干 step 触发)</text>
+
+    <rect x="60" y="428" width="220" height="62" rx="6" fill="#2a7a7a" opacity="0.08" stroke="#2a7a7a" stroke-width="0.5"/>
+    <text x="170" y="448" text-anchor="middle" font-family="'DM Sans',sans-serif" font-weight="600" font-size="12" fill="#2a7a7a">evaluate()</text>
+    <text x="170" y="466" text-anchor="middle" font-family="'DM Sans',sans-serif" font-size="10" fill="#2a7a7a" opacity="0.7">model.eval() + no_grad</text>
+    <text x="170" y="482" text-anchor="middle" font-family="'IBM Plex Mono',monospace" font-size="10" fill="#2a7a7a" opacity="0.6">验证集 AUC + LogLoss</text>
+
+    <text x="294" y="462" font-family="'DM Sans',sans-serif" font-size="14" fill="#2a7a7a">→</text>
+
+    <rect x="310" y="428" width="220" height="62" rx="6" fill="#2a7a7a" opacity="0.1" stroke="#2a7a7a" stroke-width="0.5"/>
+    <text x="420" y="448" text-anchor="middle" font-family="'DM Sans',sans-serif" font-weight="600" font-size="12" fill="#2a7a7a">EarlyStopping(score, model)</text>
+    <text x="420" y="466" text-anchor="middle" font-family="'DM Sans',sans-serif" font-size="10" fill="#2a7a7a" opacity="0.7">创新高 → counter=0 + 保存</text>
+    <text x="420" y="482" text-anchor="middle" font-family="'DM Sans',sans-serif" font-size="10" fill="#2a7a7a" opacity="0.7">没改进 → counter+=1</text>
+
+    <text x="544" y="462" font-family="'DM Sans',sans-serif" font-size="14" fill="#2a7a7a">→</text>
+
+    <rect x="560" y="428" width="220" height="62" rx="6" fill="#2a7a7a" opacity="0.08" stroke="#2a7a7a" stroke-width="0.5"/>
+    <text x="670" y="448" text-anchor="middle" font-family="'DM Sans',sans-serif" font-weight="600" font-size="12" fill="#2a7a7a">counter ≥ 5?</text>
+    <text x="670" y="466" text-anchor="middle" font-family="'DM Sans',sans-serif" font-size="10" fill="#2a7a7a" opacity="0.7">是 → 停训</text>
+    <text x="670" y="482" text-anchor="middle" font-family="'DM Sans',sans-serif" font-size="10" fill="#2a7a7a" opacity="0.7">否 → 继续训练</text>
+
+    <text x="420" y="525" text-anchor="middle" font-family="'DM Sans',sans-serif" font-size="11" fill="#2a7a7a">最佳 checkpoint 保存到磁盘 · 含 model.pt + 3 个 sidecar 配置</text>
+    <text x="420" y="548" text-anchor="middle" font-family="'IBM Plex Mono',monospace" font-size="10" fill="#2a7a7a" opacity="0.6">global_step28992.layer=2.head=4.hidden=64.best_model/</text>
+
+    <!-- LOSS FUNCTION -->
+    <rect x="40" y="590" width="760" height="110" rx="10" fill="#a07020" opacity="0.05" stroke="#a07020" stroke-width="0.5"/>
+    <text x="60" y="612" font-family="'IBM Plex Mono',monospace" font-size="10" fill="#a07020" letter-spacing="1.5">3.3 · LOSS 函数</text>
+
+    <rect x="60" y="628" width="350" height="58" rx="6" fill="#a07020" opacity="0.1" stroke="#a07020" stroke-width="1"/>
+    <text x="235" y="650" text-anchor="middle" font-family="'DM Sans',sans-serif" font-weight="700" font-size="13" fill="#a07020">BCE Loss (baseline 默认)</text>
+    <text x="235" y="670" text-anchor="middle" font-family="'DM Sans',sans-serif" font-size="11" fill="#a07020" opacity="0.8">所有样本统一扣分 · 简单稳定 · 推荐场景标配</text>
+
+    <rect x="430" y="628" width="350" height="58" rx="6" fill="#a07020" opacity="0.06" stroke="#a07020" stroke-width="0.5"/>
+    <text x="605" y="650" text-anchor="middle" font-family="'DM Sans',sans-serif" font-weight="600" font-size="13" fill="#a07020">Focal Loss (预留选项)</text>
+    <text x="605" y="670" text-anchor="middle" font-family="'DM Sans',sans-serif" font-size="11" fill="#a07020" opacity="0.8">压扁简单样本 · 聚焦难样本 · α + γ 两旋钮</text>
+  </svg>
+</div>
+
+<!-- ═══════ STATION 3.1 ═══════ -->
+<section class="station">
+  <div class="station-hdr">
+    <div class="station-dot dot-1">3.1</div>
+    <div><h2>训练循环 — 模型怎么"变聪明"</h2><div class="station-sub">一个 step 的 8 个动作 · 双优化器分工 · 梯度裁剪</div></div>
+  </div>
+
+  <div class="knowledge">
+    <div class="k-card k-violet">
+      <div class="k-head"><span class="k-term">backward() vs step() — "想清楚" vs "动手改"</span><span class="k-tag tag-concept">核心概念</span></div>
+      <div class="k-pro">backward() 通过自动微分计算 ∂loss/∂w 存入 .grad；optimizer.step() 按梯度更新 w.data。两者解耦。</div>
+      <div class="k-explain">想象烤面包机有上百万个旋钮。<strong>backward()</strong> = 数学家拿着计算器算出"每个旋钮该往哪边转、转多少"，把结果写在便签纸上（不碰旋钮）。<strong>optimizer.step()</strong> = 工人按便签纸真正去拧旋钮。<strong>zero_grad()</strong> = 下一轮前撕掉旧便签，否则新旧梯度会累加导致参数乱跑。</div>
+    </div>
+
+    <div class="k-card k-slate">
+      <div class="k-head"><span class="k-term">双优化器 — 兼职员工 + 全职高管</span><span class="k-tag tag-code">推荐系统标配</span></div>
+      <div class="k-pro">参数分两类：sparse (nn.Embedding) 占 95% 但每步只用 0.1%；dense (Linear/LN) 占 5% 但每步全用。各用专属优化器。</div>
+      <div class="k-explain">Embedding 表像有 1000 万兼职员工的人才库，每天只叫 300 人上班——用 <strong>Adagrad</strong>："谁来得少给谁涨工资"，冷门 ID 一旦出现就大步更新。其他参数像 50 个全职高管，天天都在——用 <strong>AdamW</strong>：动量 + 自适应 + 权重衰减，Transformer 标配。两类参数用同一种优化器要么浪费显存要么调坏精密层。</div>
+    </div>
+
+    <div class="k-card k-amber">
+      <div class="k-head"><span class="k-term">梯度裁剪 — 悬崖上的安全绳</span><span class="k-tag tag-concept">核心概念</span></div>
+      <div class="k-pro">clip_grad_norm_(max_norm=1.0)：所有参数梯度看作一根向量，总长超 1.0 则等比例缩小，方向不变。</div>
+      <div class="k-explain">训练偶尔出现梯度爆炸——某个 batch 梯度突然变巨大，optimizer.step() 把参数推到荒谬位置，模型瞬间崩坏。梯度裁剪就是<strong>给每步设上限</strong>：平时每步 1 米没问题，突然要飞 100 米 → 安全绳拽回 1 米。方向不变，步子变短。</div>
+    </div>
+
+    <div class="k-card k-moss">
+      <div class="k-head"><span class="k-term">Adagrad 周期性重置 — 给老员工新机会</span><span class="k-tag tag-improve">工程细节</span></div>
+      <div class="k-pro">每个 epoch 后重建 Adagrad，重置累积平方梯度 s，避免学习率衰减到接近 0 而"学不动"。</div>
+      <div class="k-explain">Adagrad 的累积量 s 只增不减——训练久了学习率衰减到接近 0，高基数 Embedding 陷入"学不动"。<strong>重建相当于给它们一次重新出发的机会</strong>。这是来自快手 MultiEpoch 论文的技巧。</div>
+    </div>
+  </div>
+
+  <div class="flow-visual">
+    <div class="flow-label">一个 training step 的完整 8 步</div>
+    <div class="flow-row">
+      <span class="flow-box">取 batch</span>
+      <span class="flow-arrow">→</span>
+      <span class="flow-box hl-violet">zero_grad</span>
+      <span class="flow-arrow">→</span>
+      <span class="flow-box">forward</span>
+      <span class="flow-arrow">→</span>
+      <span class="flow-box">loss</span>
+      <span class="flow-arrow">→</span>
+      <span class="flow-box hl-violet">backward</span>
+      <span class="flow-arrow">→</span>
+      <span class="flow-box hl-amber">clip_grad</span>
+      <span class="flow-arrow">→</span>
+      <span class="flow-box hl-violet">step ×2</span>
+      <span class="flow-arrow">→</span>
+      <span class="flow-box">日志</span>
+    </div>
+  </div>
+
+  <div class="connection">
+    <div class="connection-title">和你的训练曲线的对应</div>
+    <p><strong>Loss 频繁 spike</strong> → <code>sparse_lr=0.05</code> 给 Embedding 的更新步子太大，即使有梯度裁剪也没完全压住震荡。这正是你看到的 0.3 主体 + 频繁跳到 0.5-0.75 的现象。</p>
+    <p><strong>改进方向：</strong>降 <code>sparse_lr</code> 到 0.01-0.02 是低成本改进的首选。</p>
+  </div>
+</section>
+
+<!-- ═══════ STATION 3.2 ═══════ -->
+<section class="station">
+  <div class="station-hdr">
+    <div class="station-dot dot-2">3.2</div>
+    <div><h2>验证与早停 — 知道何时该停</h2><div class="station-sub">train vs eval 的本质区别 · AUC 排序能力 · EarlyStopping 机制</div></div>
+  </div>
+
+  <div class="comparison">
+    <div class="compare-card left">
+      <h4>训练 (train)</h4>
+      <ul>
+        <li>用训练集（前 90% Row Groups）</li>
+        <li><code>model.train()</code> — Dropout 开启</li>
+        <li>算梯度 (backward)</li>
+        <li>更新参数 (step)</li>
+        <li>看 loss，决定怎么改</li>
+      </ul>
+    </div>
+    <div class="compare-card right">
+      <h4>验证 (evaluate)</h4>
+      <ul>
+        <li>用验证集（后 10%，模型没见过）</li>
+        <li><code>model.eval()</code> — Dropout 关闭</li>
+        <li><code>torch.no_grad()</code> 不算梯度</li>
+        <li>不更新任何参数</li>
+        <li>看 AUC，判模型好坏</li>
+      </ul>
+    </div>
+  </div>
+
+  <div class="knowledge">
+    <div class="k-card k-teal">
+      <div class="k-head"><span class="k-term">为什么必须分开？— 防止"应试作弊"</span><span class="k-tag tag-concept">核心概念</span></div>
+      <div class="k-pro">仅用训练集衡量会激励模型死记硬背 → 过拟合。验证集是"没见过的考卷"，AUC 才有意义。</div>
+      <div class="k-explain">就像学生用 100 道练习题学习，光看练习题分数无法判断他真懂还是死记。再出 10 道新题考——新题考好才算真懂。验证集就是这 10 道新题。<strong>训练 loss 几乎总在下降，但验证 AUC 会先升后降</strong>——后期开始死记训练集时，验证 AUC 反而跌。</div>
+    </div>
+
+    <div class="k-card k-teal">
+      <div class="k-head"><span class="k-term">AUC — 排序能力的精确定义</span><span class="k-tag tag-concept">核心概念</span></div>
+      <div class="k-pro">AUC = P(score(positive) &gt; score(negative))，对类别不平衡稳健，不依赖阈值。</div>
+      <div class="k-explain"><strong>AUC = 随机抽一个正样本和一个负样本，模型给正样本打更高分的概率。</strong> 0.5 = 瞎猜，1.0 = 完美。推荐系统偏爱 AUC 因为：① 不依赖阈值；② 对不平衡稳健（95% 都猜"不点"也只得 0.5 AUC）；③ 直接对应推荐的核心任务——排序能力。</div>
+    </div>
+
+    <div class="k-card k-teal">
+      <div class="k-head"><span class="k-term">EarlyStopping patience=5 — 连输 5 把离场</span><span class="k-tag tag-concept">核心概念</span></div>
+      <div class="k-pro">连续 5 次验证 AUC 未创新高则停训。每次创新高 counter 立刻归零，给模型充分翻身机会。</div>
+      <div class="k-explain">就像赌场规矩：你赢了一些钱（AUC 在涨），怕赌久会输回去。<strong>连续 5 把没新高就离场</strong>，保住目前赢的最多的那一刻的筹码。关键设计：每次创新高 counter 立刻重置——给模型留足翻身空间，避免被局部波动误判。</div>
+    </div>
+
+    <div class="k-card k-teal">
+      <div class="k-head"><span class="k-term">Checkpoint — 创新高才存档</span><span class="k-tag tag-code">代码机制</span></div>
+      <div class="k-pro">torch.save(state_dict)，仅 AUC 创新高时触发。配套 schema.json + ns_groups.json + train_config.json 三个 sidecar 文件。</div>
+      <div class="k-explain">主文件 <code>model.pt</code> 只存参数数值（state_dict），<strong>不存模型架构</strong>。加载时必须先用同样的超参重建架构再灌入参数。配套三个 sidecar 文件让推理脚本能独立运行，不用回去找训练配置。<strong>旧 checkpoint 会自动删除</strong>，避免磁盘越积越多。</div>
+    </div>
+  </div>
+
+  <div class="connection">
+    <div class="connection-title">和你的训练结果的对应</div>
+    <p><strong>你的 checkpoint:</strong> <code>global_step28992.layer=2.head=4.hidden=64.best_model</code> — 在第 28992 步达到验证集 AUC 最高，系统自动保存。</p>
+    <p><strong>训练终止机制:</strong> 之后 AUC 再也没涨过，连续 5 次验证未改进，<strong>EarlyStopping 在 ~step 47000 终止训练</strong>。它保护了你的模型不至于过拟合越走越远。</p>
+    <p><strong>LogLoss 后期上翘</strong> 是过拟合开始出现的信号——EarlyStopping 正好在这个时机刹车。</p>
+  </div>
+</section>
+
+<!-- ═══════ STATION 3.3 ═══════ -->
+<section class="station">
+  <div class="station-hdr">
+    <div class="station-dot dot-3">3.3</div>
+    <div><h2>损失函数 — 怎么"扣分"</h2><div class="station-sub">BCE vs Focal Loss · α 和 γ 两个旋钮</div></div>
+  </div>
+
+  <div class="knowledge">
+    <div class="k-card k-amber">
+      <div class="k-head"><span class="k-term">BCE Loss — 统一扣分制</span><span class="k-tag tag-concept">默认 loss</span></div>
+      <div class="k-pro">Binary Cross-Entropy：-[y·log(p) + (1-y)·log(1-p)]，所有样本同等权重。</div>
+      <div class="k-explain"><strong>每道题对错都按统一标准扣分</strong>——答错扣 5 分，答对加 0 分。不管样本是正是负、好不好判，规则一样。优点：简单、稳定、和 AUC 高度相关。缺点：当类别极度不平衡时（95% 负样本），简单样本的 loss 会淹没难样本，模型陷入"全猜负"的懒惰解。</div>
+    </div>
+
+    <div class="k-card k-amber">
+      <div class="k-head"><span class="k-term">Focal Loss — 重点批改难题</span><span class="k-tag tag-improve">预留选项</span></div>
+      <div class="k-pro">在 BCE 前乘上 (1-p_t)^γ 压扁简单样本，让模型聚焦于难样本。α 控制类别权重。</div>
+      <div class="k-explain"><strong>老师改卷时多加两条规则：</strong>答得很笃定（不管对错）→ 几乎不看；答得犹豫或错得离谱 → 重点改。模型预测概率 0.9 的简单样本（γ=2 时）loss 被压到 1/100；预测 0.5 的迷糊样本 loss 几乎不变。<strong>梯度信号被强制引导到难样本上</strong>。</div>
+    </div>
+
+    <div class="k-card k-violet">
+      <div class="k-head"><span class="k-term">γ (gamma) — 聚焦强度</span><span class="k-tag tag-code">超参数</span></div>
+      <div class="k-pro">γ=0 退化成 BCE，γ=2 论文标准值，γ&gt;5 可能过度聚焦导致训练不稳。</div>
+      <div class="k-explain">控制"对简单样本的压扁程度"。γ 越大越聚焦难样本。γ=2 是 Focal Loss 论文的稳妥默认——简单样本 loss 被压成 1/100，难样本 loss 几乎不变。</div>
+    </div>
+
+    <div class="k-card k-violet">
+      <div class="k-head"><span class="k-term">α (alpha) — 类别权重</span><span class="k-tag tag-code">超参数</span></div>
+      <div class="k-pro">本实现中 alpha = 正样本权重。α &lt; 0.5 压低正样本，α &gt; 0.5 抬高正样本。默认 0.1。</div>
+      <div class="k-explain">直接给正负样本不同权重。<strong>γ 管"难易"，α 管"多少"，两个旋钮独立调</strong>。代码默认 0.1 是"压低正样本"——具体方向要根据数据集正负比例试。PCVR 场景常用 0.25 或 0.75。</div>
+    </div>
+  </div>
+
+  <div class="analogy">
+    <div class="analogy-tag">关键判断</div>
+    <p>Focal Loss 不是万能的。它需要调参，调不好可能比 BCE 还差。<strong>工业实践里 Focal 是调参选项而非默认</strong>——先用 BCE 跑通，发现模型"摆烂"才考虑切换。Baseline 默认 BCE 是正确选择。</p>
+  </div>
+
+  <div class="connection">
+    <div class="connection-title">改进方向</div>
+    <p>你的 baseline 用 BCE。如果将来尝试 Focal Loss，命令行加：<code>bash run.sh --loss_type focal --focal_alpha 0.25 --focal_gamma 2.0</code></p>
+    <p>建议作为后期实验——先把训练策略和特征工程做好，再考虑换 loss。</p>
+  </div>
+</section>
+
+<!-- ═══════ VOCAB TABLE ═══════ -->
+<h2 style="margin-top:48px;margin-bottom:16px;">Phase 3 核心术语表</h2>
+<div class="vocab">
+  <div class="vocab-row v-hdr"><div class="vocab-cell">术语</div><div class="vocab-cell">专业含义</div><div class="vocab-cell">人话翻译</div></div>
+  <div class="vocab-row"><div class="vocab-cell"><code>backward()</code></div><div class="vocab-cell">PyTorch 自动微分，计算 ∂loss/∂w 存入 .grad</div><div class="vocab-cell">数学家算出"每个旋钮该转多少"</div></div>
+  <div class="vocab-row"><div class="vocab-cell"><code>optimizer.step()</code></div><div class="vocab-cell">读取 .grad 更新参数 w.data</div><div class="vocab-cell">工人按便签纸真正去拧旋钮</div></div>
+  <div class="vocab-row"><div class="vocab-cell"><code>zero_grad()</code></div><div class="vocab-cell">清空所有参数的 .grad，防止跨 step 累加</div><div class="vocab-cell">撕掉上一轮的便签纸</div></div>
+  <div class="vocab-row"><div class="vocab-cell"><code>Adagrad</code></div><div class="vocab-cell">自适应学习率，按累积梯度平方调节步长，适合稀疏更新</div><div class="vocab-cell">"谁来得少给谁涨工资"</div></div>
+  <div class="vocab-row"><div class="vocab-cell"><code>AdamW</code></div><div class="vocab-cell">Adam + 解耦权重衰减，含动量+自适应，Transformer 标配</div><div class="vocab-cell">全职高管的稳健调节器</div></div>
+  <div class="vocab-row"><div class="vocab-cell"><code>grad_clip</code></div><div class="vocab-cell">梯度裁剪，按总范数等比例缩小过大梯度</div><div class="vocab-cell">悬崖上的安全绳</div></div>
+  <div class="vocab-row"><div class="vocab-cell"><code>model.eval()</code></div><div class="vocab-cell">切换到评估模式：关闭 Dropout、冻结 BN 统计</div><div class="vocab-cell">"考试模式"全员上岗</div></div>
+  <div class="vocab-row"><div class="vocab-cell"><code>torch.no_grad()</code></div><div class="vocab-cell">上下文管理器，禁用 autograd 跟踪，省显存+加速</div><div class="vocab-cell">考试时不需要算"该怎么改"</div></div>
+  <div class="vocab-row"><div class="vocab-cell"><code>AUC</code></div><div class="vocab-cell">Area Under ROC Curve，0~1 排序质量指标</div><div class="vocab-cell">"能不能把会点的人排在前面"</div></div>
+  <div class="vocab-row"><div class="vocab-cell"><code>patience</code></div><div class="vocab-cell">EarlyStopping 容忍连续多少次未改进</div><div class="vocab-cell">连输 5 把就离场</div></div>
+  <div class="vocab-row"><div class="vocab-cell"><code>state_dict</code></div><div class="vocab-cell">模型所有参数的字典快照，只存数值不存架构</div><div class="vocab-cell">游戏存档（只记角色状态）</div></div>
+  <div class="vocab-row"><div class="vocab-cell"><code>BCE Loss</code></div><div class="vocab-cell">Binary Cross-Entropy，二分类标准损失</div><div class="vocab-cell">统一扣分制</div></div>
+  <div class="vocab-row"><div class="vocab-cell"><code>Focal Loss</code></div><div class="vocab-cell">BCE × (1-p_t)^γ，聚焦难样本</div><div class="vocab-cell">重点批改难题制</div></div>
+</div>
+
+<!-- ═══════ CHECKPOINT ═══════ -->
+<div class="checkpoint">
+  <div class="checkpoint-title">Phase 3 检查点 — 已通过</div>
+  <p>你现在能解释"为什么 Loss 会震荡"（<code>sparse_lr=0.05</code> 太大），"为什么 AUC 会 plateau"（没有学习率调度），"为什么训练在 step 47000 终止"（EarlyStopping 连续 5 次未改进）——这些和你亲手跑出来的训练曲线<strong>完全对应</strong>。每一个现象都能追溯到具体的代码机制，每一个改进方向都有清晰的入口。</p>
+</div>
+
+<!-- ═══════ NEXT ═══════ -->
+<div class="next">
+  <h3>恭喜 → 三大支柱全部理解完毕</h3>
+  <p>数据管道（Phase 1）+ 模型架构（Phase 2）+ 训练机制（Phase 3）。你现在对 HyFormer baseline 的每一个齿轮都有了清晰的理解。下一步：Phase 4 解读你的训练结果，Phase 5 制定改进计划。</p>
+</div>
+
+<footer>TAAC 2026 · Phase 3 Summary · trainer.py + utils.py · 2026.05.12</footer>
+
+</div>
+</body>
+</html>

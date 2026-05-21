@@ -1,0 +1,1038 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>PCVRHyFormer v0.0 — 模型架构详解</title>
+<style>
+  :root {
+    --bg: #0d1117;
+    --surface: #161b22;
+    --border: #30363d;
+    --text: #c9d1d9;
+    --text-dim: #8b949e;
+    --accent: #58a6ff;
+    --accent2: #3fb950;
+    --accent3: #d2a8ff;
+    --accent4: #f0883e;
+    --accent5: #ff7b72;
+    --accent6: #79c0ff;
+    --accent7: #a5d6ff;
+    --tok-input: #1c3a5e;
+    --tok-ns: #1e3a2f;
+    --tok-seq: #3d2e0a;
+    --tok-q: #3a1e3a;
+    --tok-mixed: #2e1e3a;
+    --tok-output: #1e2e3a;
+  }
+  * { margin:0; padding:0; box-sizing:border-box; }
+  body {
+    font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', system-ui, sans-serif;
+    background: var(--bg);
+    color: var(--text);
+    line-height: 1.6;
+    padding: 20px;
+  }
+  .container { max-width: 1400px; margin: 0 auto; }
+  h1 {
+    font-size: 2rem; color: var(--accent);
+    border-bottom: 2px solid var(--border);
+    padding-bottom: 16px; margin-bottom: 8px;
+  }
+  h2 {
+    font-size: 1.4rem; color: var(--accent6);
+    margin: 32px 0 16px;
+    padding: 8px 16px;
+    border-left: 4px solid var(--accent);
+    background: var(--surface);
+    border-radius: 0 6px 6px 0;
+  }
+  h3 {
+    font-size: 1.1rem; color: var(--accent3);
+    margin: 20px 0 10px;
+  }
+  .subtitle { color: var(--text-dim); margin-bottom: 24px; font-size: 0.95rem; }
+  p, li { margin: 4px 0; }
+
+  /* ── Pipeline ── */
+  .pipeline {
+    display: flex; flex-wrap: wrap; gap: 8px; align-items: center;
+    margin: 24px 0; justify-content: center;
+  }
+  .pipe-stage {
+    background: var(--surface);
+    border: 1px solid var(--border);
+    border-radius: 10px;
+    padding: 14px 18px;
+    text-align: center;
+    min-width: 100px;
+  }
+  .pipe-stage .label { font-weight: 700; font-size: 0.85rem; color: var(--accent6); }
+  .pipe-stage .shape { font-size: 0.78rem; color: var(--accent2); margin-top: 4px; font-family: 'SF Mono', 'Fira Code', monospace; }
+  .pipe-arrow { color: var(--text-dim); font-size: 1.5rem; font-weight: bold; }
+
+  /* ── Card ── */
+  .card {
+    background: var(--surface);
+    border: 1px solid var(--border);
+    border-radius: 10px;
+    padding: 20px 24px;
+    margin: 16px 0;
+  }
+  .card h3 { margin-top: 0; }
+
+  /* ── Tables ── */
+  table {
+    width: 100%; border-collapse: collapse;
+    margin: 12px 0; font-size: 0.9rem;
+  }
+  th, td {
+    padding: 8px 12px; text-align: left;
+    border: 1px solid var(--border);
+  }
+  th { background: #1a2332; color: var(--accent6); font-weight: 600; }
+  td { font-family: 'SF Mono', 'Fira Code', monospace; font-size: 0.85rem; }
+  tr:nth-child(even) td { background: rgba(255,255,255,0.02); }
+
+  /* ── Shape tag ── */
+  .shape-tag {
+    display: inline-block;
+    padding: 2px 8px; border-radius: 4px;
+    font-family: 'SF Mono', 'Fira Code', monospace;
+    font-size: 0.82rem; font-weight: 600;
+  }
+  .sh-input  { background: var(--tok-input); color: #79c0ff; }
+  .sh-ns     { background: var(--tok-ns); color: #7ee787; }
+  .sh-seq    { background: var(--tok-seq); color: #e3b341; }
+  .sh-q      { background: var(--tok-q); color: #d2a8ff; }
+  .sh-mix    { background: var(--tok-mixed); color: #f0883e; }
+  .sh-out    { background: var(--tok-output); color: #79c0ff; }
+  .sh-final  { background: #2a1a1a; color: #ff7b72; }
+
+  /* ── Component diagram ── */
+  .comp-diagram {
+    background: var(--surface);
+    border: 2px solid var(--border);
+    border-radius: 14px;
+    padding: 20px;
+    margin: 16px 0;
+    overflow-x: auto;
+  }
+  .comp-title {
+    font-weight: 700; color: var(--accent3);
+    margin-bottom: 16px; font-size: 1rem;
+    text-align: center;
+  }
+  .comp-flow {
+    display: flex; gap: 8px; align-items: stretch;
+    flex-wrap: wrap; justify-content: center;
+  }
+  .comp-box {
+    border: 1px solid var(--border);
+    border-radius: 8px;
+    padding: 10px 14px;
+    min-width: 130px;
+    text-align: center;
+  }
+  .comp-box .name { font-weight: 700; font-size: 0.8rem; }
+  .comp-box .detail { font-size: 0.72rem; color: var(--text-dim); margin-top: 4px; }
+  .comp-box .detail code { color: var(--accent2); }
+  .comp-io { background: #0d2b1e; border-color: #3fb950; }
+  .comp-op  { background: #1a1a2e; border-color: #58a6ff; }
+  .comp-math { background: #2e1a0d; border-color: #f0883e; }
+
+  /* ── Block diagram ── */
+  .block-diagram {
+    display: flex; flex-direction: column;
+    gap: 6px; margin: 16px 0;
+  }
+  .block-row {
+    display: flex; gap: 10px; align-items: center;
+    flex-wrap: wrap;
+  }
+  .block-node {
+    background: var(--surface);
+    border: 1px solid var(--border);
+    border-radius: 8px;
+    padding: 10px 16px;
+    text-align: center;
+    font-size: 0.82rem;
+  }
+  .block-node .title { font-weight: 700; color: var(--accent6); }
+  .block-node .shapes { font-size: 0.75rem; color: var(--accent2); font-family: monospace; margin-top: 3px; }
+  .block-brace {
+    font-size: 2rem; color: var(--text-dim);
+    writing-mode: vertical-lr;
+    padding: 0 4px;
+  }
+
+  /* ── Code snippet ── */
+  pre {
+    background: #0d1117;
+    border: 1px solid var(--border);
+    border-radius: 6px;
+    padding: 14px 18px;
+    overflow-x: auto;
+    font-size: 0.82rem;
+    line-height: 1.45;
+    margin: 8px 0;
+  }
+  code { font-family: 'SF Mono', 'Fira Code', monospace; font-size: 0.85rem; }
+
+  /* ── Legend ── */
+  .legend {
+    display: flex; flex-wrap: wrap; gap: 10px;
+    margin: 16px 0;
+  }
+  .legend-item {
+    display: flex; align-items: center; gap: 6px;
+    font-size: 0.8rem;
+  }
+  .legend-dot {
+    width: 14px; height: 14px; border-radius: 3px;
+    border: 1px solid var(--border);
+  }
+
+  /* ── Note ── */
+  .note {
+    background: #1a2332;
+    border-left: 4px solid var(--accent);
+    padding: 10px 16px;
+    margin: 12px 0;
+    border-radius: 0 6px 6px 0;
+    font-size: 0.88rem;
+    color: var(--accent6);
+  }
+
+  /* ── Tabs ── */
+  .tabs { display: flex; gap: 2px; margin: 16px 0 0; }
+  .tab {
+    padding: 8px 20px;
+    background: var(--surface);
+    border: 1px solid var(--border);
+    border-bottom: none;
+    border-radius: 8px 8px 0 0;
+    cursor: pointer;
+    font-size: 0.85rem;
+    color: var(--text-dim);
+  }
+  .tab.active {
+    background: #1a2332;
+    color: var(--accent6);
+    border-color: var(--accent);
+  }
+  .tab-content { display: none; }
+  .tab-content.active { display: block; }
+
+  .divider {
+    border: none; border-top: 1px solid var(--border);
+    margin: 24px 0;
+  }
+  .two-col {
+    display: grid; grid-template-columns: 1fr 1fr;
+    gap: 16px;
+  }
+  @media (max-width: 900px) { .two-col { grid-template-columns: 1fr; } }
+
+  /* ── Step indicator ── */
+  .step-num {
+    display: inline-flex;
+    align-items: center; justify-content: center;
+    width: 24px; height: 24px;
+    border-radius: 50%;
+    background: var(--accent);
+    color: #000;
+    font-weight: 700; font-size: 0.75rem;
+    margin-right: 8px;
+  }
+
+  /* SVG diagram area */
+  .arch-svg { width: 100%; }
+  .arch-svg text { font-family: 'SF Mono', 'Fira Code', monospace; }
+</style>
+</head>
+<body>
+<div class="container">
+
+<h1>PCVRHyFormer v0.0 — 模型架构详解</h1>
+<p class="subtitle">
+  File: <code>Hyformer/HyFormer-v0.0/model.py</code> · Class: <code>PCVRHyFormer(nn.Module)</code> · Line: 1192<br>
+  用途: Post-Click Conversion Rate Prediction（点击后转化率预估）
+</p>
+
+<!-- ═══════════════════════════════════════════════════════ -->
+<!-- COLOR LEGEND -->
+<!-- ═══════════════════════════════════════════════════════ -->
+<h2>图例 / Legend</h2>
+<div class="legend">
+  <div class="legend-item"><div class="legend-dot" style="background:var(--tok-input)"></div> 原始输入 (Input)</div>
+  <div class="legend-item"><div class="legend-dot" style="background:var(--tok-ns)"></div> NS Token (Non-Sequence)</div>
+  <div class="legend-item"><div class="legend-dot" style="background:var(--tok-seq)"></div> Seq Token (Sequence)</div>
+  <div class="legend-item"><div class="legend-dot" style="background:var(--tok-q)"></div> Q Token (Query)</div>
+  <div class="legend-item"><div class="legend-dot" style="background:var(--tok-mixed)"></div> Mixed/Booseted Token</div>
+  <div class="legend-item"><div class="legend-dot" style="background:var(--tok-output)"></div> Output Embedding</div>
+  <div class="legend-item"><div class="legend-dot" style="background:var(--sh-final)"></div> Logits / Prob</div>
+</div>
+
+<!-- ═══════════════════════════════════════════════════════ -->
+<!-- TOP-LEVEL PIPELINE -->
+<!-- ═══════════════════════════════════════════════════════ -->
+<h2>1. 整体数据流 (Top-Level Pipeline)</h2>
+
+<svg class="arch-svg" viewBox="0 0 1300 320" style="max-width:1300px;">
+  <defs>
+    <marker id="arrow" markerWidth="10" markerHeight="7" refX="9" refY="3.5" orient="auto">
+      <polygon points="0 0, 10 3.5, 0 7" fill="#8b949e" />
+    </marker>
+  </defs>
+
+  <!-- Background boxes -->
+  <rect x="8" y="10" width="158" height="65" rx="8" fill="#1c3a5e" stroke="#30363d" stroke-width="1"/>
+  <text x="87" y="36" text-anchor="middle" fill="#79c0ff" font-size="11" font-weight="700">ModelInput</text>
+  <text x="87" y="56" text-anchor="middle" fill="#7ee787" font-size="10">7 个字段</text>
+
+  <rect x="200" y="10" width="158" height="65" rx="8" fill="#1e3a2f" stroke="#30363d" stroke-width="1"/>
+  <text x="279" y="36" text-anchor="middle" fill="#7ee787" font-size="11" font-weight="700">NS Tokenization</text>
+  <text x="279" y="56" text-anchor="middle" fill="#7ee787" font-size="10">(B, M, D)</text>
+
+  <rect x="392" y="10" width="158" height="65" rx="8" fill="#3d2e0a" stroke="#30363d" stroke-width="1"/>
+  <text x="471" y="36" text-anchor="middle" fill="#e3b341" font-size="11" font-weight="700">Seq Embedding</text>
+  <text x="471" y="56" text-anchor="middle" fill="#e3b341" font-size="10">(B, L, D) × S</text>
+
+  <rect x="584" y="10" width="158" height="65" rx="8" fill="#3a1e3a" stroke="#30363d" stroke-width="1"/>
+  <text x="663" y="36" text-anchor="middle" fill="#d2a8ff" font-size="11" font-weight="700">Query Generator</text>
+  <text x="663" y="56" text-anchor="middle" fill="#d2a8ff" font-size="10">(B, Nq, D) × S</text>
+
+  <rect x="776" y="10" width="198" height="65" rx="8" fill="#2e1e3a" stroke="#30363d" stroke-width="1"/>
+  <text x="875" y="36" text-anchor="middle" fill="#f0883e" font-size="11" font-weight="700">HyFormer Blocks</text>
+  <text x="875" y="56" text-anchor="middle" fill="#f0883e" font-size="10">×2 blocks (Q↔Seq↔NS)</text>
+
+  <rect x="1008" y="10" width="138" height="65" rx="8" fill="#1e2e3a" stroke="#30363d" stroke-width="1"/>
+  <text x="1077" y="36" text-anchor="middle" fill="#79c0ff" font-size="11" font-weight="700">Output Proj</text>
+  <text x="1077" y="56" text-anchor="middle" fill="#79c0ff" font-size="10">(B, D)</text>
+
+  <rect x="1180" y="10" width="112" height="65" rx="8" fill="#2a1a1a" stroke="#ff7b72" stroke-width="1"/>
+  <text x="1236" y="36" text-anchor="middle" fill="#ff7b72" font-size="11" font-weight="700">Classifier</text>
+  <text x="1236" y="56" text-anchor="middle" fill="#ff7b72" font-size="10">(B, 1) logits</text>
+
+  <!-- Arrows -->
+  <line x1="166" y1="42" x2="195" y2="42" stroke="#8b949e" stroke-width="2" marker-end="url(#arrow)"/>
+  <line x1="358" y1="42" x2="387" y2="42" stroke="#8b949e" stroke-width="2" marker-end="url(#arrow)"/>
+  <line x1="550" y1="42" x2="579" y2="42" stroke="#8b949e" stroke-width="2" marker-end="url(#arrow)"/>
+  <line x1="742" y1="42" x2="771" y2="42" stroke="#8b949e" stroke-width="2" marker-end="url(#arrow)"/>
+  <line x1="974" y1="42" x2="1003" y2="42" stroke="#8b949e" stroke-width="2" marker-end="url(#arrow)"/>
+  <line x1="1146" y1="42" x2="1175" y2="42" stroke="#8b949e" stroke-width="2" marker-end="url(#arrow)"/>
+
+  <!-- Exploded detail boxes below -->
+  <g transform="translate(0, 100)">
+    <!-- NS Tokenization detail (positioned below NS box) -->
+    <rect x="220" y="0" width="210" height="72" rx="6" fill="#0d2b1e" stroke="#3fb950" stroke-width="1" stroke-dasharray="4 2"/>
+    <text x="325" y="18" text-anchor="middle" fill="#7ee787" font-size="9" font-weight="600">user_ns_tokenizer</text>
+    <text x="325" y="33" text-anchor="middle" fill="#8b949e" font-size="8">RankMixerNSTokenizer</text>
+    <text x="325" y="48" text-anchor="middle" fill="#8b949e" font-size="8">item_ns_tokenizer</text>
+    <text x="325" y="63" text-anchor="middle" fill="#8b949e" font-size="8">+ user/item dense proj</text>
+
+    <!-- Seq Embedding detail -->
+    <rect x="474" y="0" width="200" height="72" rx="6" fill="#2e210a" stroke="#e3b341" stroke-width="1" stroke-dasharray="4 2"/>
+    <text x="574" y="18" text-anchor="middle" fill="#e3b341" font-size="9" font-weight="600">_embed_seq_domain</text>
+    <text x="574" y="33" text-anchor="middle" fill="#8b949e" font-size="8">S × Embedding(E) → cat</text>
+    <text x="574" y="48" text-anchor="middle" fill="#8b949e" font-size="8">→ Linear(S*E → D) + GELU</text>
+    <text x="574" y="63" text-anchor="middle" fill="#8b949e" font-size="8">+ TimeBucket Embedding</text>
+
+    <!-- HyFormer Block detail -->
+    <rect x="800" y="0" width="255" height="72" rx="6" fill="#1e152e" stroke="#f0883e" stroke-width="1" stroke-dasharray="4 2"/>
+    <text x="927" y="18" text-anchor="middle" fill="#f0883e" font-size="9" font-weight="600">MultiSeqHyFormerBlock</text>
+    <text x="927" y="33" text-anchor="middle" fill="#8b949e" font-size="8">Seq Encoder (Transformer/SwiGLU/Longer)</text>
+    <text x="927" y="48" text-anchor="middle" fill="#8b949e" font-size="8">→ CrossAttention (Q ← Seq)</text>
+    <text x="927" y="63" text-anchor="middle" fill="#8b949e" font-size="8">→ RankMixerBlock (Token Mixing)</text>
+
+    <!-- Connections from top boxes to detail -->
+    <line x1="279" y1="65" x2="325" y2="95" stroke="#3fb950" stroke-width="1" stroke-dasharray="3 3"/>
+    <line x1="471" y1="65" x2="574" y2="95" stroke="#e3b341" stroke-width="1" stroke-dasharray="3 3"/>
+    <line x1="875" y1="65" x2="927" y2="95" stroke="#f0883e" stroke-width="1" stroke-dasharray="3 3"/>
+  </g>
+</svg>
+
+<!-- ═══════════════════════════════════════════════════════ -->
+<!-- MODEL INPUT -->
+<!-- ═══════════════════════════════════════════════════════ -->
+<h2>2. ModelInput 输入字段</h2>
+<div class="card">
+  <pre style="margin:0"><span style="color:#ff7b72">class</span> <span style="color:#d2a8ff">ModelInput</span>(NamedTuple):
+    user_int_feats:    Tensor   <span style="color:#8b949e"># 用户离散特征拼接</span>
+    item_int_feats:    Tensor   <span style="color:#8b949e"># 商品离散特征拼接</span>
+    user_dense_feats:  Tensor   <span style="color:#8b949e"># 用户稠密特征</span>
+    item_dense_feats:  Tensor   <span style="color:#8b949e"># 商品稠密特征</span>
+    seq_data:          dict     <span style="color:#8b949e"># {domain: (B, S, L)}  多域序列行为数据</span>
+    seq_lens:          dict     <span style="color:#8b949e"># {domain: (B,)}      每样本序列有效长度</span>
+    seq_time_buckets:  dict     <span style="color:#8b949e"># {domain: (B, L)}    每位置时间桶ID</span></pre>
+</div>
+
+<table>
+  <tr><th>字段</th><th>Shape</th><th>示例值 (B=256)</th><th>说明</th></tr>
+  <tr><td>user_int_feats</td><td>(B, <b>U<sub>int</sub></b>)</td><td><span class="shape-tag sh-input">(256, 200)</span></td><td>用户侧所有离散特征沿 dim=-1 拼接，含多值特征 (如历史点击序列)</td></tr>
+  <tr><td>item_int_feats</td><td>(B, <b>I<sub>int</sub></b>)</td><td><span class="shape-tag sh-input">(256, 80)</span></td><td>商品侧所有离散特征拼接</td></tr>
+  <tr><td>user_dense_feats</td><td>(B, <b>U<sub>d</sub></b>)</td><td><span class="shape-tag sh-input">(256, 30)</span></td><td>用户侧稠密统计特征 (可选，可为0)</td></tr>
+  <tr><td>item_dense_feats</td><td>(B, <b>I<sub>d</sub></b>)</td><td><span class="shape-tag sh-input">(256, 20)</span></td><td>商品侧稠密统计特征 (可选，可为0)</td></tr>
+  <tr><td>seq_data[domain]</td><td>(B, <b>S<sub>d</sub></b>, <b>L<sub>d</sub></b>)</td><td><span class="shape-tag sh-input">(256, 10, 100)</span></td><td>S<sub>d</sub>=该域每位置的特征字段数, L<sub>d</sub>=序列长度</td></tr>
+  <tr><td>seq_lens[domain]</td><td>(B,)</td><td><span class="shape-tag sh-input">(256,)</span></td><td>每条样本的真实序列长度 (≤ L<sub>d</sub>)</td></tr>
+  <tr><td>seq_time_buckets[domain]</td><td>(B, L<sub>d</sub>)</td><td><span class="shape-tag sh-input">(256, 100)</span></td><td>每个位置的时间间隔分桶 ID (0=padding)</td></tr>
+</table>
+
+<div class="note">
+  <strong>多域序列</strong>: 每个 domain（如"点击序列"、"加购序列"等）有独立的 S<sub>d</sub>（特征字段数）和 L<sub>d</sub>（序列最大长度）。
+  <code>seq_data</code> 的三维是 <strong>(B, S<sub>d</sub>, L<sub>d</sub>)</strong> — 注意 S 在 dim=1, L 在 dim=2。
+</div>
+
+<!-- ═══════════════════════════════════════════════════════ -->
+<!-- COMPLETE SHAPE FLOW -->
+<!-- ═══════════════════════════════════════════════════════ -->
+<h2>3. 完整 Shape 流转表 <span style="font-size:0.8rem;color:var(--text-dim)">(B=256, D=64, E=64, Nq=1, S_seq=2, M=17, L=100)</span></h2>
+
+<div class="note">
+  约定: <b>B</b>=batch_size=256, <b>D</b>=d_model=64, <b>E</b>=emb_dim=64, <b>Nq</b>=num_queries=1,
+  <b>S</b>=num_sequences=2, <b>M</b>=num_ns=17, <b>L</b>=100, <b>U<sub>int</sub></b>=200, <b>I<sub>int</sub></b>=80,
+  <b>U<sub>d</sub></b>=30, <b>I<sub>d</sub></b>=20, action_num=1, num_blocks=2
+</div>
+
+<table>
+  <tr><th>#</th><th>步骤 / 操作</th><th>输出 Shape</th><th>所属模块</th></tr>
+  <tr>
+    <td>0</td>
+    <td><b>输入</b></td>
+    <td><span class="shape-tag sh-input">(256,200)</span> <span class="shape-tag sh-input">(256,80)</span> <span class="shape-tag sh-input">(256,30)</span> <span class="shape-tag sh-input">(256,20)</span> + seq</td>
+    <td>ModelInput</td>
+  </tr>
+  <tr style="background:rgba(63,185,80,0.06)">
+    <td>1a</td>
+    <td>user_ns_tokenizer(<b>int</b>) → embed → cat → pad → split(T) → Linear</td>
+    <td><span class="shape-tag sh-ns">(256, 10, 64)</span></td>
+    <td>RankMixerNSTokenizer</td>
+  </tr>
+  <tr style="background:rgba(63,185,80,0.06)">
+    <td>1b</td>
+    <td>item_ns_tokenizer(<b>int</b>) → embed → cat → pad → split(T) → Linear</td>
+    <td><span class="shape-tag sh-ns">(256, 5, 64)</span></td>
+    <td>RankMixerNSTokenizer</td>
+  </tr>
+  <tr style="background:rgba(63,185,80,0.06)">
+    <td>1c</td>
+    <td>user_dense_proj → SiLU → unsqueeze(1)</td>
+    <td><span class="shape-tag sh-ns">(256, 1, 64)</span></td>
+    <td>Linear(30→64) + LN</td>
+  </tr>
+  <tr style="background:rgba(63,185,80,0.06)">
+    <td>1d</td>
+    <td>item_dense_proj → SiLU → unsqueeze(1)</td>
+    <td><span class="shape-tag sh-ns">(256, 1, 64)</span></td>
+    <td>Linear(20→64) + LN</td>
+  </tr>
+  <tr style="background:rgba(63,185,80,0.08)">
+    <td>1e</td>
+    <td><b>cat</b>([user_ns, user_dense, item_ns, item_dense], dim=1)</td>
+    <td><span class="shape-tag sh-ns" style="font-size:1rem;font-weight:800">(256, 17, 64)</span></td>
+    <td><b>ns_tokens</b></td>
+  </tr>
+
+  <tr style="background:rgba(227,179,65,0.06)">
+    <td>2a</td>
+    <td>_embed_seq_domain: per-feature Embedding(E) → cat → Linear→GELU + time_emb</td>
+    <td><span class="shape-tag sh-seq">(256, 100, 64)</span> × 2</td>
+    <td>_embed_seq_domain</td>
+  </tr>
+  <tr style="background:rgba(227,179,65,0.06)">
+    <td>2b</td>
+    <td>_make_padding_mask(seq_lens, L=100)</td>
+    <td><span class="shape-tag sh-seq">(256, 100)</span> × 2</td>
+    <td>_make_padding_mask</td>
+  </tr>
+
+  <tr style="background:rgba(210,168,255,0.06)">
+    <td>3a</td>
+    <td>ns.view(B, -1) → (B, M*D)</td>
+    <td><span class="shape-tag sh-q">(256, 1088)</span></td>
+    <td rowspan="4">MultiSeqQueryGenerator</td>
+  </tr>
+  <tr style="background:rgba(210,168,255,0.06)">
+    <td>3b</td>
+    <td>masked_mean_pool(seq_i) → (B, D)</td>
+    <td><span class="shape-tag sh-q">(256, 64)</span></td>
+  </tr>
+  <tr style="background:rgba(210,168,255,0.06)">
+    <td>3c</td>
+    <td>cat([ns_flat, seq_pooled_i]) → <b>global_info</b></td>
+    <td><span class="shape-tag sh-q">(256, 1152)</span></td>
+  </tr>
+  <tr style="background:rgba(210,168,255,0.08)">
+    <td>3d</td>
+    <td>LN → FFN<sub>i,j</sub>(global_info) → stack Nq → <b>q_tokens_list[i]</b></td>
+    <td><span class="shape-tag sh-q" style="font-size:1rem;font-weight:800">(256, 1, 64)</span> × 2</td>
+  </tr>
+
+  <tr>
+    <td>4a</td>
+    <td>Dropout (training mode, p=0.01)</td>
+    <td>同输入</td>
+    <td>_run_multi_seq_blocks</td>
+  </tr>
+
+  <tr style="background:rgba(240,136,62,0.06)">
+    <td colspan="4" style="text-align:center;font-weight:700;color:var(--accent4)">
+      ═══════ MultiSeqHyFormerBlock #1 ═══════
+    </td>
+  </tr>
+  <tr style="background:rgba(240,136,62,0.04)">
+    <td>4b</td>
+    <td><b>Seq Encoder</b> (Transformer): Self-Attn + FFN + residual, per sequence</td>
+    <td><span class="shape-tag sh-seq">(256, 100, 64)</span> × 2</td>
+    <td>seq_encoders[i]</td>
+  </tr>
+  <tr style="background:rgba(240,136,62,0.04)">
+    <td>4c</td>
+    <td><b>CrossAttention</b>: Q=(256,1,64) attend KV=(256,100,64), per sequence</td>
+    <td><span class="shape-tag sh-q">(256, 1, 64)</span> × 2</td>
+    <td>cross_attns[i]</td>
+  </tr>
+  <tr style="background:rgba(240,136,62,0.04)">
+    <td>4d</td>
+    <td><b>cat</b>([decoded_q1, decoded_q2, ns_tokens], dim=1) → <b>combined</b></td>
+    <td><span class="shape-tag sh-mix">(256, 19, 64)</span></td>
+    <td>T = Nq×S + M = 1×2 + 17</td>
+  </tr>
+  <tr style="background:rgba(240,136,62,0.04)">
+    <td>4e</td>
+    <td><b>RankMixerBlock.token_mixing</b>: view(B,T,T,d_sub)→transpose→view</td>
+    <td><span class="shape-tag sh-mix">(256, 19, 64)</span></td>
+    <td>d_sub = 64//19 (需整除)</td>
+  </tr>
+  <tr style="background:rgba(240,136,62,0.04)">
+    <td>4f</td>
+    <td><b>RankMixerBlock FFN</b>: LN → Linear→GELU→Dropout→Linear + residual + Post-LN</td>
+    <td><span class="shape-tag sh-mix">(256, 19, 64)</span></td>
+    <td>Per-token shared FFN</td>
+  </tr>
+  <tr style="background:rgba(240,136,62,0.04)">
+    <td>4g</td>
+    <td><b>Split</b> back: first Nq×S tokens → Q per seq, rest → NS</td>
+    <td><span class="shape-tag sh-q">(256,1,64)</span>×2 + <span class="shape-tag sh-ns">(256,17,64)</span></td>
+    <td>—</td>
+  </tr>
+
+  <tr style="background:rgba(240,136,62,0.04)">
+    <td colspan="4" style="text-align:center;font-weight:700;color:var(--accent4)">
+      ═══════ MultiSeqHyFormerBlock #2 ═══════
+    </td>
+  </tr>
+  <tr style="background:rgba(240,136,62,0.03)">
+    <td>4h</td>
+    <td>重复 4b→4g (与 Block #1 结构完全相同)</td>
+    <td>同上</td>
+    <td>—</td>
+  </tr>
+
+  <tr style="background:rgba(121,192,255,0.08)">
+    <td>5a</td>
+    <td><b>cat</b>(all Q tokens, dim=1) → <b>view</b>(B, -1)</td>
+    <td><span class="shape-tag sh-out">(256, 128)</span></td>
+    <td>Nq×S×D = 1×2×64 = 128</td>
+  </tr>
+  <tr style="background:rgba(121,192,255,0.08)">
+    <td>5b</td>
+    <td><b>output_proj</b>: Linear(128→64) + LayerNorm</td>
+    <td><span class="shape-tag sh-out" style="font-size:1rem;font-weight:800">(256, 64)</span></td>
+    <td>output_proj</td>
+  </tr>
+
+  <tr style="background:rgba(255,123,114,0.08)">
+    <td>6a</td>
+    <td><b>clsfier</b>: Linear(64→64) → LN → SiLU → Dropout → Linear(64→1)</td>
+    <td><span class="shape-tag sh-final" style="font-size:1.1rem;font-weight:800">(256, 1)</span></td>
+    <td>clsfier (Classifier)</td>
+  </tr>
+  <tr style="background:rgba(255,123,114,0.06)">
+    <td>7</td>
+    <td><b>sigmoid(logits)</b> → 转化概率</td>
+    <td><span class="shape-tag sh-final" style="font-size:1.1rem;font-weight:800">(256,)</span> ∈ [0,1]</td>
+    <td>推断时调用</td>
+  </tr>
+</table>
+
+<!-- ═══════════════════════════════════════════════════════ -->
+<!-- KEY CONSTRAINTS -->
+<!-- ═══════════════════════════════════════════════════════ -->
+<h2>4. 关键约束条件</h2>
+<div class="card">
+  <table>
+    <tr><th>约束</th><th>条件</th><th>说明</th></tr>
+    <tr>
+      <td>RankMixer 整除约束</td>
+      <td><code>d_model % T == 0</code> 其中 <code>T = Nq × S + M</code></td>
+      <td>仅 rank_mixer_mode='full' 时强制要求。如 D=64, T=19，则 64%19≠0 → <b>报错</b>。需调整参数使 T 能整除 64。</td>
+    </tr>
+    <tr>
+      <td>Multi-Head Attention</td>
+      <td><code>d_model % num_heads == 0</code></td>
+      <td>head_dim = D // num_heads = 64//4 = 16</td>
+    </tr>
+    <tr>
+      <td>emb_skip_threshold</td>
+      <td>vocab > threshold 时跳过 Embedding 创建</td>
+      <td>跳过的特征输出零向量 (B, L, E)，节省参数</td>
+    </tr>
+  </table>
+</div>
+
+<!-- ═══════════════════════════════════════════════════════ -->
+<!-- DETAILED COMPONENT BREAKDOWNS -->
+<!-- ═══════════════════════════════════════════════════════ -->
+<h2>5. 核心组件详解</h2>
+
+<!-- ─── Component A: NS Tokenization ─── -->
+<h3><span class="step-num">A</span> NS Tokenization（非序列特征 → Token）</h3>
+<div class="card">
+  <p>将用户/商品的离散 + 稠密特征统一编码为一组可学习的 <b>NS (Non-Sequence) Token</b>。</p>
+
+  <h4 style="color:var(--accent2);margin-top:16px;">A1. RankMixerNSTokenizer (默认模式)</h4>
+  <div class="comp-diagram">
+    <div class="comp-flow">
+      <div class="comp-box comp-io">
+        <div class="name" style="color:#58a6ff">int_feats</div>
+        <div class="detail"><code>(B, total_dim)</code></div>
+      </div>
+      <span style="align-self:center;color:var(--text-dim);font-size:1.2rem">→</span>
+      <div class="comp-box comp-op">
+        <div class="name" style="color:#d2a8ff">Per-FID Embedding</div>
+        <div class="detail">Embed(vocab+1, E)<br>单值: 直接查表<br>多值: mean pool</div>
+      </div>
+      <span style="align-self:center;color:var(--text-dim);font-size:1.2rem">→</span>
+      <div class="comp-box comp-math">
+        <div class="name" style="color:#f0883e">Concatenate</div>
+        <div class="detail"><code>(B, total_emb_dim)</code></div>
+      </div>
+      <span style="align-self:center;color:var(--text-dim);font-size:1.2rem">→</span>
+      <div class="comp-box comp-op">
+        <div class="name" style="color:#d2a8ff">Pad + Split → T chunks</div>
+        <div class="detail">Pad to T×chunk_dim<br>split(chunk_dim)</div>
+      </div>
+      <span style="align-self:center;color:var(--text-dim);font-size:1.2rem">→</span>
+      <div class="comp-box comp-op">
+        <div class="name" style="color:#d2a8ff">Per-Chunk Proj + SiLU</div>
+        <div class="detail">Linear(chunk_dim→D)<br>LayerNorm</div>
+      </div>
+      <span style="align-self:center;color:var(--text-dim);font-size:1.2rem">→</span>
+      <div class="comp-box comp-io">
+        <div class="name" style="color:#7ee787">NS Tokens</div>
+        <div class="detail"><code>(B, T, D)</code></div>
+      </div>
+    </div>
+  </div>
+  <p style="font-size:0.85rem;color:var(--text-dim)">
+    <b>核心思想</b>: 将所有离散特征的 Embedding 拼成一个长向量，等分成 T 个 chunk，每个 chunk 通过独立的 Linear 投影到 D 维。
+    这使得 NS Token 数量可以自由选择，不受特征分组数限制。
+  </p>
+
+  <h4 style="color:var(--accent2);margin-top:16px;">A2. GroupNSTokenizer (替代模式)</h4>
+  <div class="comp-diagram">
+    <div class="comp-flow">
+      <div class="comp-box comp-io">
+        <div class="name" style="color:#58a6ff">int_feats</div>
+        <div class="detail"><code>(B, total_dim)</code></div>
+      </div>
+      <span style="align-self:center;color:var(--text-dim);font-size:1.2rem">→</span>
+      <div class="comp-box comp-op">
+        <div class="name" style="color:#d2a8ff">Per-Group Embedding</div>
+        <div class="detail">每组内各 FID 独立 embed<br>单值查表 / 多值 mean pool</div>
+      </div>
+      <span style="align-self:center;color:var(--text-dim);font-size:1.2rem">→</span>
+      <div class="comp-box comp-math">
+        <div class="name" style="color:#f0883e">cat + Proj per Group</div>
+        <div class="detail">Linear(K×E → D) + LN + SiLU</div>
+      </div>
+      <span style="align-self:center;color:var(--text-dim);font-size:1.2rem">→</span>
+      <div class="comp-box comp-io">
+        <div class="name" style="color:#7ee787">NS Tokens</div>
+        <div class="detail"><code>(B, G, D)</code></div>
+        <div class="detail" style="font-size:0.7rem;color:var(--text-dim)">G = len(groups)</div>
+      </div>
+    </div>
+  </div>
+  <p style="font-size:0.85rem;color:var(--text-dim)">
+    <b>原始模式</b>: 每个特征组 (group) 产生一个 NS Token。NS Token 数 = 组数。
+  </p>
+
+  <h4 style="color:var(--accent2);margin-top:16px;">A3. Dense Feature Projection</h4>
+  <pre>user_dense_tok = <b>SiLU</b>( <b>Linear</b>(U_d → D) → <b>LayerNorm</b> )(user_dense_feats).unsqueeze(1)</pre>
+  <p style="font-size:0.85rem;color:var(--text-dim)">稠密特征通过一个简单的 Linear+LN+SiLU 投影为单个 Token。</p>
+</div>
+
+<!-- ─── Component B: Sequence Embedding ─── -->
+<h3><span class="step-num">B</span> Sequence Embedding（序列特征 → Token）</h3>
+<div class="card">
+  <pre><span style="color:#ff7b72">def</span> <span style="color:#d2a8ff">_embed_seq_domain</span>(self, seq, embs, proj, is_id, emb_index, time_bucket_ids):
+    B, S, L = seq.shape  <span style="color:#8b949e"># (B, S_features, L_length)</span>
+
+    <span style="color:#8b949e"># 1. 每个特征列独立 Embedding</span>
+    <span style="color:#ff7b72">for</span> i <span style="color:#ff7b72">in</span> <span style="color:#79c0ff">range</span>(S):
+        e = emb(seq[:, i, :])          <span style="color:#8b949e"># (B, L, E)</span>
+        <span style="color:#ff7b72">if</span> is_id[i] <span style="color:#ff7b72">and</span> training:
+            e = dropout(e)              <span style="color:#8b949e"># 高基数 ID 特征额外 dropout</span>
+
+    <span style="color:#8b949e"># 2. 拼接 → 投影</span>
+    cat_emb = <span style="color:#79c0ff">cat</span>(all_embs, dim=-<span style="color:#a5d6ff">1</span>)   <span style="color:#8b949e"># (B, L, S*E)</span>
+    token   = <span style="color:#79c0ff">GELU</span>( proj(cat_emb) )       <span style="color:#8b949e"># (B, L, D)  via Linear(S*E→D)</span>
+
+    <span style="color:#8b949e"># 3. 加时间间隔 Embedding</span>
+    token = token + time_embedding(time_bucket_ids)  <span style="color:#8b949e"># (B, L, D)</span></pre>
+
+  <div class="note">
+    <b>核心设计</b>: 序列中每个位置有 S 个特征字段（如 item_id, cate_id, brand_id...），
+    每个字段独立过 Embedding 后拼接，再通过一个 Linear 投影到 D 维。
+    时间桶 Embedding 作为位置编码的替代方案直接相加。
+  </div>
+</div>
+
+<!-- ─── Component C: MultiSeqQueryGenerator ─── -->
+<h3><span class="step-num">C</span> MultiSeqQueryGenerator（NS → Query Token 生成）</h3>
+<div class="card">
+  <div class="comp-diagram">
+    <div class="comp-flow">
+      <div class="comp-box comp-io">
+        <div class="name" style="color:#7ee787">ns_tokens</div>
+        <div class="detail"><code>(B, M, D)</code></div>
+      </div>
+      <span style="align-self:center;color:var(--text-dim);font-size:1.2rem">→</span>
+      <div class="comp-box comp-op">
+        <div class="name" style="color:#d2a8ff">Flatten</div>
+        <div class="detail"><code>view(B, M*D)</code></div>
+      </div>
+      <span style="align-self:center;color:var(--text-dim);font-size:1.2rem">⊕</span>
+      <div class="comp-box comp-io">
+        <div class="name" style="color:#e3b341">seq_pooled_i</div>
+        <div class="detail"><code>(B, D)</code><br>masked mean pool</div>
+      </div>
+      <span style="align-self:center;color:var(--text-dim);font-size:1.2rem">→</span>
+      <div class="comp-box comp-math">
+        <div class="name" style="color:#f0883e">global_info_i</div>
+        <div class="detail"><code>(B, (M+1)×D)</code></div>
+        <div class="detail">→ LayerNorm</div>
+      </div>
+      <span style="align-self:center;color:var(--text-dim);font-size:1.2rem">→</span>
+      <div class="comp-box comp-op">
+        <div class="name" style="color:#d2a8ff">FFN₍ᵢ,ⱼ₎ × Nq</div>
+        <div class="detail">Linear→SiLU→Linear<br>→LayerNorm</div>
+      </div>
+      <span style="align-self:center;color:var(--text-dim);font-size:1.2rem">→</span>
+      <div class="comp-box comp-io">
+        <div class="name" style="color:#d2a8ff">q_tokens_i</div>
+        <div class="detail"><code>(B, Nq, D)</code></div>
+      </div>
+    </div>
+  </div>
+
+  <p style="font-size:0.85rem;color:var(--text-dim)">
+    对 <b>每个序列域独立</b> 生成 Query Token。GlobalInfo 由 <b>全部 NS Token + 该序列的 MeanPool</b> 拼接而成。
+    每个 Query Token 由独立的 FFN 从同一个 GlobalInfo 生成（Nq 个并行 FFN）。
+  </p>
+
+  <pre><span style="color:#8b949e"># 对每个序列域 i:</span>
+ns_flat   = ns_tokens.view(B, -<span style="color:#a5d6ff">1</span>)          <span style="color:#8b949e"># (B, M*D)</span>
+seq_pool  = masked_mean(seq_i, mask_i)     <span style="color:#8b949e"># (B, D)</span>
+global_i  = <span style="color:#79c0ff">cat</span>([ns_flat, seq_pool], -<span style="color:#a5d6ff">1</span>) <span style="color:#8b949e"># (B, (M+1)*D)</span>
+global_i  = LayerNorm(global_i)
+
+q_i = [FFN_j(global_i) <span style="color:#ff7b72">for</span> j <span style="color:#ff7b72">in</span> <span style="color:#79c0ff">range</span>(Nq)]  <span style="color:#8b949e"># Nq 个 (B, D)</span>
+q_i = stack(q_i, dim=<span style="color:#a5d6ff">1</span>)                  <span style="color:#8b949e"># (B, Nq, D)</span></pre>
+</div>
+
+<!-- ─── Component D: MultiSeqHyFormerBlock ─── -->
+<h3><span class="step-num">D</span> MultiSeqHyFormerBlock（核心计算单元）</h3>
+<div class="card">
+  <p>每个 Block 对 <b>每个序列域独立</b> 做序列进化 + 查询解码，然后将 <b>全部 Q Token + NS Token 拼接</b> 进行联合混合。
+  这是模型的核心创新：<b>独立处理 + 联合混合</b>。</p>
+
+  <div style="display:flex; flex-direction:column; gap:16px; margin:16px 0;">
+
+    <!-- Block pseudo-code -->
+    <div style="background:#0d1117; border-radius:8px; padding:18px; border:1px solid var(--border);">
+      <pre style="margin:0; background:transparent; padding:0;"><span style="color:#ff7b72">for</span> each block <span style="color:#ff7b72">in</span> self.blocks:       <span style="color:#8b949e"># 重复 2 次</span>
+
+  <span style="color:#8b949e"># ── 阶段 1: 序列进化 (Per-Seq, 独立并行) ──</span>
+  <span style="color:#ff7b72">for</span> i <span style="color:#ff7b72">in</span> <span style="color:#79c0ff">range</span>(S):
+      seq_i, mask_i = <b>seq_encoder[i]</b>(seq_i, mask_i)
+
+  <span style="color:#8b949e"># ── 阶段 2: 查询解码 (Per-Seq, 独立并行) ──</span>
+  <span style="color:#ff7b72">for</span> i <span style="color:#ff7b72">in</span> <span style="color:#79c0ff">range</span>(S):
+      q_i = <b>cross_attn[i]</b>(q_i, seq_i, mask_i)  <span style="color:#8b949e"># Q attend Seq</span>
+
+  <span style="color:#8b949e"># ── 阶段 3: Token 融合 ──</span>
+  combined = <span style="color:#79c0ff">cat</span>([q_1, ..., q_S, ns_tokens], dim=<span style="color:#a5d6ff">1</span>)
+
+  <span style="color:#8b949e"># ── 阶段 4: RankMixer 查询增强 (跨 Token 交互) ──</span>
+  boosted  = <b>RankMixerBlock</b>(combined)
+
+  <span style="color:#8b949e"># ── 阶段 5: 拆分回原结构 ──</span>
+  q_1, ..., q_S, ns_tokens = split(boosted)</pre>
+    </div>
+  </div>
+
+  <!-- Sub-components -->
+  <h4 style="color:var(--accent2);margin-top:20px;">D1. Sequence Encoder（序列编码器）— 3 种可选</h4>
+  <table>
+    <tr><th>类型</th><th>类名</th><th>结构</th><th>输出 Shape</th></tr>
+    <tr>
+      <td><code>transformer</code></td>
+      <td>TransformerEncoder</td>
+      <td>Pre-LN → MultiHeadSelfAttn(+RoPE) → residual → Pre-LN → FFN(GELU, 4×D) → residual</td>
+      <td><span class="shape-tag sh-seq">(B, L, D)</span></td>
+    </tr>
+    <tr>
+      <td><code>swiglu</code></td>
+      <td>SwiGLUEncoder</td>
+      <td>Pre-LN → SwiGLU(4×D) → Dropout → residual<br><i>无注意力，纯 MLP，高效</i></td>
+      <td><span class="shape-tag sh-seq">(B, L, D)</span></td>
+    </tr>
+    <tr>
+      <td><code>longer</code></td>
+      <td>LongerEncoder</td>
+      <td>L &gt; top_k: CrossAttn(Q=latest top_k, KV=all)<br>L ≤ top_k: SelfAttn(+causal可选)<br>→ FFN → residual</td>
+      <td><span class="shape-tag sh-seq">(B, <b>top_k</b>, D)</span></td>
+    </tr>
+  </table>
+  <div class="note">
+    <b>LongerEncoder 设计要点</b>: 第 1 个 Block 中 L &gt; top_k(50) 时触发 CrossAttention，
+    只取最近 top_k 个 token 作为 Query，输出压缩为 (B, top_k, D)。
+    后续 Block 中 L≤top_k，切换为 SelfAttention 模式。
+  </div>
+
+  <h4 style="color:var(--accent2);margin-top:20px;">D2. CrossAttention（查询解码）</h4>
+  <div class="comp-diagram">
+    <div class="comp-flow">
+      <div class="comp-box comp-io">
+        <div class="name" style="color:#d2a8ff">Q (Query Tokens)</div>
+        <div class="detail"><code>(B, Nq, D)</code></div>
+      </div>
+      <span style="align-self:center;color:var(--text-dim);font-size:1.2rem">Q</span>
+      <div class="comp-box comp-op">
+        <div class="name" style="color:#d2a8ff">Pre-LN <sub>Q</sub></div>
+      </div>
+      <span style="align-self:center;color:var(--text-dim);font-size:1.2rem">↘</span>
+      <div class="comp-box comp-math">
+        <div class="name" style="color:#f0883e">MultiHead<br>Cross-Attention</div>
+        <div class="detail">Q ← Seq<br>RoPE on KV only</div>
+      </div>
+      <span style="align-self:center;color:var(--text-dim);font-size:1.2rem">+residual→</span>
+      <div class="comp-box comp-io">
+        <div class="name" style="color:#d2a8ff">Decoded Q</div>
+        <div class="detail"><code>(B, Nq, D)</code></div>
+      </div>
+      <span style="align-self:center;color:var(--text-dim);font-size:0.7rem">↗</span>
+      <div class="comp-box comp-io">
+        <div class="name" style="color:#e3b341">Seq Tokens</div>
+        <div class="detail"><code>(B, L, D)</code></div>
+      </div>
+      <span style="align-self:center;color:var(--text-dim);font-size:1.2rem">K,V</span>
+      <div class="comp-box comp-op">
+        <div class="name" style="color:#d2a8ff">Pre-LN <sub>KV</sub></div>
+      </div>
+    </div>
+  </div>
+  <p style="font-size:0.85rem;color:var(--text-dim)">Pre-LN Cross Attention: RoPE 仅应用于 K/V 侧 (rope_on_q=False)。Q 侧保持无位置编码。</p>
+
+  <h4 style="color:var(--accent2);margin-top:20px;">D3. RankMixerBlock（Token 混合 / 查询增强）</h4>
+  <div class="comp-diagram">
+    <div class="comp-flow">
+      <div class="comp-box comp-io">
+        <div class="name" style="color:#f0883e">Combined</div>
+        <div class="detail"><code>(B, T, D)</code></div>
+        <div class="detail" style="font-size:0.7rem;color:var(--text-dim)">T = Nq×S + M</div>
+      </div>
+      <span style="align-self:center;color:var(--text-dim);font-size:1.2rem">→</span>
+      <div class="comp-box comp-math">
+        <div class="name" style="color:#f0883e">Token Mixing</div>
+        <div class="detail" style="font-size:0.72rem">view(B, T, T, D/T)<br>.transpose(1,2)<br>.view(B, T, D)</div>
+        <div class="detail" style="color:var(--accent5)">参数无关!</div>
+      </div>
+      <span style="align-self:center;color:var(--text-dim);font-size:1.2rem">→</span>
+      <div class="comp-box comp-op">
+        <div class="name" style="color:#d2a8ff">Per-Token FFN</div>
+        <div class="detail">LN → Linear(D→4D)<br>→ GELU → Dropout<br>→ Linear(4D→D)</div>
+        <div class="detail" style="color:var(--accent2)">参数共享</div>
+      </div>
+      <span style="align-self:center;color:var(--text-dim);font-size:1.2rem">+Q→</span>
+      <div class="comp-box comp-math">
+        <div class="name" style="color:#f0883e">Residual + Post-LN</div>
+      </div>
+      <span style="align-self:center;color:var(--text-dim);font-size:1.2rem">→</span>
+      <div class="comp-box comp-io">
+        <div class="name" style="color:#f0883e">Boosted</div>
+        <div class="detail"><code>(B, T, D)</code></div>
+      </div>
+    </div>
+  </div>
+
+  <table>
+    <tr><th>模式</th><th>Token Mixing?</th><th>说明</th></tr>
+    <tr>
+      <td><code>full</code></td>
+      <td>✅ 完整 token mixing</td>
+      <td>将 (B,T,D) reshape 为 (B,T,T,d_sub)，交换 token 轴与子空间轴，实现参数无关的跨 token 信息交换</td>
+    </tr>
+    <tr>
+      <td><code>ffn_only</code></td>
+      <td>❌ 跳过</td>
+      <td>直接对每个 token 做独立 FFN（此时混合只靠 CrossAttention 完成）</td>
+    </tr>
+    <tr>
+      <td><code>none</code></td>
+      <td>❌ 恒等映射</td>
+      <td>不做任何操作，直接透传</td>
+    </tr>
+  </table>
+
+  <div class="note">
+    <b>Token Mixing 的数学本质</b>: 将 D 维通道等分成 T 份子空间 (每份 d_sub = D/T 维)。
+    reshape+transpose 后，原本 token i 的第 j 份子空间通道被交换到 token j 的第 i 份子空间，
+    实现 <b>无参数</b> 的 token 间信息混合。
+  </div>
+</div>
+
+<!-- ═══════════════════════════════════════════════════════ -->
+<!-- RoPE -->
+<!-- ═══════════════════════════════════════════════════════ -->
+<h2>6. Rotary Position Embedding (RoPE) — 可选</h2>
+<div class="card">
+  <p>当 <code>use_rope=True</code> 时启用。预计算 cos/sin 缓存，在 Attention 中对 Q/K 施加旋转位置编码。</p>
+  <ul>
+    <li><b>参数</b>: <code>dim=head_dim=16</code>, <code>base=10000</code>, <code>max_seq_len=2048</code></li>
+    <li><b>应用位置</b>: Self-Attention (Q+K) / Cross-Attention (仅 K)</li>
+    <li><b>缓存策略</b>: 初始化时预计算 max_seq_len 长度的 cos/sin，forward 时切片使用，兼容 torch.compile</li>
+  </ul>
+  <pre><span style="color:#ff7b72">def</span> <span style="color:#d2a8ff">apply_rope_to_tensor</span>(x, cos, sin):
+    <span style="color:#8b949e"># x: (B, num_heads, L, head_dim)</span>
+    <span style="color:#8b949e"># cos, sin: (1, L, head_dim)</span>
+    <span style="color:#ff7b72">return</span> x * cos + rotate_half(x) * sin</pre>
+</div>
+
+<!-- ═══════════════════════════════════════════════════════ -->
+<!-- CLASS HIERARCHY -->
+<!-- ═══════════════════════════════════════════════════════ -->
+<h2>7. 类层次结构总览</h2>
+<div class="card">
+  <pre style="margin:0;">PCVRHyFormer (nn.Module)                    <span style="color:#8b949e">← 主模型, line 1192</span>
+├── user_ns_tokenizer                        <span style="color:#8b949e">← RankMixerNSTokenizer | GroupNSTokenizer</span>
+├── item_ns_tokenizer                        <span style="color:#8b949e">← RankMixerNSTokenizer | GroupNSTokenizer</span>
+├── user_dense_proj                          <span style="color:#8b949e">← Sequential(Linear+LN) (if U_d>0)</span>
+├── item_dense_proj                          <span style="color:#8b949e">← Sequential(Linear+LN) (if I_d>0)</span>
+├── time_embedding                           <span style="color:#8b949e">← Embedding(num_time_buckets, D)</span>
+├── _seq_embs[domain]                        <span style="color:#8b949e">← ModuleList[Embedding(vocab+1, E)]</span>
+├── _seq_proj[domain]                        <span style="color:#8b949e">← Sequential(Linear(S*E→D)+LN)</span>
+├── query_generator                          <span style="color:#8b949e">← MultiSeqQueryGenerator</span>
+│   └── query_ffns_per_seq[seq][nq]          <span style="color:#8b949e">← Sequential(Linear((M+1)D→4D),SiLU,Linear(4D→D),LN)</span>
+│       × (S × Nq) 个独立 FFN
+├── blocks[0..K-1]                           <span style="color:#8b949e">← MultiSeqHyFormerBlock × num_hyformer_blocks</span>
+│   ├── seq_encoders[i]                      <span style="color:#8b949e">← TransformerEncoder | SwiGLUEncoder | LongerEncoder</span>
+│   ├── cross_attns[i]                       <span style="color:#8b949e">← CrossAttention (Pre-LN + RoPEMHA)</span>
+│   └── mixer                                <span style="color:#8b949e">← RankMixerBlock</span>
+├── rotary_emb                               <span style="color:#8b949e">← RotaryEmbedding (if use_rope=True)</span>
+├── emb_dropout / seq_id_emb_dropout         <span style="color:#8b949e">← Dropout</span>
+├── output_proj                              <span style="color:#8b949e">← Sequential(Linear(Nq×S×D→D)+LN)</span>
+└── clsfier                                  <span style="color:#8b949e">← Sequential(Linear(D→D),LN,SiLU,Dropout,Linear(D→1))</span></pre>
+</div>
+
+<!-- ═══════════════════════════════════════════════════════ -->
+<!-- v0.0 vs later -->
+<!-- ═══════════════════════════════════════════════════════ -->
+<h2>8. v0.0 与后续版本的关键区别</h2>
+<div class="card">
+  <table>
+    <tr><th>特性</th><th>v0.0</th><th>v0.3.1 + 2.a + 2.b</th></tr>
+    <tr>
+      <td>KV Weighted Pooling (Step 2.a)</td>
+      <td style="color:#ff7b72">❌ 无</td>
+      <td style="color:#3fb950">✅ softmax(log1p(dense)/T) 加权</td>
+    </tr>
+    <tr>
+      <td>Hierarchical KV Fusion (Step 2.b)</td>
+      <td style="color:#ff7b72">❌ 无</td>
+      <td style="color:#3fb950">✅ 5 级金字塔 coarse→fine 注意力</td>
+    </tr>
+    <tr>
+      <td>kv_softmax_temperature 参数</td>
+      <td style="color:#ff7b72">❌ 无</td>
+      <td style="color:#3fb950">✅ 可配置温度系数</td>
+    </tr>
+    <tr>
+      <td>NS Tokenizer forward 签名</td>
+      <td><code>forward(int_feats)</code></td>
+      <td><code>forward(int_feats, dense_feats)</code></td>
+    </tr>
+    <tr>
+      <td>GroupNSTokenizer</td>
+      <td>纯 mean pooling</td>
+      <td>支持 weighted pooling + hierarchical fusion</td>
+    </tr>
+    <tr>
+      <td>RankMixerNSTokenizer</td>
+      <td>纯 mean pooling</td>
+      <td>支持 weighted pooling + hierarchical fusion</td>
+    </tr>
+  </table>
+</div>
+
+<!-- ═══════════════════════════════════════════════════════ -->
+<!-- LOGITS TO PROB -->
+<!-- ═══════════════════════════════════════════════════════ -->
+<h2>9. Logits → 概率 (Inference)</h2>
+<div class="card">
+  <div class="comp-diagram">
+    <div class="comp-flow">
+      <div class="comp-box comp-io">
+        <div class="name" style="color:#79c0ff">output</div>
+        <div class="detail"><code>(B, D) = (256, 64)</code></div>
+      </div>
+      <span style="align-self:center;color:var(--text-dim);font-size:1.2rem">→</span>
+      <div class="comp-box comp-op">
+        <div class="name" style="color:#d2a8ff">Classifier MLP</div>
+        <div class="detail">Linear(64→64)<br>LayerNorm<br>SiLU<br>Dropout<br>Linear(64→1)</div>
+      </div>
+      <span style="align-self:center;color:var(--text-dim);font-size:1.2rem">→</span>
+      <div class="comp-box comp-io">
+        <div class="name" style="color:#ff7b72">logits</div>
+        <div class="detail"><code>(B, 1)</code></div>
+      </div>
+      <span style="align-self:center;color:var(--text-dim);font-size:1.2rem">→</span>
+      <div class="comp-box comp-math">
+        <div class="name" style="color:#f0883e">sigmoid(logits)</div>
+        <div class="detail">σ(x) = 1/(1+e⁻ˣ)</div>
+      </div>
+      <span style="align-self:center;color:var(--text-dim);font-size:1.2rem">→</span>
+      <div class="comp-box comp-io">
+        <div class="name" style="color:#3fb950">pCVR ∈ [0,1]</div>
+        <div class="detail"><code>(B,)</code></div>
+      </div>
+    </div>
+  </div>
+
+  <h4>train vs predict 的区别</h4>
+  <table>
+    <tr><th>方法</th><th>Dropout</th><th>返回值</th></tr>
+    <tr><td><code>forward()</code></td><td>✅ 启用 (self.training=True)</td><td><code>logits: (B, action_num)</code></td></tr>
+    <tr><td><code>predict()</code></td><td>❌ 关闭 (apply_dropout=False)</td><td><code>(logits, embeddings) 两个值</code></td></tr>
+  </table>
+
+  <h4>优化器分离策略</h4>
+  <table>
+    <tr><th>参数类型</th><th>优化器</th><th>获取方法</th></tr>
+    <tr><td>Embedding 表 (稀疏)</td><td>Adagrad</td><td><code>get_sparse_params()</code></td></tr>
+    <tr><td>Linear/LayerNorm 等 (稠密)</td><td>AdamW</td><td><code>get_dense_params()</code></td></tr>
+  </table>
+</div>
+
+<hr class="divider">
+<p style="text-align:center;color:var(--text-dim);font-size:0.8rem;">
+  Generated from <code>Hyformer/HyFormer-v0.0/model.py</code> · PCVRHyFormer Class (line 1192–1675)
+</p>
+
+</div>
+</body>
+</html>

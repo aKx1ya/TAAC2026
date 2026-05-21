@@ -1,0 +1,463 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>VS Code + Claude Code 完全教程 · TAAC2026</title>
+<link href="https://fonts.googleapis.com/css2?family=Space+Mono:wght@400;700&family=DM+Sans:wght@300;400;500;600;700&family=Playfair+Display:wght@600;700&display=swap" rel="stylesheet">
+<style>
+:root {
+  --bg: #0b0e14; --bg2: #11151d; --bg3: #171c28;
+  --border: #1c2333; --text: #e6e4df; --dim: #7e8490; --muted: #4a4f5c;
+  --blue: #4fa6e8; --green: #6ec76e; --amber: #e8a838; --rose: #e05874;
+  --purple: #a78bfa; --cyan: #38d4c5;
+  --f-title: 'Playfair Display', Georgia, serif;
+  --f-body: 'DM Sans', system-ui, sans-serif;
+  --f-mono: 'Space Mono', monospace;
+}
+*{margin:0;padding:0;box-sizing:border-box}
+body{background:var(--bg);color:var(--text);font-family:var(--f-body);font-size:15px;line-height:1.75;padding:48px 24px 120px}
+.wrap{max-width:860px;margin:0 auto}
+
+.hero{text-align:center;padding:40px 0 48px;border-bottom:1px solid var(--border);margin-bottom:48px}
+.hero .badge{font-family:var(--f-mono);font-size:10px;letter-spacing:3px;text-transform:uppercase;color:var(--cyan);margin-bottom:20px}
+.hero h1{font-family:var(--f-title);font-size:38px;font-weight:700;line-height:1.2;margin-bottom:14px}
+.hero .sub{color:var(--dim);font-size:15px;max-width:560px;margin:0 auto}
+
+/* Steps */
+.step{margin-bottom:56px}
+.step-head{display:flex;align-items:center;gap:16px;margin-bottom:16px}
+.step-num{font-family:var(--f-mono);font-size:28px;font-weight:700;color:var(--cyan);min-width:48px}
+.step-title{font-family:var(--f-title);font-size:24px;font-weight:600}
+.step-desc{color:var(--dim);font-size:14px;margin-bottom:20px}
+
+/* Cards */
+.card{background:var(--bg2);border:1px solid var(--border);border-radius:10px;padding:20px 24px;margin-bottom:14px}
+.card h4{font-size:15px;font-weight:600;margin-bottom:8px;color:var(--text)}
+.card p,.card li{font-size:14px;color:var(--dim);line-height:1.7}
+.card ul{padding-left:20px;margin-top:6px}
+.card li{margin-bottom:4px}
+
+/* Code blocks */
+.code-block{background:var(--bg);border:1px solid var(--border);border-radius:8px;padding:16px 20px;margin:12px 0;font-family:var(--f-mono);font-size:13px;line-height:1.8;color:var(--green);overflow-x:auto;white-space:pre}
+.code-block .comment{color:var(--muted)}
+.code-block .cmd{color:var(--amber)}
+
+/* Info/warn boxes */
+.info{background:rgba(79,166,232,0.08);border-left:3px solid var(--blue);border-radius:0 8px 8px 0;padding:14px 18px;margin:14px 0;font-size:14px;color:var(--dim)}
+.info strong{color:var(--blue)}
+.warn{background:rgba(224,88,116,0.08);border-left:3px solid var(--rose);border-radius:0 8px 8px 0;padding:14px 18px;margin:14px 0;font-size:14px;color:var(--dim)}
+.warn strong{color:var(--rose)}
+.tip{background:rgba(110,199,110,0.08);border-left:3px solid var(--green);border-radius:0 8px 8px 0;padding:14px 18px;margin:14px 0;font-size:14px;color:var(--dim)}
+.tip strong{color:var(--green)}
+
+/* Screenshot placeholder */
+.screenshot{background:var(--bg3);border:1px dashed var(--muted);border-radius:8px;padding:32px;text-align:center;color:var(--muted);font-size:13px;font-family:var(--f-mono);margin:14px 0}
+
+/* Table */
+table{width:100%;border-collapse:collapse;margin:14px 0;font-size:13px}
+th{text-align:left;font-family:var(--f-mono);font-size:10px;letter-spacing:1.5px;text-transform:uppercase;color:var(--muted);padding:8px 12px;border-bottom:1px solid var(--border)}
+td{padding:10px 12px;border-bottom:1px solid rgba(28,35,51,0.5);color:var(--dim)}
+td:first-child{font-family:var(--f-mono);font-size:12px;color:var(--text)}
+
+.footer{text-align:center;margin-top:64px;padding-top:28px;border-top:1px solid var(--border);color:var(--muted);font-size:11px;font-family:var(--f-mono)}
+
+/* TOC */
+.toc{background:var(--bg2);border:1px solid var(--border);border-radius:10px;padding:24px 28px;margin-bottom:48px}
+.toc h3{font-family:var(--f-mono);font-size:11px;letter-spacing:2px;text-transform:uppercase;color:var(--cyan);margin-bottom:16px}
+.toc ol{padding-left:20px}
+.toc li{margin-bottom:6px;font-size:14px;color:var(--dim)}
+.toc a{color:var(--text);text-decoration:none;border-bottom:1px solid var(--muted)}
+.toc a:hover{color:var(--cyan);border-color:var(--cyan)}
+
+@media(max-width:640px){
+  .hero h1{font-size:28px}
+  .step-title{font-size:20px}
+  body{padding:24px 16px 80px}
+}
+</style>
+</head>
+<body>
+<div class="wrap">
+
+<div class="hero">
+  <div class="badge">Tutorial · From Zero to Full Pipeline</div>
+  <h1>VS Code + Claude Code<br>完全上手教程</h1>
+  <div class="sub">从安装 VS Code 到跑通 baseline、调试模型、推送结果到 GitHub。<br>面向 TAAC2026 项目，适合初次使用者。</div>
+</div>
+
+<!-- TOC -->
+<div class="toc">
+  <h3>目录</h3>
+  <ol>
+    <li><a href="#s1">安装 VS Code</a></li>
+    <li><a href="#s2">安装 Claude Code 扩展</a></li>
+    <li><a href="#s3">打开项目 + 熟悉界面</a></li>
+    <li><a href="#s4">用 Claude Code 读懂代码</a></li>
+    <li><a href="#s5">配置 Python 环境</a></li>
+    <li><a href="#s6">跑通 Baseline</a></li>
+    <li><a href="#s7">用 Claude Code 调试 & 改代码</a></li>
+    <li><a href="#s8">推送结果到 GitHub</a></li>
+    <li><a href="#s9">实战工作流速查</a></li>
+  </ol>
+</div>
+
+<!-- ═══ STEP 1 ═══ -->
+<div class="step" id="s1">
+  <div class="step-head">
+    <span class="step-num">01</span>
+    <span class="step-title">安装 VS Code</span>
+  </div>
+  <p class="step-desc">如果你已经有 VS Code，直接跳到 Step 2。</p>
+
+  <div class="card">
+    <h4>下载安装</h4>
+    <p>打开 <strong>https://code.visualstudio.com</strong> → 下载 Mac 版（Apple Silicon 或 Intel）→ 解压后拖到 Applications 文件夹。</p>
+  </div>
+
+  <div class="card">
+    <h4>安装命令行工具（推荐）</h4>
+    <p>打开 VS Code → 按 <code>Cmd + Shift + P</code> → 输入 <code>Shell Command: Install 'code' command in PATH</code> → 回车。之后你就可以在 Terminal 里用 <code>code .</code> 打开文件夹了。</p>
+  </div>
+
+  <div class="card">
+    <h4>安装 Python 扩展</h4>
+    <p>左侧边栏点击扩展图标（四个方块）→ 搜索 <code>Python</code> → 安装微软官方的 Python 扩展。这个提供代码高亮、智能提示、调试器。</p>
+  </div>
+</div>
+
+<!-- ═══ STEP 2 ═══ -->
+<div class="step" id="s2">
+  <div class="step-head">
+    <span class="step-num">02</span>
+    <span class="step-title">安装 Claude Code 扩展</span>
+  </div>
+  <p class="step-desc">让 Claude 直接在你的编辑器里帮你读代码、改代码、跑命令。</p>
+
+  <div class="card">
+    <h4>安装方式</h4>
+    <ul>
+      <li>VS Code 左侧栏 → 扩展（Extensions）→ 搜索 <code>Claude Code</code></li>
+      <li>找到 Anthropic 官方出品的 <strong>Claude Code</strong> → 点击 <strong>Install</strong></li>
+      <li>安装完成后，左侧边栏会出现 Claude 图标</li>
+    </ul>
+  </div>
+
+  <div class="card">
+    <h4>登录</h4>
+    <p>点击 Claude 图标 → 按提示登录你的 Anthropic / Claude 账号。登录成功后就可以在 VS Code 内直接和 Claude 对话了。</p>
+  </div>
+
+  <div class="info">
+    <strong>Claude Code 能做什么？</strong> 它可以读你打开的文件、搜索整个项目、在终端里执行命令、直接编辑代码。你只需要用自然语言告诉它你想做什么。
+  </div>
+</div>
+
+<!-- ═══ STEP 3 ═══ -->
+<div class="step" id="s3">
+  <div class="step-head">
+    <span class="step-num">03</span>
+    <span class="step-title">打开项目 + 熟悉界面</span>
+  </div>
+
+  <div class="card">
+    <h4>打开项目文件夹</h4>
+    <p>方法 A：VS Code → File → Open Folder → 选择 <code>~/Desktop/Tencent_Project/TAAC2026</code></p>
+    <p>方法 B：Terminal 里执行 <code>code ~/Desktop/Tencent_Project/TAAC2026</code></p>
+  </div>
+
+  <div class="card">
+    <h4>VS Code 界面布局</h4>
+    <ul>
+      <li><strong>左侧文件树</strong> — 浏览所有文件夹和文件（和 Finder 一样但更方便）</li>
+      <li><strong>中间编辑区</strong> — 打开的代码文件在这里显示</li>
+      <li><strong>下方终端</strong> — 按 <code>Ctrl + `</code>（反引号）打开内置终端，直接跑命令</li>
+      <li><strong>左侧 Claude 图标</strong> — 点击打开 Claude Code 面板，在右侧显示</li>
+    </ul>
+  </div>
+
+  <div class="tip">
+    <strong>推荐布局：</strong>左边文件树 + 中间代码 + 右边 Claude Code 面板 + 下面终端。这样你可以一边看代码一边问 Claude，Claude 的回答和代码修改实时可见。
+  </div>
+</div>
+
+<!-- ═══ STEP 4 ═══ -->
+<div class="step" id="s4">
+  <div class="step-head">
+    <span class="step-num">04</span>
+    <span class="step-title">用 Claude Code 读懂代码</span>
+  </div>
+  <p class="step-desc">在动手改任何东西之前，先让 Claude 帮你理解代码结构。</p>
+
+  <div class="card">
+    <h4>问 Claude 读代码（示例对话）</h4>
+    <p>打开 Claude Code 面板，直接用自然语言提问：</p>
+  </div>
+
+  <div class="code-block"><span class="comment"># 理解整体结构</span>
+<span class="cmd">你: 帮我看看 Interformer/v0.1/ 这个文件夹，总结一下每个文件的作用</span>
+
+<span class="comment"># 理解模型架构</span>
+<span class="cmd">你: 读一下 model.py，告诉我 PCVRInterFormer 的三个主要模块是什么</span>
+
+<span class="comment"># 理解训练配置</span>
+<span class="cmd">你: 看看 run.sh 里用了什么超参数，和 train.py 的默认值对比一下</span>
+
+<span class="comment"># 找 Bug</span>
+<span class="cmd">你: 检查 model.py 里有没有参数被 del 删掉导致不生效的问题</span>
+
+<span class="comment"># 对比两个版本</span>
+<span class="cmd">你: 对比 v0.1/model.py 和 v0.5/model.py 的差异</span></div>
+
+  <div class="info">
+    <strong>技巧：</strong>Claude Code 可以同时读多个文件。你可以说"对比 v0.1 和 v0.3 的 train.py 有什么不同"，它会自动打开两个文件分析差异。
+  </div>
+</div>
+
+<!-- ═══ STEP 5 ═══ -->
+<div class="step" id="s5">
+  <div class="step-head">
+    <span class="step-num">05</span>
+    <span class="step-title">配置 Python 环境</span>
+  </div>
+  <p class="step-desc">跑代码之前需要确保 Python 环境和依赖库就绪。</p>
+
+  <div class="card">
+    <h4>检查 Python 版本</h4>
+    <p>在 VS Code 的终端里运行：</p>
+  </div>
+
+  <div class="code-block"><span class="cmd">python3 --version</span>
+<span class="comment"># 需要 3.9+</span>
+
+<span class="cmd">pip3 --version</span></div>
+
+  <div class="card">
+    <h4>安装依赖</h4>
+    <p>TAAC2026 项目需要的核心依赖：</p>
+  </div>
+
+  <div class="code-block"><span class="comment"># 核心依赖</span>
+<span class="cmd">pip3 install torch torchvision</span>
+<span class="cmd">pip3 install pyarrow pandas numpy</span>
+<span class="cmd">pip3 install tensorboard</span>
+<span class="cmd">pip3 install scikit-learn</span>
+
+<span class="comment"># 如果你的 Mac 没有 NVIDIA GPU（大部分 Mac 都没有）</span>
+<span class="comment"># 你可以在本地用 CPU 跑 demo 数据（1000 行）做功能验证</span>
+<span class="comment"># 真正的全量训练需要在 GPU 服务器上进行</span></div>
+
+  <div class="card">
+    <h4>选择 Python 解释器</h4>
+    <p>VS Code 底部状态栏会显示当前的 Python 版本。点击它可以切换。确保选的是安装了上述依赖的那个 Python。</p>
+  </div>
+
+  <div class="warn">
+    <strong>重要：</strong>你的 Mac 没有 NVIDIA GPU，无法在本地做全量训练（需要 12-16 GB VRAM）。本地只能用 demo 数据（1000 行）做功能验证。全量训练要在你们队的 GPU 服务器上跑。
+  </div>
+</div>
+
+<!-- ═══ STEP 6 ═══ -->
+<div class="step" id="s6">
+  <div class="step-head">
+    <span class="step-num">06</span>
+    <span class="step-title">跑通 Baseline（本地 Demo）</span>
+  </div>
+  <p class="step-desc">先在本地用 1000 行 demo 数据验证代码能跑通，然后再上 GPU 服务器。</p>
+
+  <div class="card">
+    <h4>Step 6.1 — 进入实验目录</h4>
+  </div>
+
+  <div class="code-block"><span class="cmd">cd ~/Desktop/Tencent_Project/TAAC2026/Interformer/v0.1</span></div>
+
+  <div class="card">
+    <h4>Step 6.2 — 用 demo 数据跑一次</h4>
+    <p>修改 run.sh 里的数据路径，指向 demo 数据：</p>
+  </div>
+
+  <div class="code-block"><span class="comment"># 在 Claude Code 里说：</span>
+<span class="cmd">你: 帮我修改 run.sh，把 data_dir 指向 ../data/demo_1000.parquet 所在的目录，
+    schema_path 指向 ../data/schema.json，
+    ckpt_dir 和 log_dir 都设成 ./output</span></div>
+
+  <div class="card">
+    <h4>Step 6.3 — 启动训练</h4>
+  </div>
+
+  <div class="code-block"><span class="comment"># 在 VS Code 终端里执行</span>
+<span class="cmd">bash run.sh</span>
+
+<span class="comment"># 如果报 CUDA 错误（Mac 没有 GPU），加上 CPU 模式：</span>
+<span class="cmd">CUDA_VISIBLE_DEVICES="" python3 train.py \
+    --data_dir ../data \
+    --schema_path ../data/schema.json \
+    --ckpt_dir ./output/ckpt \
+    --log_dir ./output/log \
+    --batch_size 32 \
+    --num_workers 0</span>
+
+<span class="comment"># batch_size 调小（32），num_workers 设 0（Mac 兼容）</span></div>
+
+  <div class="card">
+    <h4>Step 6.4 — 看到这些输出说明跑通了</h4>
+    <p>训练开始后你会看到类似这样的日志：</p>
+  </div>
+
+  <div class="code-block"><span class="comment">05/09 20:30:15 - 0:00:05 - Loading schema from ../data/schema.json</span>
+<span class="comment">05/09 20:30:16 - 0:00:06 - Model: PCVRInterFormer, params: 239,158,977</span>
+<span class="comment">05/09 20:30:20 - 0:00:10 - Step 10 | loss=0.6931 | lr=1.0e-04</span>
+<span class="comment">05/09 20:30:25 - 0:00:15 - Step 20 | loss=0.5432 | lr=1.0e-04</span></div>
+
+  <div class="tip">
+    <strong>如果报错怎么办？</strong> 直接把错误信息复制给 Claude Code："我跑 bash run.sh 报了这个错，帮我看看怎么解决"。Claude 会读你的代码和错误信息，给出修复方案。
+  </div>
+</div>
+
+<!-- ═══ STEP 7 ═══ -->
+<div class="step" id="s7">
+  <div class="step-head">
+    <span class="step-num">07</span>
+    <span class="step-title">用 Claude Code 调试 & 改代码</span>
+  </div>
+  <p class="step-desc">这是 Claude Code 最强大的场景：帮你改超参、修 Bug、加新功能。</p>
+
+  <div class="card">
+    <h4>场景 A — 修改超参数</h4>
+  </div>
+
+  <div class="code-block"><span class="cmd">你: 帮我把 run.sh 里的 batch_size 从 256 改成 512，
+    loss_type 改成 focal，focal_alpha 设 0.25</span>
+
+<span class="comment"># Claude 会直接修改文件，你会看到 diff 预览</span>
+<span class="comment"># 确认没问题后点 Accept</span></div>
+
+  <div class="card">
+    <h4>场景 B — 修 Bug</h4>
+  </div>
+
+  <div class="code-block"><span class="cmd">你: model.py 第 480 行有个 del seq_encoder_type 导致参数不生效，
+    帮我去掉这个 del 语句，保留 seq_encoder_type 参数</span>
+
+<span class="comment"># Claude 会定位到那一行，提出修改方案</span></div>
+
+  <div class="card">
+    <h4>场景 C — 加新功能</h4>
+  </div>
+
+  <div class="code-block"><span class="cmd">你: 在 dataset.py 里加一个 _build_item_freq_map 方法，
+    扫描训练集统计每个 item_id 的出现频次，
+    然后用 log(1+count) 作为 item_dense 特征注入</span>
+
+<span class="comment"># Claude 会写完整的代码，你审核后 Accept</span></div>
+
+  <div class="card">
+    <h4>场景 D — 分析训练日志</h4>
+  </div>
+
+  <div class="code-block"><span class="cmd">你: 看看 output/log 里的训练日志，
+    分析 loss 是否在下降、AUC 是否在提升、
+    有没有过拟合的迹象</span></div>
+
+  <div class="info">
+    <strong>黄金法则：</strong>你不需要自己写代码。告诉 Claude 你想要什么效果，它写代码 → 你审核 → Accept 或要求修改。这比自己从零写快 10 倍。
+  </div>
+</div>
+
+<!-- ═══ STEP 8 ═══ -->
+<div class="step" id="s8">
+  <div class="step-head">
+    <span class="step-num">08</span>
+    <span class="step-title">推送结果到 GitHub</span>
+  </div>
+  <p class="step-desc">代码改好、训练跑完后，把结果推到 GitHub。</p>
+
+  <div class="card">
+    <h4>方法 A — VS Code 图形界面（推荐新手）</h4>
+    <ul>
+      <li>左侧栏点击 <strong>源代码管理</strong>（分支图标）</li>
+      <li>看到所有改动的文件列表</li>
+      <li>点每个文件可以看 diff（改了什么）</li>
+      <li>在顶部输入 commit message（如 "feat: add item freq feature"）</li>
+      <li>点 <strong>✓ Commit</strong></li>
+      <li>点 <strong>Sync Changes</strong>（或点 ... → Push）</li>
+    </ul>
+  </div>
+
+  <div class="card">
+    <h4>方法 B — 终端命令</h4>
+  </div>
+
+  <div class="code-block"><span class="comment"># 在 VS Code 终端里执行</span>
+<span class="cmd">cd ~/Desktop/Tencent_Project/TAAC2026</span>
+
+<span class="comment"># 查看改了什么</span>
+<span class="cmd">git status</span>
+
+<span class="comment"># 添加所有改动</span>
+<span class="cmd">git add -A</span>
+
+<span class="comment"># 提交（写清楚改了什么）</span>
+<span class="cmd">git commit -m "feat: add item log-frequency feature to dataset.py"</span>
+
+<span class="comment"># 推送到 GitHub</span>
+<span class="cmd">git push</span>
+
+<span class="comment"># 如果推送失败（网络问题），开 VPN 后重试</span></div>
+
+  <div class="card">
+    <h4>方法 C — 让 Claude Code 帮你</h4>
+  </div>
+
+  <div class="code-block"><span class="cmd">你: 帮我 git add 所有改动，commit message 写 
+    "feat: add item freq feature to v0.3.1"，然后 push</span>
+
+<span class="comment"># Claude 会在终端里执行这些命令</span></div>
+</div>
+
+<!-- ═══ STEP 9 ═══ -->
+<div class="step" id="s9">
+  <div class="step-head">
+    <span class="step-num">09</span>
+    <span class="step-title">实战工作流速查</span>
+  </div>
+  <p class="step-desc">日常开发时的典型操作流程。</p>
+
+  <div class="card">
+    <h4>每日开发流程</h4>
+    <ul>
+      <li><strong>开始前：</strong> <code>git pull</code> 拉最新代码（队友可能更新了）</li>
+      <li><strong>改代码：</strong> 在 VS Code 里改，或让 Claude Code 帮你改</li>
+      <li><strong>本地验证：</strong> 用 demo 数据跑一下确认不报错</li>
+      <li><strong>上 GPU 服务器：</strong> 把代码传到服务器跑全量训练</li>
+      <li><strong>分析结果：</strong> 训练完拿回 AUC/Loss 图，让 Claude 帮你分析</li>
+      <li><strong>提交：</strong> <code>git add → git commit → git push</code></li>
+    </ul>
+  </div>
+
+  <table>
+    <thead><tr><th>你想做的事</th><th>对 Claude Code 说</th></tr></thead>
+    <tbody>
+      <tr><td>理解代码</td><td>"读一下 model.py 里的 PCVRInterFormer 类，解释架构"</td></tr>
+      <tr><td>改超参数</td><td>"把 run.sh 里 batch_size 改成 512"</td></tr>
+      <tr><td>修 Bug</td><td>"训练报了这个错 [粘贴错误]，帮我修"</td></tr>
+      <tr><td>加功能</td><td>"在 dataset.py 加一个贝叶斯平滑 CTR 特征"</td></tr>
+      <tr><td>分析结果</td><td>"看看训练日志，AUC 有没有在提升"</td></tr>
+      <tr><td>对比版本</td><td>"对比 v0.1 和 v0.5 的 model.py 差异"</td></tr>
+      <tr><td>写 README</td><td>"帮这个文件夹写一个 README.md"</td></tr>
+      <tr><td>推到 GitHub</td><td>"git add 所有改动，commit 并 push"</td></tr>
+    </tbody>
+  </table>
+
+  <div class="warn">
+    <strong>GPU 服务器注意事项：</strong>如果你们用的是腾讯的 GPU 服务器（通过比赛平台），代码需要通过平台上传。如果是自己的 GPU 服务器，可以用 <code>scp</code> 或 <code>rsync</code> 把代码传过去。具体问你的同学 ZeSong，他之前一直在跑训练。
+  </div>
+</div>
+
+<div class="footer">
+  VS Code + Claude Code Tutorial · TAAC2026 · May 2026
+</div>
+
+</div>
+</body>
+</html>

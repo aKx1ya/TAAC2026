@@ -1,0 +1,435 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Phase 2 总结 — 模型架构完全理解</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Crimson+Pro:ital,wght@0,400;0,500;0,600;0,700;1,400;1,500&family=DM+Sans:wght@400;500;600;700&family=IBM+Plex+Mono:wght@400;500;600&family=Noto+Serif+SC:wght@400;500;600;700&display=swap" rel="stylesheet">
+<style>
+:root{
+  --bg:#faf8f4;--surface:#fff;--card:#f5f2ec;--rule:#e2ddd4;--rule-light:#ede9e2;
+  --ink:#2c2a26;--ink-soft:#5a5650;--ink-faint:#8a857d;
+  --rust:#b84c2a;--rust-light:#fdf0ec;--rust-dim:#d4785c;
+  --moss:#3d7a4a;--moss-light:#edf5ef;--moss-dim:#6ba07a;
+  --slate:#3b6b8a;--slate-light:#edf3f7;--slate-dim:#6e9ab5;
+  --amber:#a07020;--amber-light:#fdf6e8;--amber-dim:#c4983e;
+  --violet:#6b4d9a;--violet-light:#f3eefb;--violet-dim:#8e72b8;
+  --serif:'Crimson Pro','Noto Serif SC',Georgia,serif;
+  --sans:'DM Sans','Noto Serif SC',system-ui,sans-serif;
+  --mono:'IBM Plex Mono',monospace;
+}
+@media(prefers-color-scheme:dark){
+  :root{
+    --bg:#141210;--surface:#1c1a16;--card:#22201b;--rule:#33302a;--rule-light:#2a2722;
+    --ink:#e5e0d5;--ink-soft:#a89e8e;--ink-faint:#706858;
+    --rust-light:#2a1812;--moss-light:#162018;--slate-light:#141e26;--amber-light:#241e10;--violet-light:#1e1628;
+  }
+}
+*{margin:0;padding:0;box-sizing:border-box}
+html{scroll-behavior:smooth}
+body{background:var(--bg);color:var(--ink);font-family:var(--serif);font-size:17px;line-height:1.75}
+.page{max-width:900px;margin:0 auto;padding:60px 32px 120px}
+.masthead{text-align:center;padding-bottom:48px;margin-bottom:56px;border-bottom:2px solid var(--rule)}
+.phase-tag{font-family:var(--mono);font-size:11px;letter-spacing:3px;color:var(--slate);text-transform:uppercase;margin-bottom:16px}
+h1{font-family:var(--serif);font-weight:700;font-size:48px;line-height:1.1;letter-spacing:-0.02em;margin-bottom:12px}
+.subtitle{font-family:var(--sans);font-size:16px;color:var(--ink-soft);max-width:580px;margin:0 auto}
+.completion{display:inline-flex;align-items:center;gap:8px;margin-top:24px;font-family:var(--mono);font-size:12px;color:var(--moss);background:var(--moss-light);padding:6px 16px;border-radius:20px;border:1px solid var(--moss-dim)}
+.completion::before{content:"";width:8px;height:8px;border-radius:50%;background:var(--moss)}
+
+.mindmap{margin:0 0 64px;padding:40px 24px;background:var(--surface);border:1px solid var(--rule);border-radius:12px;overflow-x:auto}
+.mindmap-title{font-family:var(--mono);font-size:11px;letter-spacing:2px;color:var(--ink-faint);text-transform:uppercase;text-align:center;margin-bottom:28px}
+
+.station{margin-bottom:56px}
+.station-hdr{display:flex;align-items:center;gap:16px;margin-bottom:20px}
+.station-dot{width:40px;height:40px;border-radius:50%;display:flex;align-items:center;justify-content:center;font-family:var(--sans);font-weight:700;font-size:14px;flex-shrink:0}
+.dot-1{background:var(--rust-light);color:var(--rust)}
+.dot-2{background:var(--slate-light);color:var(--slate)}
+.dot-3{background:var(--violet-light);color:var(--violet)}
+.dot-4{background:var(--moss-light);color:var(--moss)}
+h2{font-family:var(--serif);font-weight:600;font-size:28px;letter-spacing:-0.01em}
+.station-sub{font-family:var(--sans);font-size:13px;color:var(--ink-faint);margin-top:2px}
+
+.knowledge{display:grid;gap:16px;margin:20px 0}
+.k-card{background:var(--surface);border:1px solid var(--rule);border-radius:10px;padding:24px 28px;position:relative}
+.k-card::before{content:"";position:absolute;top:0;left:0;right:0;height:3px;border-radius:10px 10px 0 0}
+.k-card.k-rust::before{background:var(--rust)}
+.k-card.k-slate::before{background:var(--slate)}
+.k-card.k-moss::before{background:var(--moss)}
+.k-card.k-amber::before{background:var(--amber)}
+.k-card.k-violet::before{background:var(--violet)}
+.k-head{display:flex;justify-content:space-between;align-items:baseline;margin-bottom:12px;flex-wrap:wrap;gap:8px}
+.k-term{font-family:var(--sans);font-weight:600;font-size:15px;color:var(--ink)}
+.k-tag{font-family:var(--mono);font-size:10px;letter-spacing:1px;padding:3px 10px;border-radius:4px;text-transform:uppercase}
+.tag-concept{background:var(--rust-light);color:var(--rust)}
+.tag-code{background:var(--slate-light);color:var(--slate)}
+.tag-insight{background:var(--amber-light);color:var(--amber)}
+.tag-core{background:var(--violet-light);color:var(--violet)}
+.tag-improve{background:var(--moss-light);color:var(--moss)}
+.k-pro{font-family:var(--sans);font-size:13px;color:var(--ink-faint);margin-bottom:8px;font-style:italic}
+.k-explain{font-size:15.5px;line-height:1.7;color:var(--ink-soft)}
+.k-explain strong{color:var(--ink);font-weight:600}
+
+.flow-visual{background:var(--card);border-radius:8px;padding:20px 24px;margin:16px 0;overflow-x:auto}
+.flow-label{font-family:var(--mono);font-size:10px;letter-spacing:1.5px;color:var(--ink-faint);text-transform:uppercase;margin-bottom:12px}
+.flow-row{display:flex;align-items:center;gap:4px;flex-wrap:wrap}
+.flow-box{background:var(--surface);border:1px solid var(--rule);border-radius:6px;padding:6px 12px;font-family:var(--mono);font-size:11px;white-space:nowrap;color:var(--ink)}
+.flow-arrow{color:var(--ink-faint);font-size:16px;flex-shrink:0}
+.flow-box.hl-rust{border-color:var(--rust);background:var(--rust-light);color:var(--rust)}
+.flow-box.hl-slate{border-color:var(--slate);background:var(--slate-light);color:var(--slate)}
+.flow-box.hl-violet{border-color:var(--violet);background:var(--violet-light);color:var(--violet)}
+.flow-box.hl-moss{border-color:var(--moss);background:var(--moss-light);color:var(--moss)}
+
+.shape-table{width:100%;border-collapse:collapse;margin:16px 0;font-size:13px}
+.shape-table th,.shape-table td{padding:8px 12px;text-align:left;border-bottom:1px solid var(--rule-light)}
+.shape-table th{font-family:var(--mono);font-size:10px;letter-spacing:1.5px;color:var(--ink-faint);text-transform:uppercase;background:var(--card)}
+.shape-table code{font-family:var(--mono);font-size:11px;color:var(--slate);background:var(--slate-light);padding:1px 6px;border-radius:3px}
+.shape-table .step-label{font-family:var(--sans);font-weight:600;color:var(--ink);font-size:13px}
+
+.analogy{background:var(--amber-light);border-left:3px solid var(--amber);border-radius:0 8px 8px 0;padding:16px 20px;margin:16px 0}
+.analogy-tag{font-family:var(--mono);font-size:10px;letter-spacing:1.5px;color:var(--amber);text-transform:uppercase;margin-bottom:4px}
+.analogy p{font-size:14.5px;color:var(--ink-soft);margin:0;font-style:italic}
+
+.vocab{margin:24px 0;border:1px solid var(--rule);border-radius:8px;overflow:hidden}
+.vocab-row{display:grid;grid-template-columns:170px 1fr 1fr;border-bottom:1px solid var(--rule-light)}
+.vocab-row:last-child{border-bottom:none}
+.vocab-row.v-hdr{background:var(--card)}
+.vocab-cell{padding:10px 14px;font-size:13px}
+.vocab-cell:not(:last-child){border-right:1px solid var(--rule-light)}
+.v-hdr .vocab-cell{font-family:var(--mono);font-size:10px;letter-spacing:1.5px;color:var(--ink-faint);text-transform:uppercase;font-weight:500}
+.vocab-cell code{font-family:var(--mono);font-size:12px;color:var(--slate);background:var(--slate-light);padding:1px 6px;border-radius:3px}
+
+.checkpoint{background:var(--moss-light);border:1px solid var(--moss-dim);border-radius:10px;padding:24px 28px;margin:48px 0}
+.checkpoint-title{font-family:var(--sans);font-weight:600;font-size:14px;color:var(--moss);margin-bottom:8px;display:flex;align-items:center;gap:8px}
+.checkpoint-title::before{content:"✓";width:22px;height:22px;background:var(--moss);color:var(--bg);border-radius:50%;display:flex;align-items:center;justify-content:center;font-size:12px;font-weight:700;flex-shrink:0}
+.checkpoint p{font-size:14.5px;color:var(--ink-soft);margin:0}
+
+.next{margin-top:64px;padding:32px;background:var(--violet-light);border-radius:12px;text-align:center}
+.next h3{font-family:var(--serif);font-weight:600;font-size:22px;margin-bottom:8px}
+.next p{font-family:var(--sans);font-size:14px;color:var(--ink-soft);margin:0}
+
+footer{margin-top:80px;padding-top:24px;border-top:1px solid var(--rule);text-align:center;font-family:var(--mono);font-size:10px;color:var(--ink-faint);letter-spacing:1.5px;text-transform:uppercase}
+
+@media(max-width:720px){
+  .page{padding:40px 16px 80px}
+  h1{font-size:34px}
+  h2{font-size:24px}
+  .vocab-row{grid-template-columns:1fr}
+  .vocab-cell:not(:last-child){border-right:none;border-bottom:1px solid var(--rule-light)}
+}
+</style>
+</head>
+<body>
+<div class="page">
+
+<header class="masthead">
+  <div class="phase-tag">Phase 2 · 阶段性总结</div>
+  <h1>模型架构<br>完全理解</h1>
+  <p class="subtitle">从 8 个名片 token + 4 条行为日志 到 1 个点击概率 — PCVRHyFormer 的 model.py 全解</p>
+  <div class="completion">Phase 2 已通过</div>
+</header>
+
+<!-- ═══════ MIND MAP ═══════ -->
+<div class="mindmap">
+  <div class="mindmap-title">Phase 2 思维导图 · model.py forward() 完整架构</div>
+  <svg width="100%" viewBox="0 0 840 700" xmlns="http://www.w3.org/2000/svg">
+    <defs>
+      <marker id="arr" viewBox="0 0 10 10" refX="8" refY="5" markerWidth="6" markerHeight="6" orient="auto-start-reverse">
+        <path d="M2 1L8 5L2 9" fill="none" stroke="context-stroke" stroke-width="1.5" stroke-linecap="round"/>
+      </marker>
+    </defs>
+
+    <!-- STEP 1: NS TOKENIZER -->
+    <rect x="40" y="20" width="760" height="100" rx="10" fill="#b84c2a" opacity="0.05" stroke="#b84c2a" stroke-width="0.5"/>
+    <text x="60" y="42" font-family="'IBM Plex Mono',monospace" font-size="10" fill="#b84c2a" letter-spacing="1.5">STEP 1 · NS TOKENIZER</text>
+
+    <rect x="60" y="54" width="145" height="50" rx="6" fill="#b84c2a" opacity="0.08" stroke="#b84c2a" stroke-width="0.5"/>
+    <text x="132" y="74" text-anchor="middle" font-family="'DM Sans',sans-serif" font-weight="600" font-size="11" fill="#b84c2a">User Int (46列)</text>
+    <text x="132" y="92" text-anchor="middle" font-family="'IBM Plex Mono',monospace" font-size="9" fill="#b84c2a" opacity="0.7">→ 5 tokens</text>
+
+    <rect x="215" y="54" width="125" height="50" rx="6" fill="#b84c2a" opacity="0.08" stroke="#b84c2a" stroke-width="0.5"/>
+    <text x="277" y="74" text-anchor="middle" font-family="'DM Sans',sans-serif" font-weight="600" font-size="11" fill="#b84c2a">User Dense</text>
+    <text x="277" y="92" text-anchor="middle" font-family="'IBM Plex Mono',monospace" font-size="9" fill="#b84c2a" opacity="0.7">→ 1 token</text>
+
+    <rect x="350" y="54" width="125" height="50" rx="6" fill="#b84c2a" opacity="0.08" stroke="#b84c2a" stroke-width="0.5"/>
+    <text x="412" y="74" text-anchor="middle" font-family="'DM Sans',sans-serif" font-weight="600" font-size="11" fill="#b84c2a">Item Int (14列)</text>
+    <text x="412" y="92" text-anchor="middle" font-family="'IBM Plex Mono',monospace" font-size="9" fill="#b84c2a" opacity="0.7">→ 2 tokens</text>
+
+    <text x="510" y="74" font-family="'DM Sans',sans-serif" font-size="14" fill="#b84c2a">=</text>
+
+    <rect x="540" y="54" width="240" height="50" rx="6" fill="#b84c2a" opacity="0.15" stroke="#b84c2a" stroke-width="1"/>
+    <text x="660" y="74" text-anchor="middle" font-family="'DM Sans',sans-serif" font-weight="700" font-size="13" fill="#b84c2a">NS tokens (B, 8, 64)</text>
+    <text x="660" y="92" text-anchor="middle" font-family="'DM Sans',sans-serif" font-size="10" fill="#b84c2a" opacity="0.7">8 张名片 · 用户+广告画像</text>
+
+    <!-- STEP 2: SEQUENCE EMBEDDING -->
+    <line x1="420" y1="120" x2="420" y2="140" stroke="#3b6b8a" stroke-width="1" marker-end="url(#arr)"/>
+    <rect x="40" y="140" width="760" height="90" rx="10" fill="#3b6b8a" opacity="0.05" stroke="#3b6b8a" stroke-width="0.5"/>
+    <text x="60" y="162" font-family="'IBM Plex Mono',monospace" font-size="10" fill="#3b6b8a" letter-spacing="1.5">STEP 2 · SEQUENCE EMBEDDING</text>
+
+    <rect x="60" y="176" width="160" height="38" rx="6" fill="#3b6b8a" opacity="0.08" stroke="#3b6b8a" stroke-width="0.5"/>
+    <text x="140" y="198" text-anchor="middle" font-family="'IBM Plex Mono',monospace" font-size="10" fill="#3b6b8a">域a (B,256,64)</text>
+
+    <rect x="230" y="176" width="160" height="38" rx="6" fill="#3b6b8a" opacity="0.08" stroke="#3b6b8a" stroke-width="0.5"/>
+    <text x="310" y="198" text-anchor="middle" font-family="'IBM Plex Mono',monospace" font-size="10" fill="#3b6b8a">域b (B,256,64)</text>
+
+    <rect x="400" y="176" width="160" height="38" rx="6" fill="#3b6b8a" opacity="0.08" stroke="#3b6b8a" stroke-width="0.5"/>
+    <text x="480" y="198" text-anchor="middle" font-family="'IBM Plex Mono',monospace" font-size="10" fill="#3b6b8a">域c (B,512,64)</text>
+
+    <rect x="570" y="176" width="160" height="38" rx="6" fill="#3b6b8a" opacity="0.08" stroke="#3b6b8a" stroke-width="0.5"/>
+    <text x="650" y="198" text-anchor="middle" font-family="'IBM Plex Mono',monospace" font-size="10" fill="#3b6b8a">域d (B,512,64)</text>
+
+    <!-- STEP 3: QUERY GENERATION -->
+    <line x1="420" y1="230" x2="420" y2="260" stroke="#6b4d9a" stroke-width="1" marker-end="url(#arr)"/>
+    <rect x="40" y="260" width="760" height="90" rx="10" fill="#6b4d9a" opacity="0.05" stroke="#6b4d9a" stroke-width="0.5"/>
+    <text x="60" y="282" font-family="'IBM Plex Mono',monospace" font-size="10" fill="#6b4d9a" letter-spacing="1.5">STEP 3 · QUERY GENERATION</text>
+
+    <text x="60" y="306" font-family="'DM Sans',sans-serif" font-size="11" fill="#6b4d9a">NS flat (B, 512) + 每域 MeanPool (B, 64) → 任务简报 (B, 576)</text>
+    <text x="60" y="326" font-family="'DM Sans',sans-serif" font-size="11" fill="#6b4d9a">→ 4 个独立 FFN → 4 个 Query tokens (B, 1, 64) ×4</text>
+    <text x="60" y="340" font-family="'DM Sans',sans-serif" font-size="10" fill="#6b4d9a" opacity="0.6">每条序列派 1 个"调查员"，带着针对性问题去查档案</text>
+
+    <!-- STEP 4: HYFORMER BLOCKS -->
+    <line x1="420" y1="350" x2="420" y2="380" stroke="#6b4d9a" stroke-width="1" marker-end="url(#arr)"/>
+    <rect x="40" y="380" width="760" height="160" rx="10" fill="#6b4d9a" opacity="0.05" stroke="#6b4d9a" stroke-width="0.5"/>
+    <text x="60" y="402" font-family="'IBM Plex Mono',monospace" font-size="10" fill="#6b4d9a" letter-spacing="1.5">STEP 4 · HYFORMER BLOCKS ×2</text>
+
+    <!-- Sub-blocks -->
+    <rect x="70" y="416" width="220" height="55" rx="6" fill="#3b6b8a" opacity="0.08" stroke="#3b6b8a" stroke-width="0.5"/>
+    <text x="180" y="436" text-anchor="middle" font-family="'DM Sans',sans-serif" font-weight="600" font-size="11" fill="#3b6b8a">Self-Attention + RoPE</text>
+    <text x="180" y="456" text-anchor="middle" font-family="'DM Sans',sans-serif" font-size="10" fill="#3b6b8a" opacity="0.7">序列 token 互相"看"</text>
+
+    <text x="302" y="444" font-family="'DM Sans',sans-serif" font-size="14" fill="#6b4d9a">→</text>
+
+    <rect x="320" y="416" width="200" height="55" rx="6" fill="#6b4d9a" opacity="0.1" stroke="#6b4d9a" stroke-width="0.5"/>
+    <text x="420" y="436" text-anchor="middle" font-family="'DM Sans',sans-serif" font-weight="600" font-size="11" fill="#6b4d9a">Cross-Attention</text>
+    <text x="420" y="456" text-anchor="middle" font-family="'DM Sans',sans-serif" font-size="10" fill="#6b4d9a" opacity="0.7">Query 从序列蒸馏精华</text>
+
+    <text x="532" y="444" font-family="'DM Sans',sans-serif" font-size="14" fill="#6b4d9a">→</text>
+
+    <rect x="550" y="416" width="230" height="55" rx="6" fill="#a07020" opacity="0.08" stroke="#a07020" stroke-width="0.5"/>
+    <text x="665" y="436" text-anchor="middle" font-family="'DM Sans',sans-serif" font-weight="600" font-size="11" fill="#a07020">RankMixer</text>
+    <text x="665" y="456" text-anchor="middle" font-family="'DM Sans',sans-serif" font-size="10" fill="#a07020" opacity="0.7">零成本 token 间情报交换</text>
+
+    <text x="420" y="510" text-anchor="middle" font-family="'DM Sans',sans-serif" font-size="11" fill="#6b4d9a">进出 shape 不变 · 信息含量大幅增加 · 重复 2 层</text>
+    <rect x="300" y="492" width="240" height="30" rx="4" fill="none" stroke="#6b4d9a" stroke-width="0.5" stroke-dasharray="4 3"/>
+
+    <!-- STEP 5: OUTPUT -->
+    <line x1="420" y1="540" x2="420" y2="570" stroke="#3d7a4a" stroke-width="1" marker-end="url(#arr)"/>
+    <rect x="40" y="570" width="760" height="110" rx="10" fill="#3d7a4a" opacity="0.05" stroke="#3d7a4a" stroke-width="0.5"/>
+    <text x="60" y="592" font-family="'IBM Plex Mono',monospace" font-size="10" fill="#3d7a4a" letter-spacing="1.5">STEP 5 · OUTPUT</text>
+
+    <rect x="70" y="606" width="170" height="40" rx="6" fill="#3d7a4a" opacity="0.08" stroke="#3d7a4a" stroke-width="0.5"/>
+    <text x="155" y="622" text-anchor="middle" font-family="'IBM Plex Mono',monospace" font-size="10" fill="#3d7a4a">cat 4 Query</text>
+    <text x="155" y="638" text-anchor="middle" font-family="'IBM Plex Mono',monospace" font-size="9" fill="#3d7a4a" opacity="0.7">(B, 4, 64)</text>
+
+    <text x="252" y="626" font-family="'DM Sans',sans-serif" font-size="14" fill="#3d7a4a">→</text>
+
+    <rect x="270" y="606" width="140" height="40" rx="6" fill="#3d7a4a" opacity="0.08" stroke="#3d7a4a" stroke-width="0.5"/>
+    <text x="340" y="622" text-anchor="middle" font-family="'IBM Plex Mono',monospace" font-size="10" fill="#3d7a4a">摊平+Linear</text>
+    <text x="340" y="638" text-anchor="middle" font-family="'IBM Plex Mono',monospace" font-size="9" fill="#3d7a4a" opacity="0.7">(B, 256)→(B, 64)</text>
+
+    <text x="422" y="626" font-family="'DM Sans',sans-serif" font-size="14" fill="#3d7a4a">→</text>
+
+    <rect x="440" y="606" width="140" height="40" rx="6" fill="#3d7a4a" opacity="0.08" stroke="#3d7a4a" stroke-width="0.5"/>
+    <text x="510" y="622" text-anchor="middle" font-family="'IBM Plex Mono',monospace" font-size="10" fill="#3d7a4a">Classifier MLP</text>
+    <text x="510" y="638" text-anchor="middle" font-family="'IBM Plex Mono',monospace" font-size="9" fill="#3d7a4a" opacity="0.7">(B, 64)→(B, 1)</text>
+
+    <text x="592" y="626" font-family="'DM Sans',sans-serif" font-size="14" fill="#3d7a4a">→</text>
+
+    <rect x="610" y="600" width="170" height="52" rx="8" fill="#3d7a4a" opacity="0.15" stroke="#3d7a4a" stroke-width="1"/>
+    <text x="695" y="620" text-anchor="middle" font-family="'DM Sans',sans-serif" font-weight="700" font-size="14" fill="#3d7a4a">sigmoid</text>
+    <text x="695" y="640" text-anchor="middle" font-family="'DM Sans',sans-serif" font-size="11" fill="#3d7a4a">→ 0~1 点击概率</text>
+  </svg>
+</div>
+
+<!-- ═══════ STATION 2.1 ═══════ -->
+<section class="station">
+  <div class="station-hdr">
+    <div class="station-dot dot-1">2.1</div>
+    <div><h2>NS Tokenizer — 制作名片</h2><div class="station-sub">把零散的非序列特征打包成标准 token</div></div>
+  </div>
+
+  <div class="knowledge">
+    <div class="k-card k-rust">
+      <div class="k-head"><span class="k-term">两种打包方式</span><span class="k-tag tag-concept">核心概念</span></div>
+      <div class="k-pro">GroupNSTokenizer 按语义分组投影；RankMixerNSTokenizer 全拼后等长切段投影。Baseline 用 RankMixer。</div>
+      <div class="k-explain"><strong>Group 模式</strong> = 按类别装箱（衣服一箱、书籍一箱），箱数被类别数锁死。<strong>RankMixer 模式</strong> = 按数量平均装箱（你说要 5 个箱子就切 5 段），灵活但语义可能被打散。实践中 RankMixer 效果不差，因为模型有能力自己重新组织语义。</div>
+    </div>
+
+    <div class="k-card k-rust">
+      <div class="k-head"><span class="k-term">5 + 1 + 2 = 8 个 NS token</span><span class="k-tag tag-code">代码参数</span></div>
+      <div class="k-pro">user_ns_tokens=5, user_dense→1 token via Linear projection, item_ns_tokens=2. 总 num_ns=8。</div>
+      <div class="k-explain">用户特征丰富（46 列）→ 给 5 个箱子。用户连续特征 → 单独投影成 1 个 token。广告特征少（14 列）→ 2 个箱子够了。这 8 个 token 就是用户和广告的"浓缩名片"。</div>
+    </div>
+
+    <div class="k-card k-amber">
+      <div class="k-head"><span class="k-term">这才是真正的降维</span><span class="k-tag tag-insight">认知更新</span></div>
+      <div class="k-pro">从 ~数百维的散乱 embedding 拼接向量，压缩为 (B, T, 64) 的定长 token 序列</div>
+      <div class="k-explain">Phase 1 的 dataset.py 是"分类整理不变少"。这一步才是真正的<strong>信息浓缩</strong>——把几百维的散乱信息压成几个 64 维的标准 token。就像把 5000 字的文章概括成 5 个要点。</div>
+    </div>
+  </div>
+</section>
+
+<!-- ═══════ STATION 2.2 ═══════ -->
+<section class="station">
+  <div class="station-hdr">
+    <div class="station-dot dot-2">2.2</div>
+    <div><h2>序列编码 — 翻译行为日志</h2><div class="station-sub">Self-Attention + RoPE + Time Bucket Embedding</div></div>
+  </div>
+
+  <div class="knowledge">
+    <div class="k-card k-slate">
+      <div class="k-head"><span class="k-term">Self-Attention — 每个 token 环顾四周</span><span class="k-tag tag-concept">核心概念</span></div>
+      <div class="k-pro">Q=K=V=x，每个 token 与所有其他 token 计算相关性，按权重加权融合信息。复杂度 O(L²·D)。</div>
+      <div class="k-explain">256 个人开会，每人都发言一遍（Query），其他人举手响应（Key），匹配度高的人详细分享（Value）。会后每人的笔记都"包含了别人的信息"，但各自重点不同。这让模型能捕捉"一周前看了手机壳，今天又在看"这种<strong>远距离关联</strong>。</div>
+    </div>
+
+    <div class="k-card k-slate">
+      <div class="k-head"><span class="k-term">RoPE — 旋转位置编码</span><span class="k-tag tag-concept">核心概念</span></div>
+      <div class="k-pro">对 Q、K 向量按位置旋转角度，使 attention 点积只与相对位置 (m-n) 有关。</div>
+      <div class="k-explain">普通位置编码 = 给每人发工牌号（绝对位置），模型要费劲算减法才知道"两人差几号"。<strong>RoPE = 让每人按位置朝不同方向站</strong>，握手时的夹角直接告诉模型"差几位"。好处：更准确的相对距离感知，且能处理训练时没见过的更长序列。</div>
+    </div>
+
+    <div class="k-card k-slate">
+      <div class="k-head"><span class="k-term">_embed_seq_domain — 序列翻译四步走</span><span class="k-tag tag-code">代码流程</span></div>
+      <div class="k-pro">每特征查 Embedding → 拼接 → Linear 投影到 d_model → 加 time_bucket embedding</div>
+      <div class="k-explain">每个时间步有多个信息（商品 ID、类目、行为类型），各自查各自的 Embedding 表 → 同一时间步的向量首尾拼接 → 过 Linear 压到 64 维 → 加上时间桶标签。最终从整数 ID 变成了 (B, L, 64) 的标准 token 序列。</div>
+    </div>
+
+    <div class="k-card k-amber">
+      <div class="k-head"><span class="k-term">RoPE + Time Bucket = 互补搭档</span><span class="k-tag tag-insight">关键洞察</span></div>
+      <div class="k-pro">RoPE 编码序列内位序（第几位），Time Bucket Embedding 编码真实时间间隔（距今多久）。</div>
+      <div class="k-explain">RoPE 知道"这两步在序列里相邻"，但不知道"它们在真实时间上隔了 3 个月"。时间桶补上这个信息：模型由此能区分"刚刚点的"和"很久以前点的"，学到时间衰减或周期性偏好。</div>
+    </div>
+  </div>
+
+  <div class="flow-visual">
+    <div class="flow-label">一个域的序列编码流程</div>
+    <div class="flow-row">
+      <span class="flow-box">seq [B,S,L] 整数</span>
+      <span class="flow-arrow">→</span>
+      <span class="flow-box hl-slate">S 个 Embedding</span>
+      <span class="flow-arrow">→</span>
+      <span class="flow-box">拼接 [B,L,S·emb]</span>
+      <span class="flow-arrow">→</span>
+      <span class="flow-box hl-slate">Linear+GELU</span>
+      <span class="flow-arrow">→</span>
+      <span class="flow-box">+ time bucket</span>
+      <span class="flow-arrow">→</span>
+      <span class="flow-box hl-slate">[B, L, 64]</span>
+    </div>
+  </div>
+</section>
+
+<!-- ═══════ STATION 2.3 ═══════ -->
+<section class="station">
+  <div class="station-hdr">
+    <div class="station-dot dot-3">2.3</div>
+    <div><h2>Query 三件套 — HyFormer 核心创新</h2><div class="station-sub">MultiSeqQueryGenerator → CrossAttention → RankMixerBlock</div></div>
+  </div>
+
+  <div class="knowledge">
+    <div class="k-card k-violet">
+      <div class="k-head"><span class="k-term">MultiSeqQueryGenerator — 派出调查员</span><span class="k-tag tag-core">HyFormer 核心</span></div>
+      <div class="k-pro">ns_flat + MaskedMeanPool(seq) → global_info → Nq 个独立 FFN → Query tokens (B, Nq, D)</div>
+      <div class="k-explain">把用户名片（NS tokens 摊平）和行为日志的摘要（序列平均池化）揉在一起形成"任务简报"，然后每个调查员（Query）用自己的视角（独立 FFN）从简报里提炼出一个<strong>针对性的问题</strong>。每条序列独立生成——短期序列和长期序列需要不同的提问方式。</div>
+    </div>
+
+    <div class="k-card k-violet">
+      <div class="k-head"><span class="k-term">CrossAttention — 调查员查档案</span><span class="k-tag tag-core">HyFormer 核心</span></div>
+      <div class="k-pro">Q=(B,Nq,D) 对 KV=(B,L,D) 做交叉注意力，RoPE 只加 K 端。输出 (B,Nq,D)。</div>
+      <div class="k-explain">调查员带着问题进档案室：扫一遍 256 条记录（Key），发现第 45 条和第 120 条相关性高 → 重点提取这两条的信息（Value），其他 254 条基本忽略。<strong>核心价值：</strong>把 256 个 token 的长序列蒸馏成 1 个 token 的精华。RoPE 只加在序列端——调查员的"问题"没有时间位置。</div>
+    </div>
+
+    <div class="k-card k-amber">
+      <div class="k-head"><span class="k-term">RankMixerBlock — 零成本情报交换</span><span class="k-tag tag-core">HyFormer 核心</span></div>
+      <div class="k-pro">reshape-transpose 实现零参数 token 间信息交换，再过 FFN 做非线性变换。三种 mode: full / ffn_only / none。</div>
+      <div class="k-explain">4 个调查员各自带回报告，但彼此不知道对方发现了什么。RankMixer 让他们<strong>交换情报</strong>：把每份报告切段 → 不同调查员的同位段拼在一起 → 过 FFN 加工。巧妙之处：信息交换通过 reshape-transpose 实现，<strong>没有可学习参数</strong>，计算成本几乎为零，效果接近 Self-Attention。</div>
+    </div>
+  </div>
+
+  <div class="analogy">
+    <div class="analogy-tag">HyFormer 的设计哲学</div>
+    <p>整个 Query 机制的本质是"<strong>信息蒸馏</strong>"——用少量 Query token 从漫长的序列中提取精华，而不是让下游网络直接面对上千个 token。这既节省计算量，又迫使模型学会"什么信息最重要"。</p>
+  </div>
+
+  <div class="flow-visual">
+    <div class="flow-label">Query 三件套数据流</div>
+    <div class="flow-row">
+      <span class="flow-box">NS (B,8,64)</span>
+      <span class="flow-arrow">+</span>
+      <span class="flow-box">Seq 摘要</span>
+      <span class="flow-arrow">→</span>
+      <span class="flow-box hl-violet">QueryGen</span>
+      <span class="flow-arrow">→</span>
+      <span class="flow-box">Q (B,1,64) ×4</span>
+      <span class="flow-arrow">→</span>
+      <span class="flow-box hl-violet">CrossAttn</span>
+      <span class="flow-arrow">→</span>
+      <span class="flow-box hl-violet">RankMixer</span>
+      <span class="flow-arrow">×2层</span>
+    </div>
+  </div>
+</section>
+
+<!-- ═══════ STATION 2.4 ═══════ -->
+<section class="station">
+  <div class="station-hdr">
+    <div class="station-dot dot-4">2.4</div>
+    <div><h2>完整 forward — 端到端 shape 链路</h2><div class="station-sub">从 ModelInput 到 0~1 概率的完整旅程</div></div>
+  </div>
+
+  <table class="shape-table">
+    <thead><tr><th>步骤</th><th>操作</th><th>shape</th><th>人话</th></tr></thead>
+    <tbody>
+      <tr><td class="step-label">输入</td><td>ModelInput 7 个字段</td><td><code>user_int (B, ~50)</code> 等</td><td>五盘食材 + 序列三件套</td></tr>
+      <tr><td class="step-label">Step 1</td><td>NS Tokenizer</td><td><code>(B, 8, 64)</code></td><td>70 列特征浓缩成 8 张名片</td></tr>
+      <tr><td class="step-label">Step 2</td><td>Seq Embedding ×4</td><td><code>(B, 256/512, 64)</code></td><td>4 条序列翻译成 token</td></tr>
+      <tr><td class="step-label">Step 3</td><td>QueryGenerator</td><td><code>(B, 1, 64) ×4</code></td><td>4 个调查员带着问题出发</td></tr>
+      <tr><td class="step-label">Step 4</td><td>HyFormer Block ×2</td><td>shape 不变</td><td>查档案 + 交换情报 × 2 轮</td></tr>
+      <tr><td class="step-label">Step 5a</td><td>拼接 4 个 Q + 摊平</td><td><code>(B, 256)</code></td><td>4 份报告合并</td></tr>
+      <tr><td class="step-label">Step 5b</td><td>Linear → (B, 64)</td><td><code>(B, 64)</code></td><td>压缩成最终表示</td></tr>
+      <tr><td class="step-label">Step 5c</td><td>Classifier MLP</td><td><code>(B, 1)</code></td><td>一个 logit 数字</td></tr>
+      <tr><td class="step-label">推理</td><td>sigmoid</td><td><code>(B, 1) ∈ [0,1]</code></td><td>点击概率</td></tr>
+    </tbody>
+  </table>
+
+  <div class="analogy">
+    <div class="analogy-tag">一句话总结</div>
+    <p>120 列原始数据 → 8 个名片 token + 4 条序列 token → 4 个调查员带着问题去查序列 → 蒸馏出精华 → 互相交换情报 → 拼起来 → 一个数字：这个用户点击这条广告的概率。</p>
+  </div>
+</section>
+
+<!-- ═══════ VOCAB TABLE ═══════ -->
+<h2 style="margin-top:48px;margin-bottom:16px;">Phase 2 核心术语表</h2>
+<div class="vocab">
+  <div class="vocab-row v-hdr"><div class="vocab-cell">术语</div><div class="vocab-cell">专业含义</div><div class="vocab-cell">人话翻译</div></div>
+  <div class="vocab-row"><div class="vocab-cell"><code>NS Token</code></div><div class="vocab-cell">Non-Sequential Token，非序列特征的 d_model 维表示</div><div class="vocab-cell">用户/广告的浓缩名片</div></div>
+  <div class="vocab-row"><div class="vocab-cell"><code>RankMixer</code></div><div class="vocab-cell">全拼后等长切段 + 独立投影的 tokenizer</div><div class="vocab-cell">不按类别、按数量平均装箱</div></div>
+  <div class="vocab-row"><div class="vocab-cell"><code>Self-Attention</code></div><div class="vocab-cell">Q=K=V，每个 token 与所有 token 计算加权融合</div><div class="vocab-cell">开会时每人环顾四周、选择性记笔记</div></div>
+  <div class="vocab-row"><div class="vocab-cell"><code>Cross-Attention</code></div><div class="vocab-cell">Q 来自外部，K/V 来自序列，做跨模态信息提取</div><div class="vocab-cell">调查员带问题去查档案室</div></div>
+  <div class="vocab-row"><div class="vocab-cell"><code>RoPE</code></div><div class="vocab-cell">Rotary Position Embedding，按位置旋转 Q/K 向量</div><div class="vocab-cell">按位置方向站，握手时夹角=相对距离</div></div>
+  <div class="vocab-row"><div class="vocab-cell"><code>Token Mixing</code></div><div class="vocab-cell">reshape-transpose 实现的零参数跨 token 信息交换</div><div class="vocab-cell">调查员间的免费情报交换（切段重组）</div></div>
+  <div class="vocab-row"><div class="vocab-cell"><code>Query Token</code></div><div class="vocab-cell">由 NS+序列摘要生成的全局查询向量</div><div class="vocab-cell">带着针对性问题的调查员</div></div>
+  <div class="vocab-row"><div class="vocab-cell"><code>sigmoid</code></div><div class="vocab-cell">σ(x) = 1/(1+e⁻ˣ)，将实数映射到 (0,1)</div><div class="vocab-cell">把任意数字压成 0~1 的概率</div></div>
+  <div class="vocab-row"><div class="vocab-cell"><code>logits</code></div><div class="vocab-cell">分类器输出的未归一化实数（可正可负）</div><div class="vocab-cell">sigmoid 之前的"原始分数"</div></div>
+  <div class="vocab-row"><div class="vocab-cell"><code>BCEWithLogitsLoss</code></div><div class="vocab-cell">sigmoid + BCE 合并的数值稳定版损失函数</div><div class="vocab-cell">训练时直接用 logits 算损失，更稳定</div></div>
+</div>
+
+<!-- ═══════ CHECKPOINT ═══════ -->
+<div class="checkpoint">
+  <div class="checkpoint-title">Phase 2 检查点 — 已通过</div>
+  <p>你现在能画出（或口述）从"120 列原始数据"到"一个 0~1 概率"的<strong>完整数据流图</strong>：70 列非序列特征经 NS Tokenizer 压成 8 个 token，45 列序列特征经 Embedding + Self-Attention 变成 4 条上下文感知的 token 序列，QueryGenerator 生成 4 个 Query，CrossAttention 从序列蒸馏精华，RankMixer 交换情报，最后拼接 → MLP → sigmoid → 概率。每一步都能说出 tensor shape 的变化。</p>
+</div>
+
+<!-- ═══════ NEXT ═══════ -->
+<div class="next">
+  <h3>下一站 → Phase 3 · 训练机制</h3>
+  <p>你已经理解了"模型怎么处理数据"。接下来要看"模型怎么从猜错到越来越准"——双优化器、Loss 函数、早停机制。</p>
+</div>
+
+<footer>TAAC 2026 · Phase 2 Summary · model.py · 2026.05.12</footer>
+
+</div>
+</body>
+</html>
