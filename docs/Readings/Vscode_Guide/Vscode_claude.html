@@ -1,0 +1,1047 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Claude Code × VSCode 安装指南 — TAAC2026 团队内部</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@400;500;600;700&family=JetBrains+Mono:wght@400;500;600;700&family=Noto+Sans+SC:wght@400;500;600;700&display=swap" rel="stylesheet">
+<style>
+  :root {
+    --bg: #0a0e14;
+    --bg-elev: #131820;
+    --bg-card: #1a212c;
+    --bg-terminal: #060a10;
+    --ink: #d4dae4;
+    --ink-bright: #f0f4fa;
+    --ink-dim: #8b94a3;
+    --ink-faint: #5a6373;
+    --rule: #232a36;
+    --cyan: #5eead4;
+    --cyan-deep: #14b8a6;
+    --green: #86efac;
+    --amber: #fbbf24;
+    --rose: #fb7185;
+    --rose-deep: #e11d48;
+    --violet: #c4b5fd;
+    --display: 'Space Grotesk', 'Noto Sans SC', system-ui, sans-serif;
+    --body: 'Noto Sans SC', 'Space Grotesk', system-ui, sans-serif;
+    --mono: 'JetBrains Mono', 'SF Mono', Menlo, monospace;
+  }
+
+  * { box-sizing: border-box; margin: 0; padding: 0; }
+
+  html { scroll-behavior: smooth; }
+
+  body {
+    background: var(--bg);
+    color: var(--ink);
+    font-family: var(--body);
+    font-size: 16px;
+    line-height: 1.7;
+    -webkit-font-smoothing: antialiased;
+    background-image:
+      radial-gradient(ellipse 80% 50% at 50% 0%, rgba(94, 234, 212, 0.06), transparent 70%),
+      radial-gradient(ellipse 60% 40% at 100% 100%, rgba(251, 113, 133, 0.04), transparent 70%);
+    background-attachment: fixed;
+    min-height: 100vh;
+  }
+
+  .container {
+    max-width: 920px;
+    margin: 0 auto;
+    padding: 64px 32px 120px;
+  }
+
+  /* ─────── HEADER ─────── */
+  .header {
+    margin-bottom: 72px;
+    position: relative;
+  }
+
+  .kicker {
+    display: inline-flex;
+    align-items: center;
+    gap: 12px;
+    font-family: var(--mono);
+    font-size: 11px;
+    letter-spacing: 0.2em;
+    color: var(--cyan);
+    text-transform: uppercase;
+    margin-bottom: 32px;
+    padding: 6px 14px;
+    border: 1px solid var(--cyan);
+    border-radius: 100px;
+    background: rgba(94, 234, 212, 0.05);
+  }
+
+  .kicker::before {
+    content: "";
+    width: 6px;
+    height: 6px;
+    border-radius: 50%;
+    background: var(--cyan);
+    box-shadow: 0 0 8px var(--cyan);
+  }
+
+  h1 {
+    font-family: var(--display);
+    font-weight: 700;
+    font-size: 64px;
+    line-height: 1.0;
+    letter-spacing: -0.03em;
+    margin-bottom: 24px;
+    color: var(--ink-bright);
+  }
+
+  h1 .accent {
+    color: var(--cyan);
+    font-style: italic;
+    font-weight: 500;
+  }
+
+  .lede {
+    font-size: 19px;
+    color: var(--ink-dim);
+    max-width: 640px;
+    line-height: 1.55;
+    margin-bottom: 40px;
+  }
+
+  .meta-bar {
+    display: flex;
+    gap: 24px;
+    padding: 20px 24px;
+    background: var(--bg-elev);
+    border: 1px solid var(--rule);
+    border-radius: 8px;
+    font-family: var(--mono);
+    font-size: 12px;
+    color: var(--ink-dim);
+    flex-wrap: wrap;
+  }
+
+  .meta-bar div {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+  }
+
+  .meta-bar strong {
+    color: var(--cyan);
+    font-weight: 600;
+  }
+
+  /* ─────── PROGRESS BAR ─────── */
+  .progress {
+    margin: 56px 0 72px;
+    padding: 32px;
+    background: var(--bg-elev);
+    border: 1px solid var(--rule);
+    border-radius: 12px;
+  }
+
+  .progress-label {
+    font-family: var(--mono);
+    font-size: 11px;
+    letter-spacing: 0.2em;
+    color: var(--ink-dim);
+    text-transform: uppercase;
+    margin-bottom: 20px;
+  }
+
+  .progress-steps {
+    display: grid;
+    grid-template-columns: repeat(5, 1fr);
+    gap: 0;
+    position: relative;
+  }
+
+  .progress-steps::before {
+    content: "";
+    position: absolute;
+    top: 18px;
+    left: 10%;
+    right: 10%;
+    height: 1px;
+    background: linear-gradient(to right, var(--cyan), var(--rule));
+    z-index: 0;
+  }
+
+  .step-marker {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 10px;
+    position: relative;
+    z-index: 1;
+  }
+
+  .step-circle {
+    width: 36px;
+    height: 36px;
+    border-radius: 50%;
+    background: var(--bg-card);
+    border: 2px solid var(--cyan);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-family: var(--mono);
+    font-weight: 700;
+    color: var(--cyan);
+    font-size: 13px;
+  }
+
+  .step-name {
+    font-family: var(--mono);
+    font-size: 10px;
+    color: var(--ink-dim);
+    letter-spacing: 0.08em;
+    text-align: center;
+    text-transform: uppercase;
+  }
+
+  /* ─────── STEP CARDS ─────── */
+  .step {
+    margin-bottom: 56px;
+    scroll-margin-top: 24px;
+  }
+
+  .step-header {
+    display: flex;
+    align-items: flex-start;
+    gap: 24px;
+    margin-bottom: 24px;
+  }
+
+  .step-num {
+    flex: 0 0 64px;
+    width: 64px;
+    height: 64px;
+    border-radius: 12px;
+    background: linear-gradient(135deg, var(--cyan-deep), var(--cyan));
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-family: var(--display);
+    font-weight: 700;
+    color: var(--bg);
+    font-size: 24px;
+    box-shadow: 0 8px 24px -8px rgba(94, 234, 212, 0.5);
+  }
+
+  .step-title-block {
+    flex: 1;
+    padding-top: 4px;
+  }
+
+  .step-tag {
+    font-family: var(--mono);
+    font-size: 11px;
+    letter-spacing: 0.2em;
+    color: var(--cyan);
+    text-transform: uppercase;
+    margin-bottom: 6px;
+  }
+
+  h2 {
+    font-family: var(--display);
+    font-weight: 700;
+    font-size: 32px;
+    line-height: 1.15;
+    color: var(--ink-bright);
+    letter-spacing: -0.02em;
+  }
+
+  .step-time {
+    font-family: var(--mono);
+    font-size: 11px;
+    color: var(--ink-faint);
+    margin-top: 8px;
+    letter-spacing: 0.05em;
+  }
+
+  .step-body {
+    padding-left: 88px;
+  }
+
+  p {
+    margin-bottom: 16px;
+    color: var(--ink);
+    max-width: 680px;
+  }
+
+  p strong {
+    color: var(--ink-bright);
+    font-weight: 600;
+  }
+
+  /* ─────── TERMINAL BLOCK ─────── */
+  .terminal {
+    background: var(--bg-terminal);
+    border: 1px solid var(--rule);
+    border-radius: 8px;
+    overflow: hidden;
+    margin: 20px 0;
+    box-shadow: 0 4px 24px rgba(0,0,0,0.3);
+  }
+
+  .terminal-header {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    padding: 12px 16px;
+    background: var(--bg-card);
+    border-bottom: 1px solid var(--rule);
+  }
+
+  .terminal-dot {
+    width: 12px;
+    height: 12px;
+    border-radius: 50%;
+  }
+
+  .terminal-dot.red { background: #ff5f57; }
+  .terminal-dot.yellow { background: #febc2e; }
+  .terminal-dot.green { background: #28c840; }
+
+  .terminal-label {
+    margin-left: 12px;
+    font-family: var(--mono);
+    font-size: 11px;
+    color: var(--ink-faint);
+    letter-spacing: 0.05em;
+  }
+
+  .terminal-body {
+    padding: 20px 24px;
+    font-family: var(--mono);
+    font-size: 14px;
+    line-height: 1.7;
+    overflow-x: auto;
+  }
+
+  .terminal-body .prompt {
+    color: var(--cyan);
+    user-select: none;
+  }
+
+  .terminal-body .command {
+    color: var(--ink-bright);
+  }
+
+  .terminal-body .output {
+    color: var(--ink-dim);
+    display: block;
+  }
+
+  .terminal-body .comment {
+    color: var(--ink-faint);
+    font-style: italic;
+  }
+
+  /* ─────── INLINE CODE ─────── */
+  code {
+    font-family: var(--mono);
+    background: var(--bg-elev);
+    padding: 2px 8px;
+    border-radius: 4px;
+    font-size: 0.88em;
+    color: var(--cyan);
+    border: 1px solid var(--rule);
+  }
+
+  /* ─────── INSTRUCTION LIST ─────── */
+  .instructions {
+    background: var(--bg-elev);
+    border-radius: 8px;
+    padding: 24px 28px;
+    margin: 20px 0;
+    border-left: 3px solid var(--cyan);
+  }
+
+  .instructions ol {
+    list-style: none;
+    counter-reset: instr;
+  }
+
+  .instructions li {
+    counter-increment: instr;
+    padding: 8px 0 8px 36px;
+    position: relative;
+    color: var(--ink);
+  }
+
+  .instructions li::before {
+    content: counter(instr) ".";
+    position: absolute;
+    left: 0;
+    top: 8px;
+    font-family: var(--mono);
+    font-weight: 600;
+    color: var(--cyan);
+  }
+
+  /* ─────── CHECKPOINT ─────── */
+  .checkpoint {
+    background: linear-gradient(135deg, rgba(94, 234, 212, 0.08), rgba(94, 234, 212, 0.02));
+    border: 1px solid rgba(94, 234, 212, 0.25);
+    border-radius: 8px;
+    padding: 20px 24px;
+    margin: 20px 0;
+    display: flex;
+    gap: 16px;
+    align-items: flex-start;
+  }
+
+  .checkpoint-icon {
+    flex: 0 0 24px;
+    width: 24px;
+    height: 24px;
+    border-radius: 50%;
+    background: var(--cyan);
+    color: var(--bg);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-weight: 700;
+    font-size: 14px;
+    margin-top: 2px;
+  }
+
+  .checkpoint-content strong {
+    color: var(--cyan);
+    display: block;
+    margin-bottom: 4px;
+    font-family: var(--display);
+    font-size: 13px;
+    letter-spacing: 0.05em;
+    text-transform: uppercase;
+  }
+
+  .checkpoint-content p {
+    margin: 0;
+    color: var(--ink);
+    font-size: 15px;
+  }
+
+  /* ─────── WARNING ─────── */
+  .warning {
+    background: linear-gradient(135deg, rgba(251, 113, 133, 0.08), rgba(251, 113, 133, 0.02));
+    border: 1px solid rgba(251, 113, 133, 0.3);
+    border-radius: 8px;
+    padding: 24px 28px;
+    margin: 24px 0;
+    position: relative;
+  }
+
+  .warning-label {
+    display: inline-flex;
+    align-items: center;
+    gap: 8px;
+    font-family: var(--mono);
+    font-size: 11px;
+    letter-spacing: 0.2em;
+    color: var(--rose);
+    text-transform: uppercase;
+    margin-bottom: 12px;
+    font-weight: 600;
+  }
+
+  .warning-label::before {
+    content: "⚠";
+    font-size: 14px;
+  }
+
+  .warning h4 {
+    font-family: var(--display);
+    color: var(--ink-bright);
+    font-size: 17px;
+    margin-bottom: 10px;
+    font-weight: 600;
+  }
+
+  .warning p {
+    color: var(--ink);
+    font-size: 14.5px;
+    margin-bottom: 8px;
+  }
+
+  .warning p:last-child { margin-bottom: 0; }
+
+  /* ─────── TIP ─────── */
+  .tip {
+    background: rgba(251, 191, 36, 0.06);
+    border-left: 3px solid var(--amber);
+    border-radius: 0 6px 6px 0;
+    padding: 16px 24px;
+    margin: 20px 0;
+  }
+
+  .tip-label {
+    font-family: var(--mono);
+    font-size: 10px;
+    letter-spacing: 0.2em;
+    color: var(--amber);
+    text-transform: uppercase;
+    font-weight: 600;
+    margin-bottom: 6px;
+  }
+
+  .tip p {
+    margin: 0;
+    font-size: 14.5px;
+    color: var(--ink);
+  }
+
+  /* ─────── PITFALLS SECTION ─────── */
+  .pitfalls {
+    margin-top: 80px;
+    padding: 48px 0;
+    border-top: 1px solid var(--rule);
+    border-bottom: 1px solid var(--rule);
+  }
+
+  .pitfalls-header {
+    margin-bottom: 32px;
+  }
+
+  .pitfalls-header .kicker {
+    color: var(--rose);
+    border-color: var(--rose);
+    background: rgba(251, 113, 133, 0.05);
+  }
+
+  .pitfalls-header .kicker::before { background: var(--rose); box-shadow: 0 0 8px var(--rose); }
+
+  .pitfalls h2 {
+    font-size: 36px;
+  }
+
+  .pitfall-grid {
+    display: grid;
+    gap: 20px;
+    margin-top: 32px;
+  }
+
+  .pitfall {
+    background: var(--bg-elev);
+    border: 1px solid var(--rule);
+    border-radius: 8px;
+    padding: 24px 28px;
+    display: grid;
+    grid-template-columns: auto 1fr;
+    gap: 20px;
+    align-items: start;
+  }
+
+  .pitfall-num {
+    font-family: var(--mono);
+    font-size: 32px;
+    font-weight: 700;
+    color: var(--rose);
+    line-height: 1;
+    opacity: 0.6;
+  }
+
+  .pitfall h4 {
+    font-family: var(--display);
+    font-size: 17px;
+    color: var(--ink-bright);
+    margin-bottom: 10px;
+    font-weight: 600;
+  }
+
+  .pitfall p {
+    color: var(--ink);
+    font-size: 14.5px;
+    margin-bottom: 8px;
+  }
+
+  .pitfall p:last-child { margin-bottom: 0; }
+
+  .pitfall .solution {
+    color: var(--cyan);
+    font-size: 13.5px;
+    padding-top: 8px;
+    border-top: 1px dashed var(--rule);
+    margin-top: 10px;
+  }
+
+  .pitfall .solution::before {
+    content: "→ ";
+    font-weight: 700;
+  }
+
+  /* ─────── FINAL CHECKLIST ─────── */
+  .final {
+    margin-top: 80px;
+    padding: 56px 48px;
+    background: linear-gradient(160deg, var(--bg-elev), var(--bg-card));
+    border: 1px solid var(--rule);
+    border-radius: 16px;
+    position: relative;
+    overflow: hidden;
+  }
+
+  .final::before {
+    content: "";
+    position: absolute;
+    top: -50px; right: -50px;
+    width: 300px; height: 300px;
+    background: radial-gradient(circle, rgba(94, 234, 212, 0.1), transparent 70%);
+  }
+
+  .final::after {
+    content: "✓";
+    position: absolute;
+    bottom: -40px; left: -20px;
+    font-size: 280px;
+    font-weight: 700;
+    color: rgba(94, 234, 212, 0.04);
+    line-height: 1;
+    font-family: var(--display);
+  }
+
+  .final h2 {
+    font-size: 32px;
+    color: var(--ink-bright);
+    margin-bottom: 12px;
+    position: relative;
+  }
+
+  .final > p {
+    color: var(--ink-dim);
+    margin-bottom: 32px;
+    position: relative;
+  }
+
+  .check-list {
+    list-style: none;
+    position: relative;
+  }
+
+  .check-list li {
+    padding: 14px 0 14px 44px;
+    position: relative;
+    border-bottom: 1px solid var(--rule);
+    color: var(--ink);
+    font-size: 15.5px;
+  }
+
+  .check-list li:last-child { border-bottom: none; }
+
+  .check-list li::before {
+    content: "✓";
+    position: absolute;
+    left: 0;
+    top: 14px;
+    width: 24px;
+    height: 24px;
+    background: var(--cyan);
+    color: var(--bg);
+    border-radius: 50%;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-weight: 700;
+    font-size: 12px;
+  }
+
+  .check-list strong {
+    color: var(--ink-bright);
+    font-weight: 600;
+  }
+
+  /* ─────── FOOTER ─────── */
+  footer {
+    margin-top: 80px;
+    padding-top: 32px;
+    border-top: 1px solid var(--rule);
+    text-align: center;
+    font-family: var(--mono);
+    font-size: 11px;
+    color: var(--ink-faint);
+    letter-spacing: 0.15em;
+    text-transform: uppercase;
+  }
+
+  footer strong { color: var(--ink-dim); }
+
+  /* ─────── RESPONSIVE ─────── */
+  @media (max-width: 720px) {
+    .container { padding: 48px 20px 80px; }
+    h1 { font-size: 42px; }
+    h2 { font-size: 26px; }
+    .step-header { gap: 16px; }
+    .step-num { width: 48px; height: 48px; font-size: 20px; flex-basis: 48px; }
+    .step-body { padding-left: 0; margin-top: 16px; }
+    .progress-steps { grid-template-columns: repeat(3, 1fr); gap: 12px; }
+    .progress-steps::before { display: none; }
+    .pitfall { grid-template-columns: 1fr; }
+    .final { padding: 32px 24px; }
+  }
+
+  /* Animation */
+  .step, .pitfall, .final {
+    animation: fadeUp 0.5s ease-out backwards;
+  }
+  .step:nth-child(1) { animation-delay: 0.05s; }
+  .step:nth-child(2) { animation-delay: 0.1s; }
+  .step:nth-child(3) { animation-delay: 0.15s; }
+  .step:nth-child(4) { animation-delay: 0.2s; }
+  .step:nth-child(5) { animation-delay: 0.25s; }
+
+  @keyframes fadeUp {
+    from { opacity: 0; transform: translateY(16px); }
+    to { opacity: 1; transform: translateY(0); }
+  }
+</style>
+</head>
+<body>
+<div class="container">
+
+  <!-- ─────────── HEADER ─────────── -->
+  <header class="header">
+    <div class="kicker">TAAC2026 团队内部 · 安装指南</div>
+    <h1>Claude Code × VSCode<br><span class="accent">从零到能用</span></h1>
+    <p class="lede">一份手把手的部署文档，包含所有踩过的坑和验证检查点。读完照做，10 分钟内可以让 Claude Code 在你的本地项目上跑起来。</p>
+
+    <div class="meta-bar">
+      <div><strong>系统</strong>macOS（Windows / Linux 步骤几乎一致）</div>
+      <div><strong>预计时间</strong>约 10 分钟</div>
+      <div><strong>前置要求</strong>Claude Pro / Max 订阅</div>
+    </div>
+  </header>
+
+  <!-- ─────────── PROGRESS ─────────── -->
+  <div class="progress">
+    <div class="progress-label">流程总览 · Five Stages</div>
+    <div class="progress-steps">
+      <div class="step-marker">
+        <div class="step-circle">1</div>
+        <div class="step-name">Node.js</div>
+      </div>
+      <div class="step-marker">
+        <div class="step-circle">2</div>
+        <div class="step-name">CLI</div>
+      </div>
+      <div class="step-marker">
+        <div class="step-circle">3</div>
+        <div class="step-name">VSCode 扩展</div>
+      </div>
+      <div class="step-marker">
+        <div class="step-circle">4</div>
+        <div class="step-name">登录</div>
+      </div>
+      <div class="step-marker">
+        <div class="step-circle">5</div>
+        <div class="step-name">验证</div>
+      </div>
+    </div>
+  </div>
+
+  <!-- ─────────── STEP 1 ─────────── -->
+  <section class="step">
+    <div class="step-header">
+      <div class="step-num">1</div>
+      <div class="step-title-block">
+        <div class="step-tag">Stage 01 · Prerequisite</div>
+        <h2>检查 / 安装 Node.js</h2>
+        <div class="step-time">⏱  约 1 分钟（已有 Node 则跳过）</div>
+      </div>
+    </div>
+
+    <div class="step-body">
+      <p>Claude Code CLI 依赖 Node.js 运行环境。先在终端检查你是否已经安装：</p>
+
+      <div class="terminal">
+        <div class="terminal-header">
+          <div class="terminal-dot red"></div>
+          <div class="terminal-dot yellow"></div>
+          <div class="terminal-dot green"></div>
+          <div class="terminal-label">~/ — zsh</div>
+        </div>
+        <div class="terminal-body">
+          <div><span class="prompt">$ </span><span class="command">node -v</span></div>
+          <div class="output">v24.15.0  <span class="comment"># 看到版本号即可，v18+ 都行</span></div>
+        </div>
+      </div>
+
+      <p>如果提示 <code>command not found</code>，需要先安装 Node.js：</p>
+
+      <div class="terminal">
+        <div class="terminal-header">
+          <div class="terminal-dot red"></div>
+          <div class="terminal-dot yellow"></div>
+          <div class="terminal-dot green"></div>
+          <div class="terminal-label">安装 Node.js（仅当未安装时）</div>
+        </div>
+        <div class="terminal-body">
+          <div class="comment"># macOS · 推荐用 Homebrew</div>
+          <div><span class="prompt">$ </span><span class="command">brew install node</span></div>
+          <div class="output"></div>
+          <div class="comment"># 没有 brew 的话，先装 brew</div>
+          <div><span class="prompt">$ </span><span class="command">/bin/bash -c "$(curl -fsSL https://raw.githubusercontent.com/Homebrew/install/HEAD/install.sh)"</span></div>
+        </div>
+      </div>
+
+      <div class="tip">
+        <div class="tip-label">提示 · Windows / Linux</div>
+        <p>Windows 用户去 <code>nodejs.org</code> 下载安装包；Linux 用 <code>apt install nodejs</code> 或 <code>nvm</code>。</p>
+      </div>
+
+      <div class="checkpoint">
+        <div class="checkpoint-icon">✓</div>
+        <div class="checkpoint-content">
+          <strong>检查点 1</strong>
+          <p>运行 <code>node -v</code> 能看到版本号（v18 或更高）才算通过。</p>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- ─────────── STEP 2 ─────────── -->
+  <section class="step">
+    <div class="step-header">
+      <div class="step-num">2</div>
+      <div class="step-title-block">
+        <div class="step-tag">Stage 02 · CLI Install</div>
+        <h2>安装 Claude Code CLI</h2>
+        <div class="step-time">⏱  约 30 秒</div>
+      </div>
+    </div>
+
+    <div class="step-body">
+      <p>用 npm（Node.js 的包管理器）全局安装 Claude Code：</p>
+
+      <div class="terminal">
+        <div class="terminal-header">
+          <div class="terminal-dot red"></div>
+          <div class="terminal-dot yellow"></div>
+          <div class="terminal-dot green"></div>
+          <div class="terminal-label">~/ — zsh</div>
+        </div>
+        <div class="terminal-body">
+          <div><span class="prompt">$ </span><span class="command">npm install -g @anthropic-ai/claude-code</span></div>
+          <div class="output">changed 2 packages in 3s  <span class="comment"># 这样就成功了</span></div>
+        </div>
+      </div>
+
+      <div class="checkpoint">
+        <div class="checkpoint-icon">✓</div>
+        <div class="checkpoint-content">
+          <strong>检查点 2</strong>
+          <p>命令执行后没有报错就行。可选验证：运行 <code>claude --version</code> 看到版本号。</p>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- ─────────── STEP 3 ─────────── -->
+  <section class="step">
+    <div class="step-header">
+      <div class="step-num">3</div>
+      <div class="step-title-block">
+        <div class="step-tag">Stage 03 · VSCode Extension</div>
+        <h2>安装 VSCode 扩展（关键 · 容易装错）</h2>
+        <div class="step-time">⏱  约 1 分钟</div>
+      </div>
+    </div>
+
+    <div class="step-body">
+      <p>打开 VSCode，按 <code>Cmd + Shift + X</code>（Windows 是 <code>Ctrl + Shift + X</code>）打开扩展面板，搜索 <strong>Claude Code</strong>。</p>
+
+      <div class="warning">
+        <div class="warning-label">高频踩坑警告</div>
+        <h4>搜索结果里会有十几个名字相似的扩展，<u>绝大部分都是第三方的</u></h4>
+        <p>必须装的是<strong>第一个</strong> —— 发布者是 <strong>Anthropic</strong>（带蓝色认证勾），下载量 13M+ 的那个。</p>
+        <p>千万不要装：<code>Chat for Claude Code</code>、<code>Claude Code Assist</code>、<code>Claude Code YOLO</code>、<code>Kiro for Claude</code>、<code>Claude Code UI</code>、<code>Claude Code Theme</code> ... 这些都是第三方包装。</p>
+      </div>
+
+      <div class="instructions">
+        <ol>
+          <li>找到发布者为 <strong>Anthropic</strong> 的 Claude Code 扩展</li>
+          <li>点 <strong>Install</strong> 按钮</li>
+          <li>安装完成后会自动打开 "Get started with Claude Code" 引导页</li>
+        </ol>
+      </div>
+
+      <div class="checkpoint">
+        <div class="checkpoint-icon">✓</div>
+        <div class="checkpoint-content">
+          <strong>检查点 3</strong>
+          <p>VSCode 顶部标签栏出现 ✳ Claude Code 的橙色图标。如果没看到，按 <code>Cmd + Shift + P</code> 打开命令面板，输入 "Claude Code" 找入口。</p>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- ─────────── STEP 4 ─────────── -->
+  <section class="step">
+    <div class="step-header">
+      <div class="step-num">4</div>
+      <div class="step-title-block">
+        <div class="step-tag">Stage 04 · Open Project & Login</div>
+        <h2>打开项目 + 登录账号</h2>
+        <div class="step-time">⏱  约 2 分钟</div>
+      </div>
+    </div>
+
+    <div class="step-body">
+      <p><strong>4.1 打开项目文件夹</strong> — VSCode 菜单：<code>File → Open Folder</code>，导航到你 clone 的 <code>TAAC2026/</code> 根目录。</p>
+
+      <p><strong>4.2 启动 Claude Code 面板</strong> — 用以下任意一种方式：</p>
+
+      <div class="instructions">
+        <ol>
+          <li>按快捷键 <code>Cmd + Escape</code>（Mac）或 <code>Ctrl + Escape</code>（Win）</li>
+          <li>或点击 VSCode 右上角的橙色 ✳ Claude Code 图标</li>
+          <li>或在命令面板（<code>Cmd + Shift + P</code>）输入 <strong>Claude Code: Focus</strong></li>
+        </ol>
+      </div>
+
+      <p><strong>4.3 登录</strong> — 第一次打开会弹出登录界面，<strong>选择最上面的橙色按钮 "Claude.ai Subscription"</strong>（Pro / Max / Team 用户都选这个）。它会跳转到浏览器完成 OAuth 授权。</p>
+
+      <div class="tip">
+        <div class="tip-label">注意</div>
+        <p>另外两个按钮 "Anthropic Console" 是按 API 用量付费的，"Bedrock / Foundry / Vertex" 是企业方案。我们都不用，<strong>认准最上面的橙色按钮</strong>。</p>
+      </div>
+
+      <div class="checkpoint">
+        <div class="checkpoint-icon">✓</div>
+        <div class="checkpoint-content">
+          <strong>检查点 4</strong>
+          <p>登录成功后会回到 VSCode，Claude Code 面板显示 "What to do first? Ask about this codebase or we can start writing code."，底部出现输入框 "Ask Claude to edit..."。</p>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- ─────────── STEP 5 ─────────── -->
+  <section class="step">
+    <div class="step-header">
+      <div class="step-num">5</div>
+      <div class="step-title-block">
+        <div class="step-tag">Stage 05 · Verify</div>
+        <h2>验证：让 Claude Code 读你的代码</h2>
+        <div class="step-time">⏱  约 30 秒</div>
+      </div>
+    </div>
+
+    <div class="step-body">
+      <p>在 Claude Code 输入框里发送下面这条消息，验证它真的能读取你的项目：</p>
+
+      <div class="terminal">
+        <div class="terminal-header">
+          <div class="terminal-dot red"></div>
+          <div class="terminal-dot yellow"></div>
+          <div class="terminal-dot green"></div>
+          <div class="terminal-label">Claude Code · 测试消息</div>
+        </div>
+        <div class="terminal-body">
+          <div class="command" style="color: var(--ink-bright); white-space: pre-wrap;">你好，请告诉我你现在能看到哪些项目文件？</div>
+        </div>
+      </div>
+
+      <p>如果一切正常，Claude Code 会：</p>
+
+      <div class="instructions">
+        <ol>
+          <li>自动运行 <code>ls -la</code> 之类的命令读取你的项目根目录</li>
+          <li>列出 <code>Hyformer/</code>、<code>Interformer/</code>、<code>datasetAnalysis/</code>、<code>docs/</code>、<code>README.md</code> 等</li>
+          <li>询问你想深入了解哪个目录</li>
+        </ol>
+      </div>
+
+      <div class="checkpoint">
+        <div class="checkpoint-icon">✓</div>
+        <div class="checkpoint-content">
+          <strong>最终检查点</strong>
+          <p>看到 Claude Code 用中文/英文列出了你 <code>TAAC2026/</code> 下的真实文件 → <strong>大功告成</strong>。</p>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- ─────────── PITFALLS ─────────── -->
+  <section class="pitfalls">
+    <header class="pitfalls-header">
+      <div class="kicker">Common Pitfalls · 容易踩的坑</div>
+      <h2>避坑指南</h2>
+      <p style="color: var(--ink-dim); max-width: 640px; margin-top: 12px;">这些是我们部署过程中真实遇到的问题，列出来让你们少走弯路。</p>
+    </header>
+
+    <div class="pitfall-grid">
+
+      <div class="pitfall">
+        <div class="pitfall-num">01</div>
+        <div>
+          <h4>把 GitHub Copilot Chat 当成了 Claude Code</h4>
+          <p>VSCode 自带的 Copilot 聊天面板长得很像 Claude Code（都是右侧的 "Chat" 面板），但里面的模型列表是 GPT-4.1、GPT-4o、GPT-5 mini，不是 Claude。</p>
+          <p class="solution">认准顶部 ✳ Claude Code 橙色图标的那个标签页，模型应该显示 Claude Opus / Sonnet。</p>
+        </div>
+      </div>
+
+      <div class="pitfall">
+        <div class="pitfall-num">02</div>
+        <div>
+          <h4>装了第三方"Claude" 扩展</h4>
+          <p>搜索 "Claude Code" 会出现十几个结果，第一个之外几乎都是第三方（Andre Pimenta、CodeFlow Studio、Aura Technologies、黑色白云 等）。</p>
+          <p class="solution">只装发布者为 <strong>Anthropic</strong> 的那一个，下载量 13M+ 是它的特征。</p>
+        </div>
+      </div>
+
+      <div class="pitfall">
+        <div class="pitfall-num">03</div>
+        <div>
+          <h4>登录时点错了按钮</h4>
+          <p>登录界面有三个选项：Claude.ai Subscription / Anthropic Console / Bedrock。后两个会让你按 API 量付费，跟你的 Pro/Max 订阅无关。</p>
+          <p class="solution">永远选最上面的橙色 <strong>Claude.ai Subscription</strong>。</p>
+        </div>
+      </div>
+
+      <div class="pitfall">
+        <div class="pitfall-num">04</div>
+        <div>
+          <h4>找不到 Claude Code 的入口</h4>
+          <p>安装扩展后有时左侧边栏不会立即出现图标，找不到入口。</p>
+          <p class="solution">三个备选方案：① <code>Cmd + Escape</code> 快捷键 ② 命令面板（<code>Cmd + Shift + P</code>）输入 "Claude Code" ③ 终端直接运行 <code>claude</code>。</p>
+        </div>
+      </div>
+
+      <div class="pitfall">
+        <div class="pitfall-num">05</div>
+        <div>
+          <h4>npm install 报权限错误</h4>
+          <p>Mac 上有时 <code>npm install -g</code> 会报 <code>EACCES permission denied</code>。</p>
+          <p class="solution">前面加 <code>sudo</code>：<code>sudo npm install -g @anthropic-ai/claude-code</code>，输入开机密码即可。</p>
+        </div>
+      </div>
+
+    </div>
+  </section>
+
+  <!-- ─────────── FINAL CHECKLIST ─────────── -->
+  <section class="final">
+    <h2>完成清单</h2>
+    <p>装完之后逐项核对，全部打勾就说明你已经准备好开始用 Claude Code 改 TAAC2026 项目了。</p>
+
+    <ul class="check-list">
+      <li><strong>Node.js</strong> 在终端运行 <code>node -v</code> 能看到版本号</li>
+      <li><strong>Claude Code CLI</strong> 通过 npm 全局安装完成</li>
+      <li><strong>VSCode 扩展</strong> 安装了 <em>Anthropic 官方</em> 发布的那一个（不是第三方）</li>
+      <li><strong>项目已打开</strong> 在 VSCode 里打开了 <code>TAAC2026/</code> 根目录</li>
+      <li><strong>账号已登录</strong> 通过 "Claude.ai Subscription" 用 Max / Pro 账号授权完成</li>
+      <li><strong>验证通过</strong> Claude Code 能读到你本地的项目文件列表</li>
+    </ul>
+  </section>
+
+  <footer>
+    <strong>TAAC 2026</strong> · Claude Code Setup Guide · Last updated 2026.05.11 · For internal use
+  </footer>
+
+</div>
+</body>
+</html>
