@@ -1,4 +1,4 @@
-# v9.3 — UE Token + UE×Item 显式交互
+# v0.3 — UE Token + UE×Item 显式交互
 新增用户身份 token 与显式 user-item 匹配信号。   
 把UE独立出来作为一个token，然后与useritem做pair。  
 
@@ -38,7 +38,7 @@ inference time：130.62s
 ## 架构变化
 
 ```
-v9.0:                               v9.3:
+v9.0:                               v0.3:
                                     
 user_int ─→ NS Tokenizer            user_int ─→ NS Tokenizer
 user_dense ─→ Dense Token           user_dense ─→ Dense Token (fid 61 已剥离)
