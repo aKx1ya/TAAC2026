@@ -1,4 +1,4 @@
-# v9.3 — UE Token + UE×Item 显式交互
+# v0.3 — UE Token + UE×Item 显式交互
 新增用户身份 token 与显式 user-item 匹配信号。   
 把UE独立出来作为一个token，然后与useritem做pair。  
 
@@ -30,7 +30,7 @@ inference time：130.62s
 |------|------|
 | **新增 `UE_INT_FID = 97`** | UE token 的 int 侧特征 fid |
 | **新增 `build_ue_spec()`** | 从 schema 中解析 fid 97 的 int_offset 和 vocab_size |
-| **新增 `--no_ue_token` 开关** | 默认启用 UE token，`--no_ue_token` 可回退到 v9.0 行为 |
+| **新增 `--no_ue_token` 开关** | 默认启用 UE token，`--no_ue_token` 可回退到 v0.2 行为 |
 | **`model_args` 新增** | `ue_int_offset`、`ue_int_vocab` 传入模型 |
 
 ---
@@ -38,7 +38,7 @@ inference time：130.62s
 ## 架构变化
 
 ```
-v9.0:                               v9.3:
+v0.2:                               v0.3:
                                     
 user_int ─→ NS Tokenizer            user_int ─→ NS Tokenizer
 user_dense ─→ Dense Token           user_dense ─→ Dense Token (fid 61 已剥离)
