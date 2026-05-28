@@ -655,6 +655,87 @@
 
 ---
 
+### InterFormer v0.6 · ⭐ 修 v0.5 三大 bug + 累积式消融实验（本次会话产物）
+
+- **日期：** 2026-05-19 ~ 2026-05-28（代码就位，**尚未训练**）
+- **运行者：** 子健 + Claude Code（成对编程：本次 session 完成全部 4 处修复）
+- **设计思路：** **彻底回归 v0.1 干净架构**（PCVRInterFormer 569 行），**抛弃** v0.4/v0.5 的 DHEN + DCN + RoPE + AMP 大架构。只精选 v0.5 训练稳定性改动（GradScaler 除外，因为 v0.6 不启用 AMP），再修 v0.5 的逻辑反转 bug
+- **改动总结（4 处，全部"加法"，0 处删除）：**
+  | 文件 | 改动 | 行数变化 |
+  |------|------|----------|
+  | `model.py` | `reinit_high_cardinality_params` 函数开头加 `if cardinality_threshold == 0: return reinitialized` early return | 569 → 571 (+2) |
+  | `trainer.py` | `__init__` 加 `warmup_steps=1000` 参数 + `self.warmup_steps` / `self._base_dense_lr` 属性 + 训练循环加线性 warmup 逻辑 | 494 → 504 (+10) |
+  | `train.py` | argparse 加 `--warmup_steps`（default=1000）+ 构造 Trainer 时传 `warmup_steps=args.warmup_steps` | +~5 行 |
+  | `run.sh` | 加 `--sparse_lr 0.01`（覆盖默认 0.05）+ `--loss_type focal --focal_alpha 0.25 --focal_gamma 2.0` | 28 → 32 (+4) |
+- **三大 bug 修复对应关系：**
+  | v0.5 Bug | v0.6 修复策略 |
+  |----------|---------------|
+  | Bug 1: reinit 逻辑反转（`cardinality_threshold=0` 反而全重置）| ✅ 在 model.py 加 early return，恢复"0 = never reset"语义 |
+  | Bug 2: GAUC 硬编码为 0 | ❌ 暂未修复（trainer.py 仍是 v0.1 版本，未实现真实分组 AUC）|
+  | Bug 3: `seq_encoder_type` 被 `del` 静默丢弃 | ❌ 不需要——v0.6 回到 v0.1 架构，根本不会用 LongerEncoder/swiglu 切换 |
+- **v0.5 → v0.6 取舍：**
+  - ✅ 保留：sparse_lr 0.01 / linear warmup / Focal Loss(α=0.25, γ=2.0)
+  - ❌ 抛弃：AMP autocast + GradScaler（FP32 训练，根本不需要）
+  - ❌ 抛弃：DHEN + DCN + RoPE + gradient_accumulation（回到 v0.1 干净架构）
+  - ❌ 抛弃：log1p 边界保护（v0.6 没启用 log1p 变换）
+  - ❌ 抛弃：eval_every_n_steps（按 epoch 验证就够）
+- **目的：** 验证 v0.5 三大 bug 都是 v0.1 架构 + 训练稳定化就能拿到的"应得 AUC"，**不需要 DHEN/DCN 这种复杂架构改动**
+- **结果：** ⏳ **待跑**
+  - Val AUC：?
+  - Eval AUC：?
+  - 训练时长：?
+  - 收敛曲线：?
+- **README 状态：** ⚠️ **v0.6/README.md 是 v0.1 README 的副本，内容还未更新成 v0.6 的描述**（待补）
+- **同学的后续动作：** 把这 4 处修复**拆成 4 个累积式消融目录**（v0.6a/b/c/d），见下方四条
+
+---
+
+### InterFormer v0.6a-reinit-only · 消融变体 1：仅 reinit 修复
+
+- **日期：** 2026-05-19 ~ 2026-05-28（代码就位，**尚未训练**）
+- **运行者：** 同学（拆 v0.6 成消融目录）
+- **改动总结：** v0.1 baseline + **只加** model.py 的 reinit early return（+2 行）
+- **run.sh：** 与 v0.1 完全相同（28 行）
+- **隔离的变量：** 让 reinit 在 cardinality_threshold=0 时真的"never reset"
+- **目的：** 单独验证 v0.5 Bug 1 的修复对 v0.1 baseline 是否有改善
+- **结果：** ⏳ **待跑**——预期 Val/Eval AUC 跟 v0.1 持平或微升（因为 v0.1 用 cardinality_threshold=0 时同样触发了 Bug 1，但 v0.1 只跑 ~22h 没看到 decay）
+
+---
+
+### InterFormer v0.6b-sparse-lr · 消融变体 2：reinit 修复 + sparse_lr 0.01
+
+- **日期：** 2026-05-19 ~ 2026-05-28（代码就位，**尚未训练**）
+- **运行者：** 同学
+- **改动总结：** v0.6a + run.sh 加 `--sparse_lr 0.01`（28 → 29 行）
+- **隔离的变量：** Adagrad 学习率从 0.05 降到 0.01（v0.4 Readme 优先级 ★★★ 建议）
+- **目的：** 验证降低 sparse_lr 对训练稳定性和最终 AUC 的影响
+- **结果：** ⏳ **待跑**——预期 loss spike 减少，AUC ceiling 略升
+
+---
+
+### InterFormer v0.6c-warmup · 消融变体 3：+ 线性 warmup
+
+- **日期：** 2026-05-19 ~ 2026-05-28（代码就位，**尚未训练**）
+- **运行者：** 同学
+- **改动总结：** v0.6b + trainer.py 加 warmup_steps（+10 行）+ train.py 加 `--warmup_steps` CLI
+- **隔离的变量：** 前 1000 步 dense LR 从 0 线性升到 1e-4
+- **目的：** 验证 warmup 对 InterFormer v0.1 干净架构是否同样有效
+- **结果：** ⏳ **待跑**——预期早期 loss 更平滑，但峰值 AUC 可能与 v0.6b 接近
+
+---
+
+### InterFormer v0.6d-focal · 消融变体 4：+ Focal Loss
+
+- **日期：** 2026-05-19 ~ 2026-05-28（代码就位，**尚未训练**）
+- **运行者：** 同学
+- **改动总结：** v0.6c + run.sh 加 `--loss_type focal --focal_alpha 0.25 --focal_gamma 2.0`
+- **隔离的变量：** BCE → Focal Loss(α=0.25, γ=2.0)
+- **目的：** 验证 Focal Loss 在正样本率 9.6% 的中等不平衡场景下是否优于 BCE
+- **结果：** ⏳ **待跑**——预期效果不确定（v0.5 实测有效，但 v0.5 是大架构；v0.6 干净架构上 Focal 可能多余甚至略损）
+- **关系：** v0.6 ≡ v0.6d + README 副本，所以 v0.6d 是消融链的终点
+
+---
+
 ### Hyformer_baseline · 不在演进链上的参考工作区
 
 - **本质：** HyFormer-v0.1 的本地工作副本
@@ -783,6 +864,260 @@ self.scaler.update()
 
 ---
 
+## 4.D DIN 家族（HyFormer + DIN 风格目标注意力 + 多轮调参）
+
+> **背景：** 2026-05-19 之后同学新开的第三条主线，目录命名为 `DIN/`。底层模型仍是 `PCVRHyFormer`（不是 InterFormer），但加入了关键的 `DINTargetAttention` 类（DIN-style target-aware attention，来自阿里 2018 论文），并大量引入时间特征工程、HashEmbedding、DCN-v2、SE-Net、Temporal Bias 等。
+>
+> **命名混淆需要注意：** 目录用 `v0 / v0.1 / v0.2 ...` 编号，但 README/代码注释里又自称 `PCVRHyFormer v9.0 / v9.0.2 / v9.3` 等"v9.x"版本号——是**同一个项目的两种命名体系**。本节按目录名为准。
+>
+> **共同基线超参数（除非另注）：** d_model 默认 64（v0.4.2 起改 128），num_heads 4（v0.4.2 起 8），rankmixer NS tokenizer (user_ns=3, item_ns=4)，num_queries=2，emb_skip_threshold=1M，hash_bucket_size=100K，precision=bf16，lr_schedule=cosine，warmup_steps=500，ema_decay=0.999，weight_decay=0.02，label_smoothing=0.01，loss_type=bce_pairwise (λ=0.05)。
+>
+> **README 覆盖率：** 15 个版本里**只有 5 个有 README**（v0.3 / v0.4 / v0.4.2 / v0.4.3 / v0.7）。**无任何 PNG 训练曲线**。这意味着大部分版本的"结果"需要找同学单独问。
+
+---
+
+### DIN v0 · 起点（继承 HyFormer v9.0 全套架构）
+
+- **日期：** 2026-05-21 之前
+- **运行者：** 同学
+- **架构：** PCVRHyFormer，model.py 2573 行，含 `RotaryEmbedding` / `HashEmbedding` / `DINTargetAttention` / `RoPEMultiheadAttention` / `CrossAttention` / `RankMixerBlock` / `MultiSeqQueryGenerator` / `SwiGLUEncoder` 等核心类
+- **改动总结：** 项目起点版本，把 HyFormer v9.0 全套带 DIN 风格目标注意力的实现搬到 DIN 目录
+- **run.sh 关键参数（45 行）：** rankmixer / user_ns=3 / item_ns=4 / nq=2 / `--use_target_attention` / `--num_cross_layers 2` / `--cross_low_rank 64` / `--use_se_net` / `--use_ns_self_attn` / `--use_ns_output_fusion` / `--use_temporal_bias` / `--use_time_gap` / `--precision bf16` / `--lr_schedule cosine` / `--warmup_steps 500` / `--ema_decay 0.999` / `--label_smoothing 0.01` / `--weight_decay 0.02` / `--loss_type bce_pairwise` / `--pairwise_lambda 0.05`
+- **目的：** 把 PCVRHyFormer v9.0（带 DIN 注意力 + 全套 v9 增强）作为 DIN 实验线起点
+- **结果：** ⏳ **无 README、无 PNG、无 AUC 记录**——只能通过和 v0.1 的代码对比反推存在过
+
+---
+
+### DIN v0.1 · v0 的代码修复（HierarchicalSparseDenseFusion 替换 UserSparseDensePairResidual）
+
+- **日期：** 2026-05-21（model.py 时间戳）
+- **运行者：** 同学
+- **改动总结：** **model.py +508 行 diff**（关键替换）：
+  - `UserSparseDensePairResidual` → `HierarchicalSparseDenseFusion`（金字塔型稀疏-稠密融合）
+  - 新增 `USER_DENSE_MIN_HIERARCHICAL_DIM = 568` 常量
+  - RoPEMultiheadAttention 支持 2D / 3D 加性 mask（更通用）
+- **run.sh：** 与 v0 完全相同
+- **目的：** 把 v0 的 pair residual 升级为分层金字塔融合，利用 datasetAnalysis 发现的 fids 62→66 自然层级结构
+- **结果：** ⏳ **无 README、无 PNG、无 AUC 记录**
+
+---
+
+### DIN v0.2 · 加 RoPE + schema.json + item_ns_tokens 4→3
+
+- **日期：** v0.1 之后
+- **运行者：** 同学
+- **改动总结：**
+  - run.sh 新增 `--schema_path "${SCRIPT_DIR}/schema.json"`（45 → 47 行）
+  - 新增 `--use_rope`
+  - `--item_ns_tokens 4 → 3`
+  - 新增 `schema.json` 文件（线上 schema 副本）
+  - dataset.py / model.py / train.py 配套修改
+- **目的：** 引入 RoPE 位置编码；降低 item_ns_tokens 让 T = nq*4 + num_ns 保持容量约束 d_model % T == 0
+- **结果：** ⏳ **无 README、无 PNG、无 AUC 记录**
+
+---
+
+### DIN v0.3 · ⭐ UE Token + UE×Item 显式交互（README: Eval AUC 0.825249，"目前最牛逼的版本"）
+
+- **日期：** v0.2 之后
+- **运行者：** 同学
+- **架构改动（README 详细记录）：**
+  - 新增 `UETokenModule`：从 fid 61 (256-dim user dense) + fid 97 (vocab≈4 user int) 融合出独立的 UE token。fid 61 经 `Linear(256→d_model)+SiLU`，fid 97 经 `Embedding→d_model`，二者 concat 后经 `Linear(2d→d)+SiLU` 融合
+  - 新增 `UEItemInteraction`：UE token ⊙ item_emb（hadamard 积）→ `Linear+SiLU`，经可学习 gate（初始 ~0.05）控幅后作为残差加到 output 上
+  - `_make_user_dense_proj_input` 修改：启用 UE token 时同时剥离 fid 61 [0:256] 和 fid 62-66 [256:568]，避免双重计数
+  - train.py 新增 `--no_ue_token` 开关（默认启用）
+- **run.sh：** 回退到 v0.1 配置（item_ns_tokens=4，不用 RoPE），但底层模型已是 UE token 版
+- **设计原则（README 原文）：**
+  - **独立路径：** UE token 不走 NS tokenizer / ns_tokens，避免 RankMixer 的 token mixing 稀释信号
+  - **残差注入：** UE×item 交互以 gated residual 形式加到 output，初始 gate≈0，让模型逐步学会使用
+  - **双重剥离：** fid 61 和 fid 62-66 从 dense_proj 中剥离，各自走独立的专门路径
+- **目的：** 让模型显式建模"这个用户身份与当前商品的相似度"
+- **结果：** ⭐ **Eval AUC = 0.825249，推理 130.62s**（README 自评"目前最牛逼的版本"）
+- **反思：** 该结果略低于 HyFormer v0.3.1+2.a-update 的 Eval 0.812208 但**高于** v0.5 的 Val 0.852 之外的部署数字（v0.5 真实 Eval 未知）。**这是 DIN 线第一个有 quantified 结果的版本**
+
+---
+
+### DIN v0.4 · ⭐ PCVRHyFormer v9.0 完整版（README + 调参手册.md，AUC 0.823689）
+
+- **日期：** v0.3 之后
+- **运行者：** 同学
+- **改动总结：** **抛弃 v0.3 的 UE Token**，回到不带 UE 的基础架构，但**大幅增强 HyFormer v9 的全套**：
+  - **架构增强：** HashEmbedding / DINTargetAttention / UserSparseDensePairResidual / NSSelfAttention / CrossNet (DCN-v2) / SENetGating / TemporalBias
+  - **时间特征工程（6 条）：** seq_time_deltas / seq_time_gaps / seq_time_hours / seq_time_weekdays / seq_time_span_buckets / cyclical_time_proj
+  - **训练优化：** BF16 / EMA(0.999) / cosine LR + warmup / label_smoothing / Pairwise Ranking Loss / weight_decay
+  - **NS 增强：** hash_bucket_size / target_emb 加入 query / NS 输出融合 / 跨层 DCN-v2
+- **新增文件：** README.md + **`调参手册.md`**（详细列出每个超参的含义+建议范围）
+- **run.sh：** v0 的全套 + `--batch_size 128`（45 → 46 行）
+- **目的：** 把所有"涨分技巧"一次性堆上来，看天花板
+- **结果：** **Eval AUC = 0.823689**（README 截图："The score is currently 0.823689"）
+- **反思（README 原文）：** "涨分经验不多，掉分经验挺多——主要在架构/item特征/泛化手段/数据增强里面涨分，xhs很多佬的提的时间特征/din等，我加的太过了，基本都是掉点"——**承认时间特征 + DIN 注意力的过度堆叠反而掉分**
+
+---
+
+### DIN v0.4.2 · ⭐ v0.4 的"d_model 翻倍 + 默认值清理"调参（README baseline AUC 0.8267）
+
+- **日期：** v0.4 之后
+- **运行者：** 同学
+- **改动总结（README 表格清晰列出）：**
+  | 参数 | v0.4 | v0.4.2 | 原因 |
+  |------|------|--------|------|
+  | `d_model` | 64 | **128** | 容量翻倍 |
+  | `num_heads` | 4 | **8** | 头数随 d_model 等比放大 |
+  | `use_se_net` | False | **True** | NS Token 自适应加权 |
+  | `use_ns_self_attn` | False | **True** | Token 间特征交叉 |
+  | `dropout_rate` | 0.01 | **0.05** | 配合大模型防过拟合 |
+  | `loss_type` | bce | **focal** | 处理 CVR 正负不平衡 |
+  | `focal_alpha` | 0.1 | **0.25** | 正样本权重 ↑ |
+  | `label_smoothing` | 0.0 | **0.05** | 标签软化防过拟合 |
+  | `batch_size` | 256 | **128** | d_model 翻倍后显存不够 |
+- **run.sh 精简：** 删掉变成默认值的 flags（`--use_se_net` 等），`loss_type` 从 `bce_pairwise` 切回默认 `focal`
+- **目的：** 不改架构，只通过模型容量翻倍 + Focal Loss 提分
+- **结果：** ⏳ **README 引用 baseline AUC 0.8267 但没记当前版本 AUC**（推测掉分，因为下个 v0.4.3 是消融测试）
+
+---
+
+### DIN v0.4.3 · v0.4.2 消融：Focal → bce_pairwise（验证掉分元凶）
+
+- **日期：** v0.4.2 之后
+- **运行者：** 同学
+- **改动总结（README 一句话）：** **唯一改动**：`loss_type focal → bce_pairwise`，`pairwise_lambda=0.05`（其他参数 dropout=0.05 / label_smoothing=0.05 / batch_size=128 完全不变）
+- **目的（README 原文）：** "验证 v0.4.2 掉分是否源于 Focal Loss 替换了 Pairwise Ranking Loss"——消融逻辑：
+  - 如果 v0.4.3 涨回来 → **Focal Loss 是罪魁祸首**
+  - 如果 v0.4.3 还是掉分 → 问题在 dropout/label_smoothing
+- **结果：** ⏳ **无 quantified 结果**——README 写了实验设计但没填回最终 AUC
+
+---
+
+### DIN v0.5 · 回归 v0.1 的 HierarchicalSparseDenseFusion 路线
+
+- **日期：** v0.4.3 之后
+- **运行者：** 同学
+- **改动总结：** **抛弃 v0.4 ~ v0.4.3 的整条 v9.0 调参分支**，回到 v0.1 的 `HierarchicalSparseDenseFusion` 基础架构。model.py 与 v0.4.3 有 508 行 diff（实际是 v0.4.3 → v0.1-style 的回退）
+- **run.sh：** **与 v0.3 完全相同**（45 行，含 use_target_attention + use_se_net + use_ns_self_attn 等全部 v9 增强 flags）
+- **目的：** v0.4 系列调参没奏效，回到 v0.3 那条线的稳健配置重启
+- **结果：** ⏳ **无 README、无 PNG、无 AUC 记录**
+
+---
+
+### DIN v0.6 · v0.5 + RoPE + schema.json + item_ns_tokens 4→3（与 v0.2 同构）
+
+- **日期：** v0.5 之后
+- **运行者：** 同学
+- **改动总结：**
+  - run.sh 新增 `--schema_path "${SCRIPT_DIR}/schema.json"` + `--use_rope` + `item_ns_tokens 4→3`（45 → 47 行）
+  - dataset.py / model.py / train.py 配套修改
+  - 新增 `schema.json` 文件
+- **目的：** 在 v0.5 干净 base 上重新尝试 v0.2 的 RoPE 实验
+- **结果：** ⏳ **无 README、无 PNG、无 AUC 记录**
+
+---
+
+### DIN v0.7 · ⭐ UE Token 回归（README 与 v0.3 完全相同，但版本号自称 "v9.3"）
+
+- **日期：** v0.6 之后
+- **运行者：** 同学
+- **改动总结：** **重新引入 v0.3 的 UE Token + UE×Item 显式交互**，README 内容**与 v0.3 一字不差**（包括 "v9.3" / Eval AUC 0.825249 / "目前最牛逼的版本了" 这些原话）
+- **关键观察：** README 的 AUC 0.825249 是 v0.3 跑出来的数字。v0.7 是不是真的重跑过、还是只是"代码复刻"，**无法从目录确认**——需要找同学问
+- **目的：** 在 v0.5 / v0.6 的更新代码 base 上验证 UE Token 仍然有效
+- **结果：** ⏳ **README 的 0.825249 实际是 v0.3 的数字。v0.7 本身是否跑过未确认**
+
+---
+
+### DIN v0.7-bce · v0.7 + checkpoint 保存策略（save_top_k 10 / save_every_n_epochs 1）
+
+- **日期：** v0.7 之后
+- **运行者：** 同学
+- **改动总结：** v0.7 全套 + run.sh 新增 `--save_top_k 10 --save_every_n_epochs 1`（45 → 47 行）。代码 6 个文件都改了（dataset/infer/model/train/trainer/utils.py 均有 diff），但 README 被删
+- **目的：** 留存训练过程中的多个 checkpoint，便于回溯比较；命名 "-bce" 暗示这是 loss=bce_pairwise 的对照分支
+- **结果：** ⏳ **无 README、无 PNG、无 AUC 记录**
+
+---
+
+### DIN v0.7-focal · v0.7-bce 的 loss 对照分支（focal α=0.1 γ=2.0）
+
+- **日期：** 与 v0.7-bce 同期
+- **运行者：** 同学
+- **改动总结：** **与 v0.7-bce 唯一区别：run.sh 的 loss 行**——`--loss_type bce_pairwise --pairwise_lambda 0.05` 改成 `--loss_type focal --focal_alpha 0.1 --focal_gamma 2.0`
+- **隔离的变量：** 仅 loss 函数
+- **目的：** 在保存策略完善的前提下，正面对比 bce_pairwise vs focal 在 DIN 架构上的效果
+- **结果：** ⏳ **无 README、无 PNG、无 AUC 记录**
+
+---
+
+### DIN v0.8 · 在 v0.7-focal 上正式接入 UE Token + UE×Item（双模块同时启用）
+
+- **日期：** v0.7-focal 之后
+- **运行者：** 同学
+- **改动总结（class 层面）：** **从 v0.7-focal 派生**（不是从 v0.7-bce），新增 `UETokenModule` 和 `UEItemInteraction` 两个类。**这意味着 v0.8 是 v0.7-focal + UE 路径的组合**
+  - model.py 169 行 diff（new class adds）
+  - dataset.py 189 行 diff（数据侧配合）
+  - trainer.py 112 行 diff
+  - train.py 51 行 diff
+- **run.sh：** **回到 bce_pairwise 配置**（v0.7-focal 是临时对照分支，v0.8 继续主线 loss）
+- **目的：** 在 DIN 主架构上同时启用 UE Token + 完整 v9 增强 + bce_pairwise，看融合上限
+- **结果：** ⏳ **无 README、无 PNG、无 AUC 记录**
+
+---
+
+### DIN v0.8.1 · v0.8 的推理小修（仅 infer.py 改动）
+
+- **日期：** v0.8 之后
+- **运行者：** 同学
+- **改动总结：** **唯一文件差异**：infer.py 修改（具体行数未深查）。model.py / train.py / trainer.py / dataset.py / run.sh / utils.py 全部一字不差
+- **目的：** 修复推理脚本的一个 bug 或对齐线上评测接口（推测）
+- **结果：** ⏳ **无 README、无 PNG、无 AUC 记录**
+
+---
+
+### DIN v0.8.2 · ⭐ 重大重构：三个 pair/UE 类合并为统一的 SparseDensePairEncoder
+
+- **日期：** v0.8.1 之后
+- **运行者：** 同学
+- **改动总结（class 层面）：**
+  - **删除：** `UETokenModule` / `UEItemInteraction` / `UserSparseDensePairResidual`（三个独立类）
+  - **新增：** `SparseDensePairEncoder`（**统一接口**）
+  - model.py 397 行 diff，train.py 63 行，trainer.py 79 行，infer.py 95 行
+  - run.sh 完全不变（45 行）
+- **目的：** **架构清理**——把之前散在多个独立类里的"sparse-dense 配对编码"统一成一个可配置的 encoder。这是为后续做更系统的消融做准备
+- **结果：** ⏳ **无 README、无 PNG、无 AUC 记录。整个 DIN 家族目前最新的版本**
+- **下一步：** 需要找同学问 v0.8 / v0.8.1 / v0.8.2 中哪个版本被真正训练过，结果是多少
+
+---
+
+## 4.D 总结表（DIN 家族 15 个版本）
+
+| 版本 | 关键改动 | run.sh 关键 | 有 README？ | AUC | 状态 |
+|---|---|---|---|---|---|
+| **v0** | 起点（PCVRHyFormer v9.0）| use_target_attention + DCN + SE + 时间 + EMA + bce_pairwise | ❌ | — | 未记录 |
+| **v0.1** | model.py +508 行：HierarchicalSparseDenseFusion | 同 v0 | ❌ | — | 未记录 |
+| **v0.2** | +RoPE + schema.json + item_ns 4→3 | + `--use_rope` + `--schema_path` | ❌ | — | 未记录 |
+| **v0.3** | ⭐ UE Token + UE×Item | 回退（无 RoPE） | ✅ | **Eval 0.825249** | "目前最牛逼" |
+| **v0.4** | ⭐ v9.0 完整版（HashEmb / DCN / SENet / 时间×6）| +`--batch_size 128` | ✅ + 调参手册 | **Eval 0.823689** | "涨分不多，掉分挺多" |
+| **v0.4.2** | d_model 64→128 + use_se_net + focal α=0.25 | 精简 flags | ✅ | baseline 0.8267 引用 | 推测掉分 |
+| **v0.4.3** | 消融：focal→bce_pairwise | + bce_pairwise | ✅ | — | README 实验设计完整，无结果 |
+| **v0.5** | 回归 HierarchicalSparseDenseFusion 路线 | 同 v0.3 | ❌ | — | 未记录 |
+| **v0.6** | v0.5 + RoPE + schema.json + item_ns 4→3 | + `--use_rope` + `--schema_path` + item_ns 3 | ❌ | — | 未记录 |
+| **v0.7** | ⭐ UE Token 回归（README ≡ v0.3）| 同 v0.5 | ✅（但 ≡ v0.3）| **README 写 0.825249（来自 v0.3）** | 是否真跑过未知 |
+| **v0.7-bce** | +`--save_top_k 10 --save_every_n_epochs 1` | + 保存策略 | ❌ | — | 未记录 |
+| **v0.7-focal** | 与 -bce 仅 loss 不同 | bce_pairwise → focal α=0.1 γ=2.0 | ❌ | — | 未记录 |
+| **v0.8** | + UETokenModule + UEItemInteraction（基于 -focal） | 回 bce_pairwise | ❌ | — | 未记录 |
+| **v0.8.1** | 仅 infer.py 修复 | 不变 | ❌ | — | 未记录 |
+| **v0.8.2** | ⭐ 三个 pair 类合并为 SparseDensePairEncoder | 不变 | ❌ | — | 未记录，**最新** |
+
+**关键观察：**
+1. **只有 v0.3 和 v0.4 有 quantified AUC（0.825249 / 0.823689）**——其余 13 个版本要么没跑、要么没记录
+2. **v0.7 的 README 内容与 v0.3 完全一致**（包括 AUC 数字）——可能是"代码复刻但 README 没更新"
+3. **架构变迁的关键拐点：**
+   - v0 → v0.1：UserSparseDensePairResidual → HierarchicalSparseDenseFusion
+   - v0.2 / v0.6：分别在自己的 base 上加 RoPE
+   - v0.3 / v0.7：分别在自己的 base 上加 UE Token + UE×Item
+   - v0.4 ~ v0.4.3：v9.0 完整 + 调参分支（侧支）
+   - v0.5 → v0.6 → v0.7 → v0.7-bce/-focal → v0.8 → v0.8.1 → v0.8.2：DIN 主线
+4. **v0.8.2 的统一 SparseDensePairEncoder 是值得追踪的设计**——把多种特征组合（pair residual / UE token / UE×Item）抽象成一个 encoder，可能为论文的"特征工程模块化"叙事提供素材
+5. **DIN 这条线和 InterFormer 不一样：DIN 是 PCVRHyFormer 派生（HyFormer 内核），InterFormer 是另一套架构**——两条线在比较时不能直接看绝对 AUC，要看相对 baseline 提升
+
+---
+
 # 第五部分：累积发现（Insights）
 
 > **每次实验后，把通用结论提炼到这里。**
@@ -828,6 +1163,9 @@ self.scaler.update()
 - **失败也是 contribution：** v0.2、v0.3 都是负面结果，但它们的诊断（"HyFormer 调参空间有限"、"一次只改一个"）成为后续决策（切换 InterFormer、规范消融）的依据
 - **统一指标定义的重要性：** v0.1 报"Eval AUC"，v0.5 报"峰值 Val AUC"，两个数字方法论不同不能直接相减。**写论文前必须统一指标口径**
 - **README 是事实源：** 部分子目录（如 +1.a+1.b、+2.a、+2.b）当前目录没填结果表，但其他下游目录（+2.a-update）的对照表已经把它们的真实数字记下来。**结果分布在多个 README 里，要交叉比对**（这是 V2 对齐扫描的关键发现之一）
+- **修复型 PR 应拆成累积消融目录（InterFormer v0.6 → v0.6a/b/c/d 范式）：** v0.6 一次性合并了 4 处修复（reinit 早退 + sparse_lr 0.01 + 线性 warmup + Focal Loss），但同学随即把它拆成 4 个独立目录 v0.6a/b/c/d，每个目录只比前一个多一处改动。这种"修复→拆消融"的二段式工作流让每条修复的独立贡献可以被量化测量，避免"一次合并多个改动 → 结果难以归因"的老问题（HyFormer v0.2、InterFormer v0.3 都栽在这里）。**这是值得未来所有修复 PR 沿用的范式**
+- **多命名体系共存的认知成本（DIN 家族教训）：** DIN 目录用 v0/v0.1/v0.2 但 README 里又自称 v9.0/v9.0.2/v9.3，导致同一个版本有两套版本号。**未来开新分支时应该选定单一命名体系**，避免给自己和接手人增加交叉对照成本
+- **README ≠ 实验结果（DIN v0.7 教训）：** DIN v0.7 的 README 与 v0.3 一字不差（同样的 0.825249 AUC，同样的"目前最牛逼"），这意味着 README 可能只是代码复刻时**抄过来**的，而不是 v0.7 真实跑出来的结果。**任何 quantified AUC 必须配合 PNG / log / 命令时间戳才能视作可信**
 
 ---
 
@@ -835,12 +1173,17 @@ self.scaler.update()
 
 ## 6.1 当前阻塞项
 
-- [ ] **关键 Bug：v0.5 的 embedding reinitialization 逻辑反转** —— 必须修复后重跑，才能知道 v0.5 架构的真实 ceiling（不是被 bug 偷走的 0.852）
-- [ ] **关键 Bug：`model.py:480 del seq_encoder_type`** —— 让 `--seq_encoder_type` 参数静默失效，所有想换 encoder 的实验都受影响
-- [ ] **GAUC 硬编码为 0** —— 比赛主指标可能用 GAUC，必须实现真实的分组 AUC 计算
+- [x] ~~**v0.5 之后没有新版本**~~ ✅ **已清除（2026-05-28）**：v0.6 + v0.6a/b/c/d 五个目录代码就位（reinit fix + sparse_lr 0.01 + warmup + Focal）。**v0.6 的设计是回到 v0.1 干净架构 + 选择性吸收 v0.5 训练稳定性改动**，不沿用 v0.4/v0.5 的 DHEN+DCN 大架构
+- [x] ~~**v0.5 的 embedding reinitialization 逻辑反转**~~ ✅ **v0.6 已修复**：`model.py:reinit_high_cardinality_params` 函数开头加 `if cardinality_threshold == 0: return reinitialized` early return，恢复"0 = never reset"语义
+- [ ] **v0.6 系列代码就位但尚未训练** —— v0.6 / v0.6a / v0.6b / v0.6c / v0.6d 五个目录都没有 PNG/log/AUC 数据，**必须跑完累积消融实验才能验证每条修复的独立贡献**
+- [ ] **v0.6/README.md 仍是 v0.1 README 副本** —— 没有反映 v0.6 实际做了什么。**需要重写**：描述 4 处修复 + 4 个消融变体的设计意图
+- [ ] **DIN 家族 15 个版本里 13 个无任何结果记录** —— 只有 v0.3（Eval 0.825249）和 v0.4（Eval 0.823689）有 quantified AUC。v0.7 的 README 与 v0.3 一字不差**疑似抄写**。**必须找同学逐版本确认：哪些真跑过、AUC 是多少、最新的 v0.8.2 是否训练**
+- [ ] **DIN 家族无 PNG/log** —— 15 个目录全部没有训练曲线，违背了 HyFormer/InterFormer 系列的"PNG 留档"惯例。如果想为论文准备 ablation 表，**必须补跑或补图**
+- [ ] **DIN 双命名体系（v0.x 目录 + v9.x README）** —— 增加交叉对照成本，未来论文写作需要先统一称呼
+- [ ] **关键 Bug：`model.py:480 del seq_encoder_type`** —— 让 `--seq_encoder_type` 参数静默失效，所有想换 encoder 的实验都受影响（v0.6 不需要此修复，因为回到 v0.1 架构不切换 encoder；但 InterFormer 后续大架构如果重启需要修）
+- [ ] **GAUC 硬编码为 0** —— 比赛主指标可能用 GAUC，必须实现真实的分组 AUC 计算（v0.6 也未修复——trainer.py 与 v0.1 完全一致）
 - [ ] **v0.3.1+2.b（金字塔 KV）无训练结果** —— 代码 +327 行 HierarchicalKVFusion 已写好，但目录里没有 PNG/log。**必须找 Zesong 确认状态**（V2 修正：1a+1b、2a 的结果实际上在 +2.a-update README 里）
 - [ ] **v0.3.1+Interformer+1.a（架构对照）无训练结果** —— 关键的"架构 vs 特征工程"对照实验
-- [ ] **v0.5 之后没有新版本** —— 需要规划 v0.6（基于 v0.5 修 bug 后的稳定版）
 
 ## 6.2 已识别风险
 
@@ -959,10 +1302,11 @@ self.scaler.update()
 | 2026-05-14 | 子健 | 初始化研究日志，填入 v0.0 信息 |
 | 2026-05-14 | 子健 + Claude | **v2.0 大重构**：整合 HyFormer 全系列扫描 + InterFormer 全系列扫描 + datasetAnalysis 扫描；补全所有 17 个版本的事实档案；提炼 5 大维度的累积发现；列出给 Zesong 的 12 个待确认问题；起草潜在论文叙事 |
 | 2026-05-19 | 子健 + Claude Code | **V2 对齐扫描：基于本地文件全量核对，修正 6 处事实错误，补充 14 处遗漏**（关键修正：HyfFormer-v0.1 ≡ HyFormer-v0.1 / 1a+1b 与 2a 的训练结果实际散落在 +2.a-update README 中可补全 / 2.a-update 的 T=3.0 结果 Val 0.86275 Eval 0.812208 系列新高 / v0.2、v0.3、v0.4 的训练日期全部从 log 文件补齐 / 2.b 的"+404 行"应理解为相对 v0.0、相对 +2.a 实际 +327 行 / Interformer+1.a 对照的 run.sh 实际有调整不是"完全不变" / v0.3.1+1.a 实测参数量 239,158,977） |
+| 2026-05-28 | 子健 + Claude Code | **v2.2 同步扫描：补录 5/19 之后同学的更新**——① 新增 4.D 节（DIN 家族 15 个版本完整 4 要素归档）；② 4.B 节末尾新增 6 个 v0.6 系列条目（v0.6 + v0.6a/b/c/d 累积消融，含结果占位）；③ 5.5 节追加 3 条新方法论 insight（修复型 PR 应拆消融、多命名体系成本、README≠实验结果）；④ 6.1 阻塞项清除 2 条已完成、新增 6 条新阻塞（v0.6 待训、DIN 13 个版本无结果等）。**关键发现**：v0.6 系列代码就位但全部待跑；DIN 家族只有 v0.3 / v0.4 两个版本有 quantified AUC，其余 13 个无结果记录；DIN v0.7 README 疑似复制自 v0.3（同一 0.825249 数字） |
 
 ---
 
-*Last updated: 2026-05-19*
+*Last updated: 2026-05-28*
 *Maintained by: 徐子健（TAAC2026 项目规划）*
 *Use this file as context when chatting with any AI tool (Claude, DeepSeek, GPT, etc.)*
 
